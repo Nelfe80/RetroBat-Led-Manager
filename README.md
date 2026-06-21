@@ -47,6 +47,14 @@ Pour savoir comment raccorder votre Raspberry Pi Pico à vos boutons d'arcade, �
 
 Un schéma technique de câblage est également inclus dans ce guide (`docs/pico_wiring_diagram.png`) pour vous assister.
 
+### ⚡ Schémas de Câblage (Wiring Diagrams)
+
+#### Version Française :
+![Schéma de Câblage Pico FR](docs/pico_wiring_diagram_fr.png)
+
+#### English Version :
+![Pico Wiring Diagram EN](docs/pico_wiring_diagram.png)
+
 ---
 
 ## 🔧 Compilation des Sources

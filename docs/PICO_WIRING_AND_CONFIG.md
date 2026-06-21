@@ -37,8 +37,13 @@ Voici les recommandations de câblage standard pour connecter vos boutons d'arca
     *   Chaque couleur ou bouton simple est branché à une broche `GPx` (GPIO) du Pico.
     *   Le retour commun de la LED/du bouton va à la masse (`GND`).
 
-### Schéma technique de câblage :
-![Schéma de Câblage Pico](pico_wiring_diagram.png)
+### Schémas techniques de câblage
+
+#### Version Française :
+![Schéma de Câblage Pico FR](pico_wiring_diagram_fr.png)
+
+#### English Version :
+![Pico Wiring Diagram EN](pico_wiring_diagram.png)
 
 ---
 
