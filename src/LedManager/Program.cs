@@ -32,6 +32,7 @@ internal sealed class LedManagerApp
     private PanelState? _currentPanel;
     private CancellationTokenSource? _ingameIdleRestoreCts;
     private long _ingameIdleRestoreVersion;
+    private long _frontendStartSelectPulseVersion;
     private long _arcadeOutputVersion;
     private long _lastPanelSequence;
     private int _activeEffectSequences;
@@ -218,6 +219,7 @@ internal sealed class LedManagerApp
             _currentPanel = nextPanel;
             Console.WriteLine($"[panel] current panel={_currentPanel.PanelId ?? "unknown"} layout={_currentPanel.LayoutId ?? "unknown"} sequence={_currentPanel.Sequence} outputs={_currentPanel.Outputs.Count}");
             await DispatchAsync(_router.RoutePanelState(_currentPanel));
+            PulseFrontendStartSelectOnPanelChange();
             return;
         }
 
@@ -610,6 +612,63 @@ internal sealed class LedManagerApp
         {
             await _senders.SendAsync(command, bypassStateDedupe);
         }
+    }
+
+    private void PulseFrontendStartSelectOnPanelChange()
+    {
+        if (!_config.FrontendFeedback.StartSelectPulseOnPanelChange)
+        {
+            return;
+        }
+
+        var pulseMs = _config.FrontendFeedback.StartSelectPulseMs;
+        var onColor = NormalizeFeedbackColor(_config.FrontendFeedback.StartSelectPulseColor, "ORANGE");
+        var offColor = NormalizeFeedbackColor(_config.FrontendFeedback.StartSelectPulseOffColor, "BLACK");
+        var version = Interlocked.Increment(ref _frontendStartSelectPulseVersion);
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await DispatchFrontendControlColorAsync(onColor, bypassStateDedupe: true);
+                if (pulseMs > 0)
+                {
+                    await Task.Delay(pulseMs);
+                }
+
+                if (Interlocked.Read(ref _frontendStartSelectPulseVersion) == version)
+                {
+                    await DispatchFrontendControlColorAsync(offColor, bypassStateDedupe: true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[frontend] start/select pulse error: {ex.Message}");
+            }
+        });
+    }
+
+    private async Task DispatchFrontendControlColorAsync(string color, bool bypassStateDedupe)
+    {
+        var player = _config.ApiExpose.DefaultPlayer;
+        foreach (var target in new[] { "START", "SELECT" })
+        {
+            var evt = new LedEvent
+            {
+                Type = "ledmanager.frontend.feedback",
+                Stream = "frontend",
+                Player = player,
+                Target = target,
+                Color = color
+            };
+
+            await DispatchAsync(_router.RouteEvent(evt), bypassStateDedupe);
+        }
+    }
+
+    private static string NormalizeFeedbackColor(string value, string fallback)
+    {
+        return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim().ToUpperInvariant();
     }
 
     private async Task DispatchSnapshotButtonSlotsAsync(PanelState panel, bool bypassStateDedupe)

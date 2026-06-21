@@ -11,6 +11,7 @@ public sealed class LedManagerConfig
     public string PanelSnapshotPath { get; init; } = "state\\panel-before-game.json";
     public ApiExposeConfig ApiExpose { get; init; } = new();
     public EffectsConfig Effects { get; init; } = new();
+    public FrontendFeedbackConfig FrontendFeedback { get; init; } = new();
     public HardwareConfig Hardware { get; init; } = new();
     public IReadOnlyDictionary<string, CommandSenderConfig> Senders { get; init; } =
         new Dictionary<string, CommandSenderConfig>(StringComparer.OrdinalIgnoreCase);
@@ -92,6 +93,13 @@ public sealed class LedManagerConfig
                 Enabled = ini.GetBool("Effects", "Enabled", true),
                 CatalogPath = ResolvePath(baseDir, ini.Get("Effects", "CatalogPath", "default.mem.effects.json"))
             },
+            FrontendFeedback = new FrontendFeedbackConfig
+            {
+                StartSelectPulseOnPanelChange = ini.GetBool("FrontendFeedback", "StartSelectPulseOnPanelChange", true),
+                StartSelectPulseColor = ini.Get("FrontendFeedback", "StartSelectPulseColor", "ORANGE"),
+                StartSelectPulseOffColor = ini.Get("FrontendFeedback", "StartSelectPulseOffColor", "BLACK"),
+                StartSelectPulseMs = Math.Max(0, ini.GetInt("FrontendFeedback", "StartSelectPulseMs", 140))
+            },
             Hardware = new HardwareConfig
             {
                 PanelPlayers = Math.Max(1, ini.GetInt("Hardware", "PanelPlayers", 1)),
@@ -144,6 +152,14 @@ public sealed class EffectsConfig
 {
     public bool Enabled { get; init; } = true;
     public string CatalogPath { get; init; } = "default.mem.effects.json";
+}
+
+public sealed class FrontendFeedbackConfig
+{
+    public bool StartSelectPulseOnPanelChange { get; init; } = true;
+    public string StartSelectPulseColor { get; init; } = "ORANGE";
+    public string StartSelectPulseOffColor { get; init; } = "BLACK";
+    public int StartSelectPulseMs { get; init; } = 140;
 }
 
 public sealed class HardwareConfig
