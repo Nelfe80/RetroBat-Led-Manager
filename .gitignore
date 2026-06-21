@@ -32,5 +32,8 @@ state/
 !PicoCommandSender.exe
 !LedManager.ini
 !PicoCommandSender.ini
-!apiexpose-curator-ledmanager.ini
 !default.mem.effects.json
+
+# Local configurations / runtime files
+events.ini
+license.ini
