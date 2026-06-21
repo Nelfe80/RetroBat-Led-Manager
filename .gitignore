@@ -37,3 +37,4 @@ state/
 # Local configurations / runtime files
 events.ini
 license.ini
+git-push.bat
