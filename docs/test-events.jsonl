@@ -1,0 +1,5 @@
+{"stream":"panel","type":"panel.state","system":"neogeo","rom":"mslug","ActivePanel":{"Id":"arcade-2p-8b","Slots":[{"Slot":1,"Player":1,"Color":"red"},{"Slot":2,"Player":1,"Color":"blue"},{"Slot":1,"Player":2,"Color":"green"}],"ControlMap":{"Outputs":[{"Name":"MATRIX1","Player":0,"Color":"black"}]}},"ActiveLayout":{"Id":"NEOGEO MVS TYPE 1"}}
+{"stream":"frontend","type":"ui.game.started.raw","system":"neogeo","rom":"mslug"}
+{"stream":"ingame","type":"ingame.score.changed","system":"neogeo","rom":"mslug","score":12345}
+{"stream":"hiscore","type":"hiscore.updated","system":"neogeo","rom":"mslug","score":99999}
+{"stream":"frontend","type":"ui.game.ended.raw","system":"neogeo","rom":"mslug"}

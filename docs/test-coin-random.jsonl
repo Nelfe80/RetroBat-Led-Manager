@@ -1,0 +1,6 @@
+{"stream":"mem","type":"mem.action","system":"megadrive","rom":"sonic-the-hedgehog","player":1,"action":"COIN_GAIN","family":"scoring.collectibles","value":1}
+{"stream":"mem","type":"mem.action","system":"megadrive","rom":"sonic-the-hedgehog","player":1,"action":"COIN_GAIN","family":"scoring.collectibles","value":2}
+{"stream":"mem","type":"mem.action","system":"megadrive","rom":"sonic-the-hedgehog","player":1,"action":"COIN_GAIN","family":"scoring.collectibles","value":3}
+{"stream":"mem","type":"mem.action","system":"megadrive","rom":"sonic-the-hedgehog","player":1,"action":"COIN_GAIN","family":"scoring.collectibles","value":4}
+{"stream":"mem","type":"mem.action","system":"megadrive","rom":"sonic-the-hedgehog","player":1,"action":"COIN_GAIN","family":"scoring.collectibles","value":5}
+{"stream":"mem","type":"mem.action","system":"megadrive","rom":"sonic-the-hedgehog","player":1,"action":"COIN_GAIN","family":"scoring.collectibles","value":6}

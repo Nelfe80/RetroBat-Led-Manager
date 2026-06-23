@@ -1,0 +1,7 @@
+{"stream":"mem","type":"mem.action","system":"megadrive","rom":"sonic-the-hedgehog","player":1,"action":"COIN_GAIN","family":"scoring.collectibles","value":1}
+{"stream":"mem","type":"mem.action","system":"snes","rom":"super-mario-world","player":1,"action":"HIT","family":"resources.health","value":1}
+{"stream":"mem","type":"mem.action","system":"snes","rom":"super-mario-world","player":1,"action":"HEAL","family":"resources.health","value":1}
+{"stream":"mem","type":"mem.action","system":"nes","rom":"contra","player":1,"action":"LOSE_LIFE","family":"resources.lives","value":2}
+{"stream":"mem","type":"mem.action","system":"arcade","rom":"1943","player":1,"action":"LEVEL_CLEAR","family":"progression.level","value":1}
+{"stream":"mem","type":"mem.action","system":"arcade","rom":"1943","player":1,"action":"SCORE_STATE","family":"scoring.points","value":12345}
+{"stream":"mem","type":"mem.action","system":"snes","rom":"unknown","player":1,"action":"UNKNOWN_HEALTH_DROP","family":"resources.health","value":4}
