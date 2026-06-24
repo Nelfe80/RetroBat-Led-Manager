@@ -112,8 +112,74 @@ internal sealed class LedManagerApp
             ["hiscore"] = _config.ApiExpose.HiscorePath
         };
 
-        var tasks = streams.Select(s => ListenWebSocketAsync(s.Key, _config.ApiExpose.BuildUri(s.Value), cts.Token));
+        var tasks = streams.Select(s => ListenWebSocketAsync(s.Key, _config.ApiExpose.BuildUri(s.Value), cts.Token))
+            .Concat(new[] { MonitorEmulationStationLifecycleAsync(cts, cts.Token) });
         await Task.WhenAll(tasks);
+    }
+
+    private async Task MonitorEmulationStationLifecycleAsync(CancellationTokenSource cts, CancellationToken token)
+    {
+        const string processName = "emulationstation";
+        const int checkIntervalMs = 1000;
+        const int gracePeriodMs = 3500;
+
+        bool hasSeenEmulationStation = false;
+        DateTime? missingSince = null;
+
+        Console.WriteLine($"[lifecycle] Monitoring '{processName}' process started.");
+
+        while (!token.IsCancellationRequested)
+        {
+            try
+            {
+                var processes = Process.GetProcessesByName(processName);
+                bool isRunning = processes.Length > 0;
+
+                if (isRunning)
+                {
+                    if (!hasSeenEmulationStation)
+                    {
+                        Console.WriteLine("[lifecycle] EmulationStation process detected. Lifecycle monitoring armed.");
+                        hasSeenEmulationStation = true;
+                    }
+                    missingSince = null;
+                }
+                else
+                {
+                    if (hasSeenEmulationStation)
+                    {
+                        if (missingSince == null)
+                        {
+                            missingSince = DateTime.Now;
+                            Console.WriteLine($"[lifecycle] EmulationStation process lost. Grace period started ({gracePeriodMs} ms).");
+                        }
+                        else
+                        {
+                            var timeMissingMs = (DateTime.Now - missingSince.Value).TotalMilliseconds;
+                            if (timeMissingMs >= gracePeriodMs)
+                            {
+                                Console.WriteLine($"[lifecycle] EmulationStation missing for {timeMissingMs:F0} ms. Initiating clean shutdown.");
+                                cts.Cancel();
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[lifecycle] Error: {ex.Message}");
+            }
+
+            try
+            {
+                await Task.Delay(checkIntervalMs, token);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+        }
     }
 
     private async Task ListenWebSocketAsync(string stream, Uri uri, CancellationToken cancellationToken)
