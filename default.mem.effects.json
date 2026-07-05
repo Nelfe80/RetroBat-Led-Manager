@@ -1,0 +1,4071 @@
+{
+  "schema": "ledmanager.default_effect_catalog.v1",
+  "description": "Catalogue d'effets par défaut mappé sur les ACTION des fichiers .MEM.",
+  "routing": {
+    "eventActionField": "action",
+    "eventFamilyField": "family",
+    "playerField": "player",
+    "defaultPlayers": [
+      "${event.player}"
+    ],
+    "fallbackPlayers": [
+      "GLOBAL"
+    ]
+  },
+  "effectLayers": {
+    "hardware": 0,
+    "base_layout": 10,
+    "selected": 20,
+    "running": 30,
+    "mame_outputs": 40,
+    "mem_action": 50,
+    "input_feedback": 60,
+    "alert": 70,
+    "error": 90
+  },
+  "genericRules": {
+    "flow.lifecycle": {
+      "effect": "flow_state",
+      "targets": [
+        "START",
+        "SELECT",
+        "STRIP1"
+      ],
+      "durationMs": 250,
+      "throttleMs": 1000,
+      "priority": 30
+    },
+    "progression.level": {
+      "effect": "sweep",
+      "targets": [
+        "ALL_BUTTONS",
+        "STRIP1"
+      ],
+      "color": "CYAN",
+      "durationMs": 700,
+      "restore": true
+    },
+    "resources.lives": {
+      "effect": "resource_feedback",
+      "targets": [
+        "ALL_BUTTONS"
+      ],
+      "negativeColor": "RED",
+      "positiveColor": "GREEN"
+    },
+    "resources.health": {
+      "effect": "health_feedback",
+      "targets": [
+        "ALL_BUTTONS"
+      ],
+      "negativeColor": "RED",
+      "positiveColor": "GREEN"
+    },
+    "scoring.collectibles": {
+      "effect": "flash_restore",
+      "targets": [
+        "RANDOM_COLUMN"
+      ],
+      "color": "YELLOW",
+      "onMs": 100,
+      "throttleMs": 80
+    },
+    "scoring.points": {
+      "effect": "matrix_score",
+      "target": "MATRIX1",
+      "value": "${event.value}",
+      "color": "GREEN",
+      "throttleMs": 100
+    },
+    "inventory.items": {
+      "effect": "sparkle",
+      "targets": [
+        "ALL_BUTTONS",
+        "STRIP1"
+      ],
+      "color": "GOLD",
+      "restore": true
+    },
+    "combat.enemies": {
+      "effect": "flash_restore",
+      "targets": [
+        "RANDOM_COLUMN"
+      ],
+      "color": "RED",
+      "onMs": 100,
+      "throttleMs": 80
+    },
+    "state.temporary": {
+      "effect": "state_aura",
+      "targets": [
+        "ALL_BUTTONS",
+        "STRIP1"
+      ],
+      "restoreOnStop": true
+    },
+    "system.timer": {
+      "effect": "timer_warning",
+      "targets": [
+        "START",
+        "SELECT"
+      ],
+      "intervalMs": 90,
+      "durationMs": 180,
+      "throttleMs": 250
+    },
+    "state.player": {
+      "effect": "flash_restore",
+      "targets": [
+        "STRIP1"
+      ],
+      "fallbackTargets": [
+        "RANDOM_BUTTON"
+      ],
+      "color": "CYAN",
+      "onMs": 60,
+      "throttleMs": 350
+    },
+    "world_interaction.objects": {
+      "effect": "flash_restore",
+      "targets": [
+        "STRIP1"
+      ],
+      "fallbackTargets": [
+        "RANDOM_BUTTON"
+      ],
+      "color": "BLUE",
+      "onMs": 80,
+      "throttleMs": 400
+    }
+  },
+  "actionRules": {
+    "COMBO_*": {
+      "description": "Combo chain variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "COMBO_*"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "color": "YELLOW",
+          "onMs": 90,
+          "intervalMs": 55,
+          "priority": 58,
+          "throttleMs": 120
+        }
+      ]
+    },
+    "DYNAMIC_*": {
+      "description": "Dynamic resource/inventory variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DYNAMIC_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "GOLD",
+          "onMs": 100,
+          "priority": 48,
+          "throttleMs": 120
+        }
+      ]
+    },
+    "ENEMY_*": {
+      "description": "Enemy state variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "ENEMY_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "RED",
+          "onMs": 100,
+          "priority": 55,
+          "throttleMs": 80
+        }
+      ]
+    },
+    "HIT_*": {
+      "description": "Hit variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "HIT_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "RED",
+          "onMs": 100,
+          "priority": 55,
+          "throttleMs": 80
+        }
+      ]
+    },
+    "LEVEL_*": {
+      "description": "Level variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "LEVEL_*"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "color": "CYAN",
+          "onMs": 90,
+          "intervalMs": 55,
+          "priority": 45,
+          "throttleMs": 2500
+        }
+      ]
+    },
+    "MOUNT_*": {
+      "description": "Mount variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "MOUNT_*"
+      },
+      "then": [
+        {
+          "effect": "column_flash_bounce",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "color": "GREEN",
+          "onMs": 90,
+          "intervalMs": 55,
+          "priority": 48,
+          "throttleMs": 300
+        }
+      ]
+    },
+    "OPPONENT_SELECTED_*": {
+      "description": "Opponent selection variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "OPPONENT_SELECTED_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_COLUMN"
+          ],
+          "color": "PURPLE",
+          "onMs": 120,
+          "priority": 45
+        }
+      ]
+    },
+    "PLAYER_SELECTED_*": {
+      "description": "Player selection variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "PLAYER_SELECTED_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_COLUMN"
+          ],
+          "color": "BLUE",
+          "onMs": 120,
+          "priority": 45
+        }
+      ]
+    },
+    "PLAYER_STATE_*": {
+      "description": "Player state variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "PLAYER_STATE_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "CYAN",
+          "onMs": 100,
+          "priority": 42,
+          "throttleMs": 300
+        }
+      ]
+    },
+    "SCORE_*": {
+      "description": "Score variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SCORE_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "GREEN",
+          "onMs": 80,
+          "priority": 38,
+          "throttleMs": 250
+        }
+      ]
+    },
+    "TRANSFORMATION_*": {
+      "description": "Transformation variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "TRANSFORMATION_*"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "colors": [
+            "YELLOW",
+            "CYAN",
+            "BLUE",
+            "GREEN"
+          ],
+          "times": 2,
+          "onMs": 95,
+          "intervalMs": 55,
+          "priority": 56,
+          "throttleMs": 250
+        }
+      ]
+    },
+    "TREASURE_*": {
+      "description": "Treasure variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "TREASURE_*"
+      },
+      "then": [
+        {
+          "effect": "sparkle",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "GOLD",
+          "durationMs": 420,
+          "restore": true,
+          "priority": 55,
+          "throttleMs": 150
+        }
+      ]
+    },
+    "VEHICLE_SELECTED_*": {
+      "description": "Vehicle selection variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "VEHICLE_SELECTED_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_COLUMN"
+          ],
+          "color": "BLUE",
+          "onMs": 120,
+          "priority": 45
+        }
+      ]
+    },
+    "WEAPON_*": {
+      "description": "Weapon variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "WEAPON_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "ORANGE",
+          "onMs": 100,
+          "priority": 52,
+          "throttleMs": 120
+        }
+      ]
+    },
+    "BUILD_*": {
+      "description": "Build variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "BUILD_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_COLUMN"
+          ],
+          "color": "ORANGE",
+          "onMs": 100,
+          "priority": 45,
+          "throttleMs": 160
+        }
+      ]
+    },
+    "ENVIRONMENT_*": {
+      "description": "Environment variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "ENVIRONMENT_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "STRIP1"
+          ],
+          "fallbackTargets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "BLUE",
+          "onMs": 80,
+          "priority": 35,
+          "throttleMs": 700
+        }
+      ]
+    },
+    "MAP_*": {
+      "description": "Map variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "MAP_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "CYAN",
+          "onMs": 100,
+          "priority": 35,
+          "throttleMs": 300
+        }
+      ]
+    },
+    "MODE_*": {
+      "description": "Mode variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "MODE_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_COLUMN"
+          ],
+          "color": "PURPLE",
+          "onMs": 120,
+          "priority": 35,
+          "throttleMs": 300
+        }
+      ]
+    },
+    "*": {
+      "description": "Fallback for unmapped mem actions",
+      "when": {
+        "trigger": "mem.action",
+        "action": "*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "CYAN",
+          "onMs": 80,
+          "priority": 30,
+          "throttleMs": 400
+        }
+      ]
+    },
+    "ACTION": {
+      "description": "Action",
+      "when": {
+        "trigger": "mem.action",
+        "action": "ACTION"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "AMMO_GAIN": {
+      "description": "Ammo gained",
+      "when": {
+        "trigger": "mem.action",
+        "action": "AMMO_GAIN"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "AMMO_LOSE": {
+      "description": "Ammo used",
+      "when": {
+        "trigger": "mem.action",
+        "action": "AMMO_LOSE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "AMMO_STATE": {
+      "description": "Ammo",
+      "when": {
+        "trigger": "mem.action",
+        "action": "AMMO_STATE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "BATTLE_END": {
+      "description": "Battle End",
+      "when": {
+        "trigger": "mem.action",
+        "action": "BATTLE_END"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "BATTLE_START": {
+      "description": "Battle Start",
+      "when": {
+        "trigger": "mem.action",
+        "action": "BATTLE_START"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "BOMB_FIRED": {
+      "description": "Bomb fired",
+      "when": {
+        "trigger": "mem.action",
+        "action": "BOMB_FIRED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "BOMB_TIMER": {
+      "description": "Bomb timer",
+      "when": {
+        "trigger": "mem.action",
+        "action": "BOMB_TIMER"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 150,
+          "durationMs": 1000,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "BOSS_DEFEATED": {
+      "description": "Boss defeated",
+      "when": {
+        "trigger": "mem.action",
+        "action": "BOSS_DEFEATED"
+      },
+      "then": [
+        {
+          "effect": "column_flash_bounce",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "colors": [
+            "GREEN",
+            "YELLOW",
+            "CYAN",
+            "RED"
+          ],
+          "times": 2,
+          "onMs": 100,
+          "intervalMs": 60,
+          "priority": 68,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "BOSS_HEAL": {
+      "description": "Boss Heal",
+      "when": {
+        "trigger": "mem.action",
+        "action": "BOSS_HEAL"
+      },
+      "then": [
+        {
+          "effect": "flash",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "GREEN",
+          "times": 1,
+          "onMs": 80,
+          "offMs": 40,
+          "restore": true,
+          "priority": 65
+        }
+      ]
+    },
+    "BOSS_HIT": {
+      "description": "Boss damage",
+      "when": {
+        "trigger": "mem.action",
+        "action": "BOSS_HIT"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_COLUMN"
+          ],
+          "color": "RED",
+          "onMs": 100,
+          "priority": 65,
+          "throttleMs": 100
+        }
+      ]
+    },
+    "CAMERA_MOVE": {
+      "description": "Camera Move",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CAMERA_MOVE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "CHARACTER_SELECT": {
+      "description": "Character Select",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CHARACTER_SELECT"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "CHEST_OPENED": {
+      "description": "Chest opened",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CHEST_OPENED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "SLOT:${event.slot}",
+            "STRIP1"
+          ],
+          "color": "WHITE",
+          "durationMs": 300,
+          "restore": true,
+          "priority": 50
+        }
+      ]
+    },
+    "CHOICE_END": {
+      "description": "Choice End",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CHOICE_END"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "CHOICE_PROMPT": {
+      "description": "Choice Prompt",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CHOICE_PROMPT"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "CINEMATIC_END": {
+      "description": "Cinematic End",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CINEMATIC_END"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "CINEMATIC_PLAYING": {
+      "description": "Cinematic Playing",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CINEMATIC_PLAYING"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "COIN_GAIN": {
+      "description": "Collect coin/ring",
+      "when": {
+        "trigger": "mem.action",
+        "action": "COIN_GAIN"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_COLUMN"
+          ],
+          "color": "YELLOW",
+          "onMs": 100,
+          "priority": 50,
+          "throttleMs": 35
+        }
+      ]
+    },
+    "COIN_LOSE": {
+      "description": "Lose coin/ring",
+      "when": {
+        "trigger": "mem.action",
+        "action": "COIN_LOSE"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_COLUMN"
+          ],
+          "color": "YELLOW",
+          "onMs": 100,
+          "priority": 50
+        }
+      ]
+    },
+    "COLLISION": {
+      "description": "Collision",
+      "when": {
+        "trigger": "mem.action",
+        "action": "COLLISION"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "COMBO_HIT": {
+      "description": "Combo hit",
+      "when": {
+        "trigger": "mem.action",
+        "action": "COMBO_HIT"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "COMBO_TIMER": {
+      "description": "Combo Timer",
+      "when": {
+        "trigger": "mem.action",
+        "action": "COMBO_TIMER"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 150,
+          "durationMs": 1000,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "CONTINUE_SCREEN": {
+      "description": "Continue screen",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CONTINUE_SCREEN"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "COOLDOWN_TIMER": {
+      "description": "Cooldown Timer",
+      "when": {
+        "trigger": "mem.action",
+        "action": "COOLDOWN_TIMER"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 150,
+          "durationMs": 1000,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "CORPORATE_SCREEN": {
+      "description": "Corporate screen",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CORPORATE_SCREEN"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "WHITE",
+          "durationMs": 220,
+          "restore": true,
+          "priority": 40,
+          "throttleMs": 1000
+        }
+      ]
+    },
+    "CRAFTING_END": {
+      "description": "Crafting End",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CRAFTING_END"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "CRAFTING_START": {
+      "description": "Crafting Start",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CRAFTING_START"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "CRASH": {
+      "description": "Crash",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CRASH"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "CREDITS": {
+      "description": "Credits",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CREDITS"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "CREDITS_SCREEN": {
+      "description": "Credits Screen",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CREDITS_SCREEN"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "CREDIT_INSERTED": {
+      "description": "Coin inserted",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CREDIT_INSERTED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "CRITICAL_HIT": {
+      "description": "Critical hit",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CRITICAL_HIT"
+      },
+      "then": [
+        {
+          "effect": "flash",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "times": 1,
+          "onMs": 80,
+          "offMs": 40,
+          "restore": true,
+          "priority": 65
+        }
+      ]
+    },
+    "CROUCH": {
+      "description": "Crouch",
+      "when": {
+        "trigger": "mem.action",
+        "action": "CROUCH"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "DAY_TIME": {
+      "description": "Day Time",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DAY_TIME"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "DC_CATEGORY_MAP": {
+      "description": "Dc Category Map",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DC_CATEGORY_MAP"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "DEAD": {
+      "description": "Dead",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DEAD"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "RED",
+          "durationMs": 450,
+          "restore": true,
+          "priority": 60
+        }
+      ]
+    },
+    "DEMO_MODE": {
+      "description": "Demo mode",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DEMO_MODE"
+      },
+      "then": [
+        {
+          "effect": "ambient",
+          "targets": [
+            "STRIP1"
+          ],
+          "fallbackTargets": [
+            "START",
+            "SELECT"
+          ],
+          "palette": "attract",
+          "priority": 20,
+          "throttleMs": 1000
+        }
+      ]
+    },
+    "DIALOGUE_END": {
+      "description": "Dialogue End",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DIALOGUE_END"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "DIALOGUE_SCENE": {
+      "description": "Dialogue Scene",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DIALOGUE_SCENE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "DOOR_OPENED": {
+      "description": "Door opened",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DOOR_OPENED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "SLOT:${event.slot}",
+            "STRIP1"
+          ],
+          "color": "WHITE",
+          "durationMs": 300,
+          "restore": true,
+          "priority": 50
+        }
+      ]
+    },
+    "DROWNING": {
+      "description": "Drowning",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DROWNING"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "RED",
+          "intervalMs": 90,
+          "durationMs": 360,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 1000
+        }
+      ]
+    },
+    "DYNAMIC_ALWAYS": {
+      "description": "Dynamic Always",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DYNAMIC_ALWAYS"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "DYNAMIC_INFINITE": {
+      "description": "Dynamic Infinite",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DYNAMIC_INFINITE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "DYNAMIC_INVENTORY": {
+      "description": "Dynamic Inventory",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DYNAMIC_INVENTORY"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "GOLD",
+          "onMs": 100,
+          "priority": 48,
+          "throttleMs": 120
+        }
+      ]
+    },
+    "DYNAMIC_MAX": {
+      "description": "Dynamic Max",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DYNAMIC_MAX"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "DYNAMIC_MODIFIER": {
+      "description": "Dynamic Modifier",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DYNAMIC_MODIFIER"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "DYNAMIC_START": {
+      "description": "Dynamic Start",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DYNAMIC_START"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "DYNAMIC_ZERO": {
+      "description": "Dynamic Zero",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DYNAMIC_ZERO"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "ENVIRONMENT_FORCE": {
+      "description": "Environment Force",
+      "when": {
+        "trigger": "mem.action",
+        "action": "ENVIRONMENT_FORCE"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "STRIP1"
+          ],
+          "fallbackTargets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "BLUE",
+          "onMs": 100,
+          "priority": 40,
+          "throttleMs": 1000
+        }
+      ]
+    },
+    "ENVIRONMENT_MOVE": {
+      "description": "Environment Move",
+      "when": {
+        "trigger": "mem.action",
+        "action": "ENVIRONMENT_MOVE"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "STRIP1"
+          ],
+          "fallbackTargets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "CYAN",
+          "onMs": 70,
+          "priority": 40,
+          "throttleMs": 700
+        }
+      ]
+    },
+    "ENVIRONMENT_TIMER": {
+      "description": "Environment Timer",
+      "when": {
+        "trigger": "mem.action",
+        "action": "ENVIRONMENT_TIMER"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 150,
+          "durationMs": 1000,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "EVENT_TRIGGER": {
+      "description": "Event Trigger",
+      "when": {
+        "trigger": "mem.action",
+        "action": "EVENT_TRIGGER"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "EXPERIENCE_STATE": {
+      "description": "Experience State",
+      "when": {
+        "trigger": "mem.action",
+        "action": "EXPERIENCE_STATE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "FAMILY_ROUTING": {
+      "description": "Family Routing",
+      "when": {
+        "trigger": "mem.action",
+        "action": "FAMILY_ROUTING"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "FATALITY": {
+      "description": "Fatality",
+      "when": {
+        "trigger": "mem.action",
+        "action": "FATALITY"
+      },
+      "then": [
+        {
+          "effect": "strobe",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "colors": [
+            "RED",
+            "BLACK"
+          ],
+          "durationMs": 900,
+          "intervalMs": 120,
+          "restore": false,
+          "priority": 70
+        }
+      ]
+    },
+    "FIRE_SIDEARM": {
+      "description": "Fire Sidearm",
+      "when": {
+        "trigger": "mem.action",
+        "action": "FIRE_SIDEARM"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "FUNDS_GAINED": {
+      "description": "Funds Gained",
+      "when": {
+        "trigger": "mem.action",
+        "action": "FUNDS_GAINED"
+      },
+      "then": [
+        {
+          "effect": "flash",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "YELLOW",
+          "times": 2,
+          "onMs": 50,
+          "offMs": 50,
+          "restore": true,
+          "priority": 50
+        }
+      ]
+    },
+    "FUNDS_LOW_WARN": {
+      "description": "Funds Low Warn",
+      "when": {
+        "trigger": "mem.action",
+        "action": "FUNDS_LOW_WARN"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 150,
+          "durationMs": 1000,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "FUNDS_SPENT": {
+      "description": "Funds Spent",
+      "when": {
+        "trigger": "mem.action",
+        "action": "FUNDS_SPENT"
+      },
+      "then": [
+        {
+          "effect": "strobe",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "colors": [
+            "YELLOW",
+            "BLACK"
+          ],
+          "durationMs": 450,
+          "intervalMs": 60,
+          "restore": true,
+          "priority": 55
+        }
+      ]
+    },
+    "GAIN_LIFE": {
+      "description": "1UP",
+      "when": {
+        "trigger": "mem.action",
+        "action": "GAIN_LIFE"
+      },
+      "then": [
+        {
+          "effect": "column_flash_bounce",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "color": "GREEN",
+          "onMs": 95,
+          "intervalMs": 55,
+          "priority": 55
+        }
+      ]
+    },
+    "GAMEPLAY": {
+      "description": "Gameplay",
+      "when": {
+        "trigger": "mem.action",
+        "action": "GAMEPLAY"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "GAME_OVER": {
+      "description": "Game over",
+      "when": {
+        "trigger": "mem.action",
+        "action": "GAME_OVER"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "right_to_left_columns",
+          "color": "RED",
+          "onMs": 120,
+          "intervalMs": 70,
+          "priority": 70
+        }
+      ]
+    },
+    "GAME_PLAYING": {
+      "description": "Gameplay",
+      "when": {
+        "trigger": "mem.action",
+        "action": "GAME_PLAYING"
+      },
+      "then": [
+        {
+          "effect": "restore",
+          "targets": [
+            "ALL"
+          ],
+          "layer": "flow",
+          "priority": 80
+        }
+      ]
+    },
+    "GEAR_SHIFT": {
+      "description": "Gear Shift",
+      "when": {
+        "trigger": "mem.action",
+        "action": "GEAR_SHIFT"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "GENERAL_TIMER": {
+      "description": "Time",
+      "when": {
+        "trigger": "mem.action",
+        "action": "GENERAL_TIMER"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 90,
+          "durationMs": 180,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 250
+        }
+      ]
+    },
+    "HACKING_START": {
+      "description": "Hacking Start",
+      "when": {
+        "trigger": "mem.action",
+        "action": "HACKING_START"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "HEAL": {
+      "description": "Recover health",
+      "when": {
+        "trigger": "mem.action",
+        "action": "HEAL"
+      },
+      "then": [
+        {
+          "effect": "flash",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "GREEN",
+          "times": 2,
+          "onMs": 90,
+          "offMs": 70,
+          "restore": true,
+          "priority": 55
+        }
+      ]
+    },
+    "HEALTH_STATE": {
+      "description": "Health",
+      "when": {
+        "trigger": "mem.action",
+        "action": "HEALTH_STATE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "HIT": {
+      "description": "Take damage",
+      "when": {
+        "trigger": "mem.action",
+        "action": "HIT"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "RED",
+          "durationMs": 450,
+          "restore": true,
+          "priority": 60
+        }
+      ]
+    },
+    "IGNORE": {
+      "description": "Ignore",
+      "when": {
+        "trigger": "mem.action",
+        "action": "IGNORE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "INTRO_SCREEN": {
+      "description": "Intro Screen",
+      "when": {
+        "trigger": "mem.action",
+        "action": "INTRO_SCREEN"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "INVENTORY_ITEM": {
+      "description": "Inventory Item",
+      "when": {
+        "trigger": "mem.action",
+        "action": "INVENTORY_ITEM"
+      },
+      "then": [
+        {
+          "effect": "sparkle",
+          "targets": [
+            "ALL_BUTTONS",
+            "STRIP1"
+          ],
+          "color": "GOLD",
+          "durationMs": 800,
+          "restore": true,
+          "priority": 55
+        }
+      ]
+    },
+    "INVINCIBILITY_START": {
+      "description": "Invincibility",
+      "when": {
+        "trigger": "mem.action",
+        "action": "INVINCIBILITY_START"
+      },
+      "then": [
+        {
+          "effect": "rainbow",
+          "targets": [
+            "ALL_BUTTONS",
+            "STRIP1"
+          ],
+          "durationMs": 1500,
+          "restore": false,
+          "priority": 55
+        }
+      ]
+    },
+    "INVINCIBILITY_STOP": {
+      "description": "Invincibility ends",
+      "when": {
+        "trigger": "mem.action",
+        "action": "INVINCIBILITY_STOP"
+      },
+      "then": [
+        {
+          "effect": "restore",
+          "targets": [
+            "ALL_BUTTONS",
+            "STRIP1"
+          ],
+          "layer": "state",
+          "priority": 55
+        }
+      ]
+    },
+    "INVINCIBILITY_TIMER": {
+      "description": "Invincibility Timer",
+      "when": {
+        "trigger": "mem.action",
+        "action": "INVINCIBILITY_TIMER"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 150,
+          "durationMs": 1000,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "ITEM_GET": {
+      "description": "Item Get",
+      "when": {
+        "trigger": "mem.action",
+        "action": "ITEM_GET"
+      },
+      "then": [
+        {
+          "effect": "sparkle",
+          "targets": [
+            "ALL_BUTTONS",
+            "STRIP1"
+          ],
+          "color": "GOLD",
+          "durationMs": 800,
+          "restore": true,
+          "priority": 55
+        }
+      ]
+    },
+    "ITEM_USE": {
+      "description": "Item Use",
+      "when": {
+        "trigger": "mem.action",
+        "action": "ITEM_USE"
+      },
+      "then": [
+        {
+          "effect": "sparkle",
+          "targets": [
+            "ALL_BUTTONS",
+            "STRIP1"
+          ],
+          "color": "GOLD",
+          "durationMs": 800,
+          "restore": true,
+          "priority": 55
+        }
+      ]
+    },
+    "JUMP": {
+      "description": "Jump",
+      "when": {
+        "trigger": "mem.action",
+        "action": "JUMP"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "JUMPING": {
+      "description": "Jumping",
+      "when": {
+        "trigger": "mem.action",
+        "action": "JUMPING"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "STRIP1"
+          ],
+          "fallbackTargets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "CYAN",
+          "onMs": 55,
+          "priority": 25,
+          "throttleMs": 350
+        }
+      ]
+    },
+    "KEY_GET": {
+      "description": "Key obtained",
+      "when": {
+        "trigger": "mem.action",
+        "action": "KEY_GET"
+      },
+      "then": [
+        {
+          "effect": "sparkle",
+          "targets": [
+            "ALL_BUTTONS",
+            "STRIP1"
+          ],
+          "color": "GOLD",
+          "durationMs": 800,
+          "restore": true,
+          "priority": 55
+        }
+      ]
+    },
+    "KEY_PRESSED": {
+      "description": "Key pressed",
+      "when": {
+        "trigger": "mem.action",
+        "action": "KEY_PRESSED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "LAP_COMPLETE": {
+      "description": "Lap Complete",
+      "when": {
+        "trigger": "mem.action",
+        "action": "LAP_COMPLETE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "LAP_STATE": {
+      "description": "Lap",
+      "when": {
+        "trigger": "mem.action",
+        "action": "LAP_STATE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "LEVEL_CLEAR": {
+      "description": "Level clear",
+      "when": {
+        "trigger": "mem.action",
+        "action": "LEVEL_CLEAR"
+      },
+      "then": [
+        {
+          "effect": "celebrate",
+          "targets": [
+            "ALL_BUTTONS",
+            "STRIP1"
+          ],
+          "colors": [
+            "WHITE",
+            "GOLD",
+            "GREEN"
+          ],
+          "durationMs": 1500,
+          "restore": false,
+          "priority": 70
+        }
+      ]
+    },
+    "LEVEL_TIMER": {
+      "description": "Level Timer",
+      "when": {
+        "trigger": "mem.action",
+        "action": "LEVEL_TIMER"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 90,
+          "durationMs": 180,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 250
+        }
+      ]
+    },
+    "LIVES_STATE": {
+      "description": "Lives",
+      "when": {
+        "trigger": "mem.action",
+        "action": "LIVES_STATE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "LOADING_SCREEN": {
+      "description": "Loading Screen",
+      "when": {
+        "trigger": "mem.action",
+        "action": "LOADING_SCREEN"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "LOADOUT_SELECTED": {
+      "description": "Loadout Selected",
+      "when": {
+        "trigger": "mem.action",
+        "action": "LOADOUT_SELECTED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "LOCKPICK_START": {
+      "description": "Lockpick Start",
+      "when": {
+        "trigger": "mem.action",
+        "action": "LOCKPICK_START"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "LOSE_LIFE": {
+      "description": "Life lost",
+      "when": {
+        "trigger": "mem.action",
+        "action": "LOSE_LIFE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "RED",
+          "durationMs": 450,
+          "restore": true,
+          "priority": 60
+        }
+      ]
+    },
+    "LOW_HEALTH_WARN": {
+      "description": "Low health warning",
+      "when": {
+        "trigger": "mem.action",
+        "action": "LOW_HEALTH_WARN"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "RED",
+          "durationMs": 450,
+          "restore": true,
+          "priority": 60
+        }
+      ]
+    },
+    "LOW_RESOURCES_WARN": {
+      "description": "Low Resources Warn",
+      "when": {
+        "trigger": "mem.action",
+        "action": "LOW_RESOURCES_WARN"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 150,
+          "durationMs": 1000,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "MAP_CLOSED": {
+      "description": "Map Closed",
+      "when": {
+        "trigger": "mem.action",
+        "action": "MAP_CLOSED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "MAP_VIEWING": {
+      "description": "Map Viewing",
+      "when": {
+        "trigger": "mem.action",
+        "action": "MAP_VIEWING"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "MINIGAME_ACTIVE": {
+      "description": "Minigame Active",
+      "when": {
+        "trigger": "mem.action",
+        "action": "MINIGAME_ACTIVE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "MONEY_STATE": {
+      "description": "Rings/Coins",
+      "when": {
+        "trigger": "mem.action",
+        "action": "MONEY_STATE"
+      },
+      "then": [
+        {
+          "effect": "matrix_score",
+          "target": "MATRIX1",
+          "value": "${event.value}",
+          "color": "YELLOW",
+          "priority": 20,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "MOUNT_START": {
+      "description": "Mount Start",
+      "when": {
+        "trigger": "mem.action",
+        "action": "MOUNT_START"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "MOUNT_STATE": {
+      "description": "Mount State",
+      "when": {
+        "trigger": "mem.action",
+        "action": "MOUNT_STATE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "MOUNT_STOP": {
+      "description": "Mount Stop",
+      "when": {
+        "trigger": "mem.action",
+        "action": "MOUNT_STOP"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "NEW_LEVEL": {
+      "description": "Level",
+      "when": {
+        "trigger": "mem.action",
+        "action": "NEW_LEVEL"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "color": "CYAN",
+          "onMs": 90,
+          "intervalMs": 55,
+          "priority": 45,
+          "throttleMs": 2500
+        }
+      ]
+    },
+    "NIGHT_TIME": {
+      "description": "Night Time",
+      "when": {
+        "trigger": "mem.action",
+        "action": "NIGHT_TIME"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "OBJECT_BUILT": {
+      "description": "Object Built",
+      "when": {
+        "trigger": "mem.action",
+        "action": "OBJECT_BUILT"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "SLOT:${event.slot}",
+            "STRIP1"
+          ],
+          "color": "WHITE",
+          "durationMs": 300,
+          "restore": true,
+          "priority": 50
+        }
+      ]
+    },
+    "OBJECT_DESTROYED": {
+      "description": "Object destroyed",
+      "when": {
+        "trigger": "mem.action",
+        "action": "OBJECT_DESTROYED"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "SLOT:${event.slot}"
+          ],
+          "fallbackTargets": [
+            "RANDOM_COLUMN"
+          ],
+          "color": "RED",
+          "onMs": 100,
+          "priority": 55,
+          "throttleMs": 80
+        },
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "ORANGE",
+          "onMs": 100,
+          "priority": 52,
+          "throttleMs": 160
+        }
+      ]
+    },
+    "OBJECT_INTERACTION": {
+      "description": "World interaction",
+      "when": {
+        "trigger": "mem.action",
+        "action": "OBJECT_INTERACTION"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "SLOT:${event.slot}"
+          ],
+          "fallbackTargets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "CYAN",
+          "onMs": 100,
+          "priority": 50,
+          "throttleMs": 120
+        }
+      ]
+    },
+    "OBJECT_REPAIRED": {
+      "description": "Object Repaired",
+      "when": {
+        "trigger": "mem.action",
+        "action": "OBJECT_REPAIRED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "SLOT:${event.slot}",
+            "STRIP1"
+          ],
+          "color": "WHITE",
+          "durationMs": 300,
+          "restore": true,
+          "priority": 50
+        }
+      ]
+    },
+    "PARRY_SUCCESS": {
+      "description": "Parry successful",
+      "when": {
+        "trigger": "mem.action",
+        "action": "PARRY_SUCCESS"
+      },
+      "then": [
+        {
+          "effect": "flash",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "times": 1,
+          "onMs": 80,
+          "offMs": 40,
+          "restore": true,
+          "priority": 65
+        }
+      ]
+    },
+    "PASS_GET": {
+      "description": "Pass Get",
+      "when": {
+        "trigger": "mem.action",
+        "action": "PASS_GET"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "PAUSED": {
+      "description": "Paused",
+      "when": {
+        "trigger": "mem.action",
+        "action": "PAUSED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "PAUSE_OFF": {
+      "description": "Unpaused",
+      "when": {
+        "trigger": "mem.action",
+        "action": "PAUSE_OFF"
+      },
+      "then": [
+        {
+          "effect": "restore",
+          "targets": [
+            "ALL"
+          ],
+          "layer": "flow",
+          "priority": 80
+        }
+      ]
+    },
+    "PAUSE_ON": {
+      "description": "Paused",
+      "when": {
+        "trigger": "mem.action",
+        "action": "PAUSE_ON"
+      },
+      "then": [
+        {
+          "effect": "dim",
+          "targets": [
+            "ALL"
+          ],
+          "amount": 0.25,
+          "priority": 80
+        }
+      ]
+    },
+    "PLAYER_STATE": {
+      "description": "Player State",
+      "when": {
+        "trigger": "mem.action",
+        "action": "PLAYER_STATE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "PLAYER_THEME": {
+      "description": "Player Theme",
+      "when": {
+        "trigger": "mem.action",
+        "action": "PLAYER_THEME"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "POISON_START": {
+      "description": "Poisoned",
+      "when": {
+        "trigger": "mem.action",
+        "action": "POISON_START"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS",
+            "STRIP1"
+          ],
+          "color": "PURPLE",
+          "durationMs": 1000,
+          "restore": false,
+          "priority": 55
+        }
+      ]
+    },
+    "POWERUP_GET": {
+      "description": "Powerup Get",
+      "when": {
+        "trigger": "mem.action",
+        "action": "POWERUP_GET"
+      },
+      "then": [
+        {
+          "effect": "sparkle",
+          "targets": [
+            "ALL_BUTTONS",
+            "STRIP1"
+          ],
+          "color": "GOLD",
+          "durationMs": 800,
+          "restore": true,
+          "priority": 55
+        }
+      ]
+    },
+    "PROGRESSION_STAGE": {
+      "description": "Progression Stage",
+      "when": {
+        "trigger": "mem.action",
+        "action": "PROGRESSION_STAGE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "PROGRESSION_ZONE": {
+      "description": "Progression Zone",
+      "when": {
+        "trigger": "mem.action",
+        "action": "PROGRESSION_ZONE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "PUZZLE_SOLVED": {
+      "description": "Puzzle Solved",
+      "when": {
+        "trigger": "mem.action",
+        "action": "PUZZLE_SOLVED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "SLOT:${event.slot}",
+            "STRIP1"
+          ],
+          "color": "WHITE",
+          "durationMs": 300,
+          "restore": true,
+          "priority": 50
+        }
+      ]
+    },
+    "QUEST_COMPLETE": {
+      "description": "Quest Complete",
+      "when": {
+        "trigger": "mem.action",
+        "action": "QUEST_COMPLETE"
+      },
+      "then": [
+        {
+          "effect": "celebrate",
+          "targets": [
+            "ALL_BUTTONS",
+            "STRIP1"
+          ],
+          "colors": [
+            "WHITE",
+            "GOLD",
+            "GREEN"
+          ],
+          "durationMs": 1500,
+          "restore": false,
+          "priority": 70
+        }
+      ]
+    },
+    "RAIN": {
+      "description": "Rain",
+      "when": {
+        "trigger": "mem.action",
+        "action": "RAIN"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "RANK_ACHIEVED": {
+      "description": "Rank Achieved",
+      "when": {
+        "trigger": "mem.action",
+        "action": "RANK_ACHIEVED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "RANK_STATE": {
+      "description": "Rank",
+      "when": {
+        "trigger": "mem.action",
+        "action": "RANK_STATE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "RESOURCE_GAIN": {
+      "description": "Resource gained",
+      "when": {
+        "trigger": "mem.action",
+        "action": "RESOURCE_GAIN"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "RESOURCE_LOSE": {
+      "description": "Resource lost",
+      "when": {
+        "trigger": "mem.action",
+        "action": "RESOURCE_LOSE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "RESOURCE_STATE": {
+      "description": "Resource",
+      "when": {
+        "trigger": "mem.action",
+        "action": "RESOURCE_STATE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "RESOURCE_USED": {
+      "description": "Resource consumed",
+      "when": {
+        "trigger": "mem.action",
+        "action": "RESOURCE_USED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "RING_GAIN": {
+      "description": "Ring Gain",
+      "when": {
+        "trigger": "mem.action",
+        "action": "RING_GAIN"
+      },
+      "then": [
+        {
+          "effect": "flash",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "YELLOW",
+          "times": 2,
+          "onMs": 50,
+          "offMs": 50,
+          "restore": true,
+          "priority": 50
+        }
+      ]
+    },
+    "ROOM_DISCOVERED": {
+      "description": "Room Discovered",
+      "when": {
+        "trigger": "mem.action",
+        "action": "ROOM_DISCOVERED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "ROUND_STATE": {
+      "description": "Round state",
+      "when": {
+        "trigger": "mem.action",
+        "action": "ROUND_STATE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "RUN": {
+      "description": "Run",
+      "when": {
+        "trigger": "mem.action",
+        "action": "RUN"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "RUNNING": {
+      "description": "Running",
+      "when": {
+        "trigger": "mem.action",
+        "action": "RUNNING"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "STRIP1"
+          ],
+          "fallbackTargets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "BLUE",
+          "onMs": 50,
+          "priority": 20,
+          "throttleMs": 300
+        }
+      ]
+    },
+    "SAVING_ACTIVE": {
+      "description": "Saving Active",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SAVING_ACTIVE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "SAVING_END": {
+      "description": "Saving End",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SAVING_END"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "SCORE": {
+      "description": "Score",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SCORE"
+      },
+      "then": [
+        {
+          "effect": "matrix_score",
+          "target": "MATRIX1",
+          "value": "${event.value}",
+          "color": "GREEN",
+          "priority": 40,
+          "throttleMs": 100
+        }
+      ]
+    },
+    "SCORE_STATE": {
+      "description": "Score State",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SCORE_STATE"
+      },
+      "then": [
+        {
+          "effect": "matrix_score",
+          "target": "MATRIX1",
+          "value": "${event.value}",
+          "color": "GREEN",
+          "priority": 40,
+          "throttleMs": 100
+        },
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "GREEN",
+          "onMs": 80,
+          "priority": 38,
+          "throttleMs": 250
+        }
+      ]
+    },
+    "SECRET_REVEALED": {
+      "description": "Secret Revealed",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SECRET_REVEALED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "SELECT_SCREEN": {
+      "description": "Select Screen",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SELECT_SCREEN"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "SETTINGS_CHANGED": {
+      "description": "Settings Changed",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SETTINGS_CHANGED"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "SHIELD_GAIN": {
+      "description": "Shield",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SHIELD_GAIN"
+      },
+      "then": [
+        {
+          "effect": "flash",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "GREEN",
+          "times": 2,
+          "onMs": 90,
+          "offMs": 70,
+          "restore": true,
+          "priority": 55
+        }
+      ]
+    },
+    "SHIELD_LOST": {
+      "description": "Shield lost",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SHIELD_LOST"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "SHIELD_TIMER": {
+      "description": "Shield Timer",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SHIELD_TIMER"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 150,
+          "durationMs": 1000,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "SKID": {
+      "description": "Skid",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SKID"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "SPECIAL_ACTION": {
+      "description": "Special Action",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SPECIAL_ACTION"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "SPECIAL_STAGE_ENTER": {
+      "description": "Special Stage Enter",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SPECIAL_STAGE_ENTER"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "SPEED_START": {
+      "description": "Speed shoes",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SPEED_START"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "STRIP1",
+            "ALL_BUTTONS"
+          ],
+          "color": "BLUE",
+          "times": 2,
+          "onMs": 90,
+          "intervalMs": 50,
+          "priority": 55
+        }
+      ]
+    },
+    "SPEED_STATE": {
+      "description": "Speed",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SPEED_STATE"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "STRIP1"
+          ],
+          "fallbackTargets": [
+            "START",
+            "SELECT"
+          ],
+          "color": "CYAN",
+          "onMs": 80,
+          "priority": 30,
+          "throttleMs": 300
+        }
+      ]
+    },
+    "SPEED_STOP": {
+      "description": "Speed shoes ends",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SPEED_STOP"
+      },
+      "then": [
+        {
+          "effect": "restore",
+          "targets": [
+            "STRIP1",
+            "ALL_BUTTONS"
+          ],
+          "layer": "state",
+          "priority": 55
+        }
+      ]
+    },
+    "SPEED_TIMER": {
+      "description": "Speed Timer",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SPEED_TIMER"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 150,
+          "durationMs": 1000,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "SPIN": {
+      "description": "Spin",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SPIN"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "STAGE_SELECT": {
+      "description": "Stage Select",
+      "when": {
+        "trigger": "mem.action",
+        "action": "STAGE_SELECT"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "STARE_UPDATE": {
+      "description": "Stare Update",
+      "when": {
+        "trigger": "mem.action",
+        "action": "STARE_UPDATE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "START_GAME": {
+      "description": "Start Game",
+      "when": {
+        "trigger": "mem.action",
+        "action": "START_GAME"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "STATS_UPDATE": {
+      "description": "Stats update",
+      "when": {
+        "trigger": "mem.action",
+        "action": "STATS_UPDATE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "STATUS_EFFECT_START": {
+      "description": "Status effect",
+      "when": {
+        "trigger": "mem.action",
+        "action": "STATUS_EFFECT_START"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS",
+            "STRIP1"
+          ],
+          "color": "PURPLE",
+          "durationMs": 1000,
+          "restore": false,
+          "priority": 55
+        }
+      ]
+    },
+    "STATUS_EFFECT_STOP": {
+      "description": "Recover from status",
+      "when": {
+        "trigger": "mem.action",
+        "action": "STATUS_EFFECT_STOP"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS",
+            "STRIP1"
+          ],
+          "color": "PURPLE",
+          "durationMs": 1000,
+          "restore": false,
+          "priority": 55
+        }
+      ]
+    },
+    "STATUS_EFFECT_TIMER": {
+      "description": "Status Effect Timer",
+      "when": {
+        "trigger": "mem.action",
+        "action": "STATUS_EFFECT_TIMER"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 150,
+          "durationMs": 1000,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "STEALTH_ALERT": {
+      "description": "Stealth alert",
+      "when": {
+        "trigger": "mem.action",
+        "action": "STEALTH_ALERT"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "STEALTH_START": {
+      "description": "Stealth active",
+      "when": {
+        "trigger": "mem.action",
+        "action": "STEALTH_START"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "STEALTH_STOP": {
+      "description": "Stealth ends",
+      "when": {
+        "trigger": "mem.action",
+        "action": "STEALTH_STOP"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "STEALTH_TIMER": {
+      "description": "Stealth Timer",
+      "when": {
+        "trigger": "mem.action",
+        "action": "STEALTH_TIMER"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 150,
+          "durationMs": 1000,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "TIMER_LOW": {
+      "description": "Timer Low",
+      "when": {
+        "trigger": "mem.action",
+        "action": "TIMER_LOW"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 150,
+          "durationMs": 1000,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "TIMER_LOW_WARN": {
+      "description": "Time low warning",
+      "when": {
+        "trigger": "mem.action",
+        "action": "TIMER_LOW_WARN"
+      },
+      "then": [
+        {
+          "effect": "blink",
+          "targets": [
+            "START",
+            "SELECT",
+            "STRIP1"
+          ],
+          "color": "ORANGE",
+          "intervalMs": 150,
+          "durationMs": 1000,
+          "restore": true,
+          "priority": 60,
+          "throttleMs": 500
+        }
+      ]
+    },
+    "TITLE_SCREEN": {
+      "description": "Title screen",
+      "when": {
+        "trigger": "mem.action",
+        "action": "TITLE_SCREEN"
+      },
+      "then": [
+        {
+          "effect": "ambient",
+          "targets": [
+            "STRIP1"
+          ],
+          "fallbackTargets": [
+            "START",
+            "SELECT"
+          ],
+          "palette": "attract",
+          "priority": 20,
+          "throttleMs": 1000
+        }
+      ]
+    },
+    "TRANSFORMATION": {
+      "description": "Transformation",
+      "when": {
+        "trigger": "mem.action",
+        "action": "TRANSFORMATION"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "colors": [
+            "YELLOW",
+            "CYAN",
+            "BLUE",
+            "GREEN"
+          ],
+          "times": 2,
+          "onMs": 95,
+          "intervalMs": 55,
+          "priority": 56,
+          "throttleMs": 250
+        }
+      ]
+    },
+    "TRANSFORMATION_START": {
+      "description": "Transformation Start",
+      "when": {
+        "trigger": "mem.action",
+        "action": "TRANSFORMATION_START"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "colors": [
+            "YELLOW",
+            "CYAN",
+            "BLUE",
+            "GREEN"
+          ],
+          "times": 2,
+          "onMs": 95,
+          "intervalMs": 55,
+          "priority": 56,
+          "throttleMs": 250
+        }
+      ]
+    },
+    "TREASURE": {
+      "description": "Treasure obtained",
+      "when": {
+        "trigger": "mem.action",
+        "action": "TREASURE"
+      },
+      "then": [
+        {
+          "effect": "sparkle",
+          "targets": [
+            "ALL_BUTTONS",
+            "STRIP1"
+          ],
+          "color": "GOLD",
+          "durationMs": 800,
+          "restore": true,
+          "priority": 55
+        }
+      ]
+    },
+    "TURBO_BOOST": {
+      "description": "Turbo Boost",
+      "when": {
+        "trigger": "mem.action",
+        "action": "TURBO_BOOST"
+      },
+      "then": [
+        {
+          "effect": "chase",
+          "targets": [
+            "STRIP1",
+            "ALL_BUTTONS"
+          ],
+          "color": "BLUE",
+          "durationMs": 1200,
+          "restore": false,
+          "priority": 55
+        }
+      ]
+    },
+    "UDP_OUT": {
+      "description": "Udp Out",
+      "when": {
+        "trigger": "mem.action",
+        "action": "UDP_OUT"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "UNIT_COUNT": {
+      "description": "Unit Count",
+      "when": {
+        "trigger": "mem.action",
+        "action": "UNIT_COUNT"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "UNIT_GAIN": {
+      "description": "Unit gained",
+      "when": {
+        "trigger": "mem.action",
+        "action": "UNIT_GAIN"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "UNIT_LOSE": {
+      "description": "Unit lost",
+      "when": {
+        "trigger": "mem.action",
+        "action": "UNIT_LOSE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "UNKNOWN": {
+      "description": "Unknown",
+      "when": {
+        "trigger": "mem.action",
+        "action": "UNKNOWN"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "UPDATE": {
+      "description": "Update",
+      "when": {
+        "trigger": "mem.action",
+        "action": "UPDATE"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    },
+    "WEAPON_UPGRADE": {
+      "description": "Weapon upgrade",
+      "when": {
+        "trigger": "mem.action",
+        "action": "WEAPON_UPGRADE"
+      },
+      "then": [
+        {
+          "effect": "sparkle",
+          "targets": [
+            "ALL_BUTTONS",
+            "STRIP1"
+          ],
+          "color": "GOLD",
+          "durationMs": 800,
+          "restore": true,
+          "priority": 55
+        }
+      ]
+    },
+    "WEATHER": {
+      "description": "Weather",
+      "when": {
+        "trigger": "mem.action",
+        "action": "WEATHER"
+      },
+      "then": [
+        {
+          "effect": "ambient",
+          "targets": [
+            "STRIP1"
+          ],
+          "palette": "weather",
+          "priority": 35
+        }
+      ]
+    },
+    "WEATHER_CLEAR": {
+      "description": "Weather Clear",
+      "when": {
+        "trigger": "mem.action",
+        "action": "WEATHER_CLEAR"
+      },
+      "then": [
+        {
+          "effect": "ambient",
+          "targets": [
+            "STRIP1"
+          ],
+          "palette": "weather",
+          "priority": 35
+        }
+      ]
+    },
+    "WEATHER_EFFECT": {
+      "description": "Weather Effect",
+      "when": {
+        "trigger": "mem.action",
+        "action": "WEATHER_EFFECT"
+      },
+      "then": [
+        {
+          "effect": "ambient",
+          "targets": [
+            "STRIP1"
+          ],
+          "palette": "weather",
+          "priority": 35
+        }
+      ]
+    },
+    "WORLD_MAP": {
+      "description": "World Map",
+      "when": {
+        "trigger": "mem.action",
+        "action": "WORLD_MAP"
+      },
+      "then": [
+        {
+          "effect": "pulse",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "WHITE",
+          "durationMs": 250,
+          "restore": true,
+          "priority": 40
+        }
+      ]
+    }
+  }
+}
