@@ -2,7 +2,7 @@
 
 **LedManager** brings the buttons and LED panels of your cabinet to life, in sync with your RetroBat games: each game colors your buttons according to its real controls, MAME lamps light up just like on the original cabinet, and effects react in real time to what happens on screen.
 
-![Pico wiring diagram](assets/pico_wiring_diagram.png)
+![RGB LED panel driven by LedManager](assets/accueil.png)
 
 ## What LedManager does
 
