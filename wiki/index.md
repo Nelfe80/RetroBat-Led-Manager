@@ -2,7 +2,7 @@
 
 **LedManager** fait vivre les boutons et panneaux LED de votre borne au rythme de vos jeux RetroBat : chaque jeu colore vos boutons selon ses propres contrôles, les lampes MAME s'allument comme sur la borne d'origine, et les effets réagissent en temps réel à ce qui se passe à l'écran.
 
-![Panel LED RGB piloté par LedManager](assets/accueil.png)
+![Panel LED RGB piloté par LedManager](assets/accueil.jpg)
 
 ## Ce que fait LedManager
 
