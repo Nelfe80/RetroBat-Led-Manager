@@ -1,0 +1,76 @@
+site_name: RetroBat LedManager
+site_description: Boutons LED RGB et panneaux lumineux pilotés par vos jeux RetroBat.
+site_url: https://nelfe80.github.io/RetroBat-Led-Manager/
+repo_url: https://github.com/Nelfe80/RetroBat-Led-Manager
+repo_name: Nelfe80/RetroBat-Led-Manager
+docs_dir: wiki
+edit_uri: ""
+
+theme:
+  name: material
+  language: fr
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Mode sombre
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Mode clair
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      languages:
+        - locale: fr
+          default: true
+          name: Français
+          build: true
+        - locale: en
+          name: English
+          build: true
+          site_name: RetroBat LedManager
+          nav_translations:
+            Accueil: Home
+            Premiers pas: Getting started
+            Matériel: Hardware
+            Configuration: Configuration
+            Cartes LED externes: External LED boards
+            Dépannage: Troubleshooting
+            Licence: License
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Accueil: index.md
+  - Premiers pas: premiers-pas.md
+  - Matériel: materiel.md
+  - Configuration: configuration.md
+  - Cartes LED externes: cartes-externes.md
+  - Dépannage: depannage.md
+  - Licence: licence.md
