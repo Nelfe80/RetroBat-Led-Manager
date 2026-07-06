@@ -1333,7 +1333,7 @@ internal sealed class PicoSerial : IAsyncDisposable
         ConfigurePort(port, config.BaudRate);
         var handle = OpenPortHandle(port);
         ConfigureHandle(handle, config.BaudRate);
-        SetSerialTimeouts(handle, config.ProbeTimeoutMs);
+        SetPollReadTimeouts(handle, config.WriteTimeoutMs);
         NativeMethods.PurgeComm(handle, NativeMethods.PurgeRxClear | NativeMethods.PurgeTxClear);
         if (config.BootDelayMs > 0)
         {
@@ -1456,7 +1456,7 @@ internal sealed class PicoSerial : IAsyncDisposable
                 ConfigurePort(PortName, _config.BaudRate);
                 var handle = OpenPortHandle(PortName);
                 ConfigureHandle(handle, _config.BaudRate);
-                SetSerialTimeouts(handle, _config.ProbeTimeoutMs);
+                SetPollReadTimeouts(handle, _config.WriteTimeoutMs);
                 NativeMethods.PurgeComm(handle, NativeMethods.PurgeRxClear | NativeMethods.PurgeTxClear);
                 lock (_ioLock)
                 {
@@ -1660,6 +1660,25 @@ internal sealed class PicoSerial : IAsyncDisposable
             ReadTotalTimeoutConstant = timeoutMs,
             WriteTotalTimeoutMultiplier = 1,
             WriteTotalTimeoutConstant = timeoutMs
+        };
+
+        NativeMethods.SetCommTimeouts(handle, ref timeouts);
+    }
+
+    /// <summary>
+    /// Poll-mode timeouts for the daemon handle: ReadFile returns immediately with
+    /// whatever is buffered. Critical on a non-overlapped handle, where a blocking
+    /// read would serialize with (and delay) every write on the port.
+    /// </summary>
+    private static void SetPollReadTimeouts(SafeFileHandle handle, int writeTimeoutMs)
+    {
+        var timeouts = new NativeMethods.CommTimeouts
+        {
+            ReadIntervalTimeout = uint.MaxValue,
+            ReadTotalTimeoutMultiplier = 0,
+            ReadTotalTimeoutConstant = 0,
+            WriteTotalTimeoutMultiplier = 1,
+            WriteTotalTimeoutConstant = writeTimeoutMs
         };
 
         NativeMethods.SetCommTimeouts(handle, ref timeouts);

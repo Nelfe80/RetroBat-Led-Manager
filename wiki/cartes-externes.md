@@ -39,6 +39,9 @@ APIExpose
 
     Le sender reçoit `SLOT 1 RED`, consulte son mapping (`RGB:1,2,3`) et applique les valeurs à la carte.
 
+!!! tip "Votre sender peut être n'importe quel programme"
+    `Executable=` et `Arguments=` sont libres : un exe compilé, un script Python (`Executable=python.exe`), Node, ou même PowerShell si vous y tenez. Seule règle : lire les commandes ligne par ligne sur l'entrée standard. Préférez toutefois un exécutable compilé — les antivirus surveillent de près les scripts PowerShell qui tournent en continu (heuristiques « ClickFix »), c'est d'ailleurs pourquoi le sender Pico officiel utilise un accès série natif.
+
 ## Cartes cibles réalistes
 
 Ces intégrations ne sont pas fournies clé en main : ce sont des cibles réalistes pour un sender adapté.

@@ -39,6 +39,9 @@ APIExpose
 
     The sender receives `SLOT 1 RED`, looks up its mapping (`RGB:1,2,3`) and applies the values to the board.
 
+!!! tip "Your sender can be any program"
+    `Executable=` and `Arguments=` are free-form: a compiled exe, a Python script (`Executable=python.exe`), Node, or even PowerShell if you insist. The only rule: read commands line by line on standard input. Prefer a compiled executable though — antivirus software closely watches long-running PowerShell scripts ("ClickFix" heuristics), which is precisely why the official Pico sender uses native serial access.
+
 ## Realistic target boards
 
 These integrations are not shipped ready-made: they are realistic targets for an adapted sender.
