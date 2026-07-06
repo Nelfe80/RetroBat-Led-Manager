@@ -154,17 +154,94 @@ internal sealed class PicoCommandSenderApp
 
             await RunInitCommandsAsync("startup");
 
-            while (Console.ReadLine() is { } line)
+            // Stdin is drained greedily and bursts are coalesced with last-state-wins
+            // semantics: when commands arrive faster than the serial link absorbs them
+            // (20 coins in a row), intermediate states are skipped so the panel always
+            // shows the FRESHEST state instead of replaying a laggy backlog.
+            var stdinLines = Channel.CreateUnbounded<string>(new UnboundedChannelOptions
             {
-                if (string.IsNullOrWhiteSpace(line))
+                SingleReader = true,
+                SingleWriter = true
+            });
+            _ = Task.Run(() =>
+            {
+                while (Console.ReadLine() is { } rawLine)
+                {
+                    if (!string.IsNullOrWhiteSpace(rawLine))
+                    {
+                        stdinLines.Writer.TryWrite(rawLine);
+                    }
+                }
+
+                stdinLines.Writer.TryComplete();
+            });
+
+            while (await stdinLines.Reader.WaitToReadAsync())
+            {
+                var batch = new List<string>();
+                while (stdinLines.Reader.TryRead(out var queuedLine))
+                {
+                    batch.Add(queuedLine);
+                }
+
+                if (batch.Count == 0)
                 {
                     continue;
                 }
 
-                await SendWithRecoveryAsync(line, resendAfterRecovery: true);
+                var toSend = batch.Count > 1 ? CoalesceCommands(batch) : batch;
+                if (toSend.Count < batch.Count)
+                {
+                    Console.Error.WriteLine($"[daemon] coalesced {batch.Count} -> {toSend.Count} commands (last state wins)");
+                }
+
+                foreach (var command in toSend)
+                {
+                    await SendWithRecoveryAsync(command, resendAfterRecovery: true);
+                }
             }
 
             return 0;
+
+            // Keeps the LAST occurrence per visual target (slot, named output, flash,
+            // matrix) and the last full-scene command; survivors keep their original
+            // order, so an older slot write is harmlessly overwritten microseconds
+            // later by the newer scene. Unknown commands are always kept.
+            static List<string> CoalesceCommands(List<string> batch)
+            {
+                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var keep = new List<string>(batch.Count);
+                for (var i = batch.Count - 1; i >= 0; i--)
+                {
+                    var key = CoalesceKey(batch[i]);
+                    if (key is null || seen.Add(key))
+                    {
+                        keep.Add(batch[i]);
+                    }
+                }
+
+                keep.Reverse();
+                return keep;
+            }
+
+            static string? CoalesceKey(string command)
+            {
+                var tokens = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (tokens.Length == 0)
+                {
+                    return null;
+                }
+
+                return tokens[0].ToUpperInvariant() switch
+                {
+                    "SLOT" or "SLOTPWM" when tokens.Length >= 3 => "S:" + tokens[1],
+                    "SET" when tokens.Length >= 3 => "T:" + tokens[1].ToUpperInvariant(),
+                    "FLASH" when tokens.Length >= 4 => "F:" + tokens[1].ToUpperInvariant(),
+                    "MATRIXSCORE" or "MATRIXTEXT" when tokens.Length >= 3 => "M:" + tokens[1].ToUpperInvariant(),
+                    "BATCH" or "ALL" or "ALLPCT" or "ALLPCTPANEL" or "CLEAR" => "SCENE",
+                    _ => null
+                };
+            }
         }
 
         var inline = RemainingCommand(args);
