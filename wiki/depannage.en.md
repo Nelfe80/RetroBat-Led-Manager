@@ -47,7 +47,7 @@ In the plugin's `.log\` folder. It is the first thing to attach when asking for 
 ## Resetting the Pico
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools\reset-pico.ps1
+powershell -NoProfile -ExecutionPolicy RemoteSigned -File tools\reset-pico.ps1
 ```
 
 Then restart LedManager (or RetroBat).

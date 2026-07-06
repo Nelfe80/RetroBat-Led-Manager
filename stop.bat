@@ -1,10 +1,18 @@
 @echo off
-setlocal
+setlocal EnableExtensions
 
-set "PLUGIN_DIR=%~dp0"
-set "API_EXE=%PLUGIN_DIR%LedManager.exe"
+rem Stops LedManager and its senders. Pure batch on purpose (no PowerShell):
+rem AV heuristics flag powershell one-liners as ClickFix trojans.
 
 echo Stopping LedManager...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$apiPath=[System.IO.Path]::GetFullPath('%API_EXE%'); $processes=Get-Process LedManager -ErrorAction SilentlyContinue | Where-Object { try { [System.IO.Path]::GetFullPath($_.Path) -eq $apiPath } catch { $false } }; if (-not $processes) { Write-Host 'No LedManager process found for this plugin.'; exit 0 }; foreach ($proc in $processes) { Write-Host ('Stopping LedManager PID ' + $proc.Id); Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }; Start-Sleep -Milliseconds 300; $remaining=Get-Process RetroBat.Api -ErrorAction SilentlyContinue | Where-Object { try { [System.IO.Path]::GetFullPath($_.Path) -eq $apiPath } catch { $false } }; if ($remaining) { Write-Host 'LedManager may still be running.'; exit 1 } else { Write-Host 'LedManager stopped.' }"
+taskkill /IM LedManager.exe /F >nul 2>&1
+if errorlevel 1 (
+  echo No LedManager process found.
+) else (
+  echo LedManager stopped.
+)
+
+taskkill /IM PicoCommandSender.exe /F >nul 2>&1
+if not errorlevel 1 echo PicoCommandSender stopped.
 
 endlocal

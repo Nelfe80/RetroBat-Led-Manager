@@ -47,7 +47,7 @@ Dans le dossier `.log\` du plugin. C'est la première chose à joindre si vous d
 ## Réinitialiser le Pico
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools\reset-pico.ps1
+powershell -NoProfile -ExecutionPolicy RemoteSigned -File tools\reset-pico.ps1
 ```
 
 Puis relancez LedManager (ou RetroBat).

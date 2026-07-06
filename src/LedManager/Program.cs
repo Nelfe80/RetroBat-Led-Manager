@@ -12,6 +12,31 @@ using LedManager.Core.Runtime;
 var app = new LedManagerApp();
 return await app.RunAsync(args);
 
+/// <summary>
+/// Hides our own console window (--hide-console). The ES hook starts the exe
+/// directly and lets it hide itself, so no PowerShell window tricks are needed
+/// (those trip antivirus ClickFix heuristics).
+/// </summary>
+internal static class ConsoleWindow
+{
+    private const int SwHide = 0;
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+    private static extern IntPtr GetConsoleWindow();
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    public static void Hide()
+    {
+        var handle = GetConsoleWindow();
+        if (handle != IntPtr.Zero)
+        {
+            ShowWindow(handle, SwHide);
+        }
+    }
+}
+
 internal sealed class LedManagerApp
 {
     private const int IngameIdleRestoreDelayMs = 2000;
@@ -40,6 +65,11 @@ internal sealed class LedManagerApp
 
     public async Task<int> RunAsync(string[] args)
     {
+        if (HasFlag(args, "--hide-console"))
+        {
+            ConsoleWindow.Hide();
+        }
+
         if (!HasFlag(args, "--no-kill-previous"))
         {
             StopPreviousLedManagerInstances();

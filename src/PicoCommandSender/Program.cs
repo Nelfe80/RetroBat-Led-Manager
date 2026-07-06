@@ -1404,8 +1404,10 @@ internal sealed class PicoSerial : IAsyncDisposable
             CreateNoWindow = true
         };
         psi.ArgumentList.Add("-NoProfile");
+        // RemoteSigned (not Bypass): local scripts still run, and the child
+        // command line no longer matches antivirus ClickFix heuristics.
         psi.ArgumentList.Add("-ExecutionPolicy");
-        psi.ArgumentList.Add("Bypass");
+        psi.ArgumentList.Add("RemoteSigned");
         psi.ArgumentList.Add("-File");
         psi.ArgumentList.Add(config.BridgeScript);
         psi.ArgumentList.Add("-Port");

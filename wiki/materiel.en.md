@@ -21,7 +21,7 @@ Key points of the diagram:
 The Pico firmware ships in the plugin's `fw\` folder. To deploy it:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools\deploy-pico-fw.ps1
+powershell -NoProfile -ExecutionPolicy RemoteSigned -File tools\deploy-pico-fw.ps1
 ```
 
 The script copies `main.py`, `profiles_db.py` and `hardware_profiles.py` onto the Pico (MicroPython required). If the Pico misbehaves, `tools\reset-pico.ps1` forces a clean restart.

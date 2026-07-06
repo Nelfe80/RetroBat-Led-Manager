@@ -4,6 +4,8 @@ setlocal EnableExtensions DisableDelayedExpansion
 rem EmulationStation start hook for LedManager.
 rem This script is intended to be copied to:
 rem   emulationstation\.emulationstation\scripts\start\LedManager-start.bat
+rem Pure batch on purpose: PowerShell one-liners with hidden windows are
+rem flagged by antivirus heuristics (Trojan:Win32/ClickFix).
 
 for %%I in ("%~dp0..\..\..\..\plugins\LedManager") do set "PLUGIN_DIR=%%~fI"
 set "LED_EXE=%PLUGIN_DIR%\LedManager.exe"
@@ -12,37 +14,24 @@ set "LOG_DIR=%PLUGIN_DIR%\.log"
 set "LOG_FILE=%LOG_DIR%\es-start-hook.log"
 
 if not exist "%LOG_DIR%" mkdir "%LOG_DIR%" >nul 2>&1
+echo %date% %time% ES start hook entered.>> "%LOG_FILE%"
 
 if not exist "%LED_EXE%" (
-  echo LedManager executable not found:
-  echo   %LED_EXE%
+  echo %date% %time% ERROR missing executable: %LED_EXE%>> "%LOG_FILE%"
   exit /b 1
 )
 
 if not exist "%LED_INI%" (
-  echo LedManager configuration not found:
-  echo   %LED_INI%
+  echo %date% %time% ERROR missing configuration: %LED_INI%>> "%LOG_FILE%"
   exit /b 1
 )
 
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-"$ErrorActionPreference='SilentlyContinue'; ^
- $exe=[System.IO.Path]::GetFullPath('%LED_EXE%'); ^
- $wd=[System.IO.Path]::GetFullPath('%PLUGIN_DIR%'); ^
- $log='%LOG_FILE%'; ^
- function Log([string]$m){ $stamp=(Get-Date).ToString('yyyy-MM-dd HH:mm:ss.fff'); Add-Content -LiteralPath $log -Value ($stamp + ' ' + $m) -Encoding UTF8 }; ^
- Log 'ES start hook entered.'; ^
- $running=@(Get-Process -Name 'LedManager' -ErrorAction SilentlyContinue).Where({ try { [System.IO.Path]::GetFullPath($_.Path) -eq $exe } catch { $false } }); ^
- if ($running) { Log ('LedManager already running PID ' + $running[0].Id); exit 0 }; ^
- Unblock-File -LiteralPath $exe -ErrorAction SilentlyContinue; ^
- try { ^
-   $proc=Start-Process -FilePath $exe -ArgumentList @('--ini','LedManager.ini') -WorkingDirectory $wd -WindowStyle Hidden -PassThru -ErrorAction Stop; ^
-   if ($null -eq $proc) { throw 'Start-Process returned no process.' } ^
-   Log ('LedManager started as hidden process PID ' + $proc.Id); ^
-   exit 0; ^
- } catch { ^
-   Log ('ERROR failed to start LedManager: ' + $_.Exception.Message); ^
-   exit 1; ^
- }"
+tasklist /FI "IMAGENAME eq LedManager.exe" 2>nul | find /I "LedManager.exe" >nul
+if not errorlevel 1 (
+  echo %date% %time% LedManager already running.>> "%LOG_FILE%"
+  exit /b 0
+)
 
-exit /b %ERRORLEVEL%
+start "LedManager" /D "%PLUGIN_DIR%" /MIN "%LED_EXE%" --ini LedManager.ini --hide-console
+echo %date% %time% LedManager started.>> "%LOG_FILE%"
+exit /b 0
