@@ -17,31 +17,77 @@ public partial class MainWindow : Window
     private readonly Dictionary<int, ButtonVisual> _slots = new();
     private readonly Dictionary<string, ButtonVisual> _targets = new(StringComparer.OrdinalIgnoreCase);
 
+    // A game is running while this window is open: messages are queued and the UI
+    // is refreshed in a single 50 ms batch pass instead of one dispatch per command.
+    private readonly System.Collections.Concurrent.ConcurrentQueue<VirtualPanelEvent> _pending = new();
+    private readonly DispatcherTimer _drainTimer;
+
     public MainWindow()
     {
         InitializeComponent();
+        TryLowerProcessPriority();
 
         var (buttonCount, hasStart, hasSelect, port) = LoadHardwareDescription();
         var layout = PanelLayoutDefinition.Load(FindPluginRoot());
         BuildPanel(layout, buttonCount, hasStart, hasSelect);
 
-        _interpreter.SlotChanged += (slot, color) => Dispatch(() => SetSlot(slot, color));
-        _interpreter.TargetChanged += (target, color) => Dispatch(() => SetTarget(target, color));
-        _interpreter.AllChanged += color => Dispatch(() => SetAll(color));
-        _interpreter.MatrixChanged += text => Dispatch(() => MatrixText.Text = text);
-        _interpreter.Flashed += (target, color, ms) => Dispatch(() => Flash(target, color, ms));
+        _interpreter.SlotChanged += SetSlot;
+        _interpreter.TargetChanged += SetTarget;
+        _interpreter.AllChanged += SetAll;
+        _interpreter.MatrixChanged += text => MatrixText.Text = text;
+        _interpreter.Flashed += Flash;
+
+        _drainTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(50) };
+        _drainTimer.Tick += (_, _) => DrainPending();
+        _drainTimer.Start();
 
         _client = new VirtualPanelClient(port: port);
-        _client.ConnectionChanged += connected => Dispatch(() => OnConnectionChanged(connected));
-        _client.MessageReceived += evt => Dispatch(() => OnMessage(evt));
+        _client.ConnectionChanged += connected => Dispatcher.BeginInvoke(() => OnConnectionChanged(connected), DispatcherPriority.Background);
+        _client.MessageReceived += _pending.Enqueue;
         _client.Start();
 
-        Closed += (_, _) => _client.Dispose();
+        Closed += (_, _) =>
+        {
+            _drainTimer.Stop();
+            _client.Dispose();
+        };
     }
 
-    private void Dispatch(Action action)
+    private static void TryLowerProcessPriority()
     {
-        Dispatcher.BeginInvoke(action, DispatcherPriority.Background);
+        try
+        {
+            using var current = System.Diagnostics.Process.GetCurrentProcess();
+            current.PriorityClass = System.Diagnostics.ProcessPriorityClass.BelowNormal;
+        }
+        catch
+        {
+            // Cosmetic: the game keeps priority anyway.
+        }
+    }
+
+    private void DrainPending()
+    {
+        if (_pending.IsEmpty)
+        {
+            return;
+        }
+
+        var logged = 0;
+        while (_pending.TryDequeue(out var evt))
+        {
+            _interpreter.Apply(evt.Command);
+            if (logged < 25)
+            {
+                LogList.Items.Insert(0, $"{DateTime.Now:HH:mm:ss.fff}  [{evt.Sender}] {evt.Command}");
+                logged++;
+            }
+        }
+
+        while (LogList.Items.Count > 100)
+        {
+            LogList.Items.RemoveAt(LogList.Items.Count - 1);
+        }
     }
 
     /// <summary>
@@ -142,12 +188,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnMessage(VirtualPanelEvent evt)
-    {
-        _interpreter.Apply(evt.Command);
-        Log($"[{evt.Sender}] {evt.Command}");
-    }
-
     private void SetSlot(int slot, Color color)
     {
         if (_slots.TryGetValue(slot, out var visual))
@@ -205,14 +245,6 @@ public partial class MainWindow : Window
         timer.Start();
     }
 
-    private void Log(string line)
-    {
-        LogList.Items.Insert(0, $"{DateTime.Now:HH:mm:ss.fff}  {line}");
-        while (LogList.Items.Count > 300)
-        {
-            LogList.Items.RemoveAt(LogList.Items.Count - 1);
-        }
-    }
 }
 
 /// <summary>
@@ -323,23 +355,31 @@ internal sealed class PanelLayoutDefinition
     }
 }
 
-/// <summary>A round arcade button with a glow that follows the LED color.</summary>
+/// <summary>
+/// A round arcade button with a glow that follows the LED color.
+/// Performance matters here: this window runs WHILE a game is running, so no
+/// bitmap effects (DropShadowEffect renders in software and steals frame time).
+/// The glow is a plain gradient ellipse and all brushes are cached and frozen.
+/// </summary>
 internal sealed class ButtonVisual
 {
+    private static readonly Dictionary<Color, (Brush Dome, Brush Glow)> BrushCache = new();
+    private static readonly Brush StrokeBrush = Frozen(new SolidColorBrush(Color.FromRgb(0x3A, 0x3A, 0x48)));
+    private static readonly Brush CaptionBrush = Frozen(new SolidColorBrush(Color.FromRgb(0x8A, 0x8A, 0x9A)));
+
     private readonly Ellipse _dome;
-    private readonly DropShadowEffect _glow;
+    private readonly Ellipse _halo;
 
     public FrameworkElement Root { get; }
     public Color CurrentColor { get; private set; } = PanelColors.Off;
 
     public ButtonVisual(string label, double size, string subLabel = "")
     {
-        _glow = new DropShadowEffect
+        _halo = new Ellipse
         {
-            Color = PanelColors.Off,
-            BlurRadius = 24,
-            ShadowDepth = 0,
-            Opacity = 0.0
+            Width = size * 1.5,
+            Height = size * 1.5,
+            IsHitTestVisible = false
         };
 
         _dome = new Ellipse
@@ -347,23 +387,27 @@ internal sealed class ButtonVisual
             Width = size,
             Height = size,
             StrokeThickness = 3,
-            Stroke = new SolidColorBrush(Color.FromRgb(0x3A, 0x3A, 0x48)),
-            Effect = _glow
+            Stroke = StrokeBrush
         };
+
+        var layers = new Grid { Width = size * 1.5, Height = size * 1.5 };
+        layers.Children.Add(_halo);
+        layers.Children.Add(_dome);
+        _dome.HorizontalAlignment = HorizontalAlignment.Center;
+        _dome.VerticalAlignment = VerticalAlignment.Center;
 
         var caption = string.IsNullOrEmpty(subLabel) ? label : $"{label} · {subLabel}";
         var text = new TextBlock
         {
             Text = caption,
-            Foreground = new SolidColorBrush(Color.FromRgb(0x8A, 0x8A, 0x9A)),
+            Foreground = CaptionBrush,
             FontSize = size >= 70 ? 13 : 10,
             FontWeight = FontWeights.Bold,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Margin = new Thickness(0, 6, 0, 0)
+            HorizontalAlignment = HorizontalAlignment.Center
         };
 
-        var stack = new StackPanel { Margin = new Thickness(10) };
-        stack.Children.Add(_dome);
+        var stack = new StackPanel { Margin = new Thickness(4) };
+        stack.Children.Add(layers);
         stack.Children.Add(text);
         Root = stack;
 
@@ -372,10 +416,27 @@ internal sealed class ButtonVisual
 
     public void SetColor(Color color)
     {
+        if (color == CurrentColor && !ReferenceEquals(_dome.Fill, null))
+        {
+            return;
+        }
+
         CurrentColor = color;
+        var (dome, glow) = GetBrushes(color);
+        _dome.Fill = dome;
+        _halo.Fill = glow;
+    }
+
+    private static (Brush Dome, Brush Glow) GetBrushes(Color color)
+    {
+        if (BrushCache.TryGetValue(color, out var cached))
+        {
+            return cached;
+        }
+
         var isOff = color == PanelColors.Off;
 
-        _dome.Fill = new RadialGradientBrush
+        var dome = new RadialGradientBrush
         {
             GradientOrigin = new Point(0.35, 0.3),
             Center = new Point(0.5, 0.5),
@@ -386,9 +447,36 @@ internal sealed class ButtonVisual
                 new GradientStop(Darken(color, 0.45), 1.0)
             }
         };
+        dome.Freeze();
 
-        _glow.Color = color;
-        _glow.Opacity = isOff ? 0.0 : 0.9;
+        Brush glow;
+        if (isOff)
+        {
+            glow = Brushes.Transparent;
+        }
+        else
+        {
+            var haloBrush = new RadialGradientBrush
+            {
+                GradientStops =
+                {
+                    new GradientStop(Color.FromArgb(0xA0, color.R, color.G, color.B), 0.55),
+                    new GradientStop(Color.FromArgb(0x00, color.R, color.G, color.B), 1.0)
+                }
+            };
+            haloBrush.Freeze();
+            glow = haloBrush;
+        }
+
+        var entry = ((Brush)dome, glow);
+        BrushCache[color] = entry;
+        return entry;
+    }
+
+    private static Brush Frozen(SolidColorBrush brush)
+    {
+        brush.Freeze();
+        return brush;
     }
 
     private static Color Lighten(Color c, double amount)

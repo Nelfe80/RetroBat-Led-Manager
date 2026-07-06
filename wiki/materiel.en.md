@@ -48,8 +48,8 @@ Its strength: it stays **functional from 2 to 8 buttons without rewiring**, beca
 
 `SELECT` then `START` sit at the top-left of the panel. This arrangement is described in `resources\setup\layouts\retrobat_standard.json` — it is what the virtual panel in `LedManagerSetup.exe` displays.
 
-!!! note "Slowdowns when launching the Setup Manager are normal"
-    When `LedManagerSetup.exe` starts, a few slowdowns are expected: the executable unpacks itself, the antivirus scans it and the app waits for the LedManager connection. Give it a few seconds — once the green dot shows, everything is smooth.
+!!! note "The Setup Manager during a game"
+    The virtual panel deliberately runs at low priority and batches its refreshes to stay as light as possible. A slight in-game slowdown is still possible while the window is open during a game — that is normal: it is a tuning tool, close it for serious play.
 
 ## Flashing the firmware
 

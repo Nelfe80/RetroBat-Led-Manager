@@ -48,8 +48,8 @@ Sa force : elle reste **fonctionnelle de 2 à 8 boutons sans recâblage**, car c
 
 `SELECT` puis `START` se placent en haut à gauche du panel. Cette disposition est décrite dans `resources\setup\layouts\retrobat_standard.json` — c'est elle que le panel virtuel de `LedManagerSetup.exe` affiche.
 
-!!! note "Lenteurs au lancement du Setup Manager : c'est normal"
-    Au démarrage de `LedManagerSetup.exe`, quelques ralentissements sont normaux : l'exécutable se décompresse, l'antivirus l'analyse et l'application attend la connexion à LedManager. Laissez-lui quelques secondes — une fois la pastille verte affichée, tout est fluide.
+!!! note "Le Setup Manager pendant une partie"
+    Le panel virtuel tourne volontairement en priorité basse et regroupe ses rafraîchissements pour peser le moins possible. Un léger ralentissement du jeu reste néanmoins possible quand la fenêtre est ouverte pendant une partie — c'est normal : c'est un outil de mise au point, fermez-le pour jouer sérieusement.
 
 ## Flasher le firmware
 
