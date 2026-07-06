@@ -22,6 +22,14 @@ if %ERRORLEVEL% neq 0 (
     exit /b %ERRORLEVEL%
 )
 
+call "%~dp0build-Setup.bat" --no-pause
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo [ERROR] Build LedManagerSetup.exe en echec.
+    pause
+    exit /b %ERRORLEVEL%
+)
+
 echo.
 echo ===================================================
 echo  Build termine avec succes !
