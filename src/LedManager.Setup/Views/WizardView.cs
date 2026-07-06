@@ -31,17 +31,26 @@ public sealed class WizardView : UserControl, IDisposable
     private PicoSenderHost? _sender;
     private PicoDetectionResult? _detection;
 
-    // Wiring test state
-    private List<int> _wiringOrder = new();
+    // Wiring test state. An item is either a numbered slot or a named target (START/SELECT).
+    private sealed record WiringItem(int? Slot, string? Target)
+    {
+        public string Label => Slot.HasValue ? $"B{Slot}" : Target!;
+        public string Light(string color) => Slot.HasValue ? $"SLOT {Slot} {color}" : $"SET {Target} {color}";
+        public bool Matches(int? slot, string? target)
+            => (Slot.HasValue && slot == Slot) || (Target is not null && string.Equals(Target, target, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private List<WiringItem> _wiringItems = new();
     private int _wiringIndex;
-    private readonly Dictionary<int, int> _wiringMap = new(); // lit slot -> clicked slot
+    private readonly Dictionary<WiringItem, WiringItem?> _wiringMap = new();
 
     public WizardView(HardwareDescription hardware, PanelLayoutDefinition layout)
     {
         _hardware = hardware;
         _pluginRoot = HardwareDescription.FindPluginRoot() ?? Directory.GetCurrentDirectory();
         _panel.Build(layout, hardware.ButtonCount, hardware.HasStart, hardware.HasSelect);
-        _panel.SlotClicked += OnSlotClicked;
+        _panel.SlotClicked += slot => OnWiringClick(slot, null);
+        _panel.TargetClicked += target => OnWiringClick(null, target);
 
         _title = new TextBlock { FontSize = 18, FontWeight = FontWeights.Bold, Foreground = Text(0xE8, 0xE8, 0xF0), TextWrapping = TextWrapping.Wrap };
         _body = new TextBlock { Margin = new Thickness(0, 12, 0, 0), FontSize = 13, Foreground = Text(0xB8, 0xB8, 0xC6), TextWrapping = TextWrapping.Wrap, LineHeight = 20 };
@@ -205,40 +214,71 @@ public sealed class WizardView : UserControl, IDisposable
         RenderStep();
     }
 
+    private static readonly Color FeedbackColor = Color.FromRgb(0x20, 0xE8, 0xE8); // cyan
+
     private void StartWiringTest()
     {
         _wiringMap.Clear();
-        _wiringOrder = _panel.Slots.OrderBy(s => s).ToList();
+
+        // Numbered buttons first (top-to-bottom), then START and SELECT.
+        var items = _panel.Slots.OrderBy(s => s).Select(s => new WiringItem(s, null)).ToList();
+        if (_panel.TargetNames.Contains("SELECT")) items.Add(new WiringItem(null, "SELECT"));
+        if (_panel.TargetNames.Contains("START")) items.Add(new WiringItem(null, "START"));
+        _wiringItems = items;
+
         _wiringIndex = 0;
-        LightCurrentWiringSlot();
+        LightCurrentWiringItem();
     }
 
-    private void LightCurrentWiringSlot()
+    private void LightCurrentWiringItem()
     {
-        if (_wiringIndex >= _wiringOrder.Count)
+        if (_wiringIndex >= _wiringItems.Count)
         {
+            _sender?.Send("CLEAR");
             _step = Step.Done;
             RenderStep();
             return;
         }
 
-        _panel.SetAll(PanelColors.Off);
-        var slot = _wiringOrder[_wiringIndex];
-        _sender?.Send($"SLOT {slot} WHITE");
-        _status.Text = $"Bouton {_wiringIndex + 1}/{_wiringOrder.Count} allumé sur le panneau. Cliquez le bouton virtuel correspondant.";
+        // Turn the PHYSICAL panel off first (CLEAR), otherwise a single lit button is
+        // invisible among the all-white panel left by the panel test. Then light just
+        // this item in a vivid color so it stands out.
+        var item = _wiringItems[_wiringIndex];
+        _sender?.Send("CLEAR");
+        _sender?.Send(item.Light("GREEN"));
+
+        _panel.ClearAll();
+        _status.Text = $"Élément {_wiringIndex + 1}/{_wiringItems.Count} : un bouton s'allume en VERT sur le panneau. "
+            + "Cliquez le bouton virtuel qui correspond.";
     }
 
-    private void OnSlotClicked(int clickedSlot)
+    private async void OnWiringClick(int? clickedSlot, string? clickedTarget)
     {
-        if (_step != Step.WiringTest || _wiringIndex >= _wiringOrder.Count)
+        if (_step != Step.WiringTest || _wiringIndex >= _wiringItems.Count)
         {
             return;
         }
 
-        var litSlot = _wiringOrder[_wiringIndex];
-        _wiringMap[litSlot] = clickedSlot;
+        var lit = _wiringItems[_wiringIndex];
+        var clicked = clickedSlot.HasValue ? new WiringItem(clickedSlot, null) : new WiringItem(null, clickedTarget);
+        _wiringMap[lit] = clicked;
+
+        // Feedback: blink the clicked button on BOTH panels so the user sees the click
+        // registered — cyan on the virtual panel, a brief cyan pulse on the real one.
+        if (clickedSlot.HasValue)
+        {
+            _panel.Flash(clickedSlot.Value.ToString(), FeedbackColor, 260);
+        }
+        else if (clickedTarget is not null)
+        {
+            _panel.Flash(clickedTarget, FeedbackColor, 260);
+        }
+
+        _sender?.Send(new WiringItem(clickedSlot, clickedTarget).Light("CYAN"));
+        await Task.Delay(260);
+
         _wiringIndex++;
-        LightCurrentWiringSlot();
+        LightCurrentWiringItem();
     }
 
     private string BuildWiringSummary()
@@ -248,17 +288,17 @@ public sealed class WizardView : UserControl, IDisposable
             return "Test du câblage passé. Vous pourrez le relancer à tout moment.";
         }
 
-        var mismatches = _wiringMap.Where(kv => kv.Key != kv.Value).ToList();
+        var mismatches = _wiringMap.Where(kv => kv.Value is null || !kv.Key.Matches(kv.Value!.Slot, kv.Value.Target)).ToList();
         if (mismatches.Count == 0)
         {
-            return $"Câblage vérifié : les {_wiringMap.Count} boutons correspondent à la disposition attendue. "
+            return $"Câblage vérifié : les {_wiringMap.Count} éléments correspondent à la disposition attendue. "
                 + "Aucune correction nécessaire.";
         }
 
-        var lines = string.Join("\n", mismatches.Select(kv => $"   • GPIO du bouton B{kv.Key} → allume en réalité B{kv.Value}"));
+        var lines = string.Join("\n", mismatches.Select(kv => $"   • {kv.Key.Label} allumé → cliqué {kv.Value?.Label ?? "?"}"));
         return $"{mismatches.Count} différence(s) détectée(s) entre le câblage et la disposition :\n{lines}\n\n"
             + "La correction automatique du mapping GPIO arrive dans une prochaine version — "
-            + "en attendant, ces informations vous aident à ajuster le câblage ou le fichier PicoCommandSender.ini.";
+            + "en attendant, ces informations vous aident à ajuster le câblage ou PicoCommandSender.ini.";
     }
 
     private void StopSender()

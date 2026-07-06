@@ -49,6 +49,7 @@ plugins:
           nav_translations:
             Accueil: Home
             Premiers pas: Getting started
+            Assistant de configuration: Setup assistant
             Matériel: Hardware
             Configuration: Configuration
             Cartes LED externes: External LED boards
@@ -69,6 +70,7 @@ markdown_extensions:
 nav:
   - Accueil: index.md
   - Premiers pas: premiers-pas.md
+  - Assistant de configuration: assistant.md
   - Matériel: materiel.md
   - Configuration: configuration.md
   - Cartes LED externes: cartes-externes.md

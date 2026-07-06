@@ -32,6 +32,8 @@ public sealed class PanelSurface : UserControl
 
     public IReadOnlyCollection<int> Slots => _slots.Keys;
 
+    public IReadOnlyCollection<string> TargetNames => _targets.Keys;
+
     public PanelSurface()
     {
         _systemButtonsRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(8, 0, 0, 4) };
