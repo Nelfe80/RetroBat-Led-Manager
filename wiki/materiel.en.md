@@ -16,6 +16,21 @@ Key points of the diagram:
 !!! warning "Important"
     Only **3V3(OUT)** powers the buttons' and LEDs' common wires. Do not wire the Pico's GND pins to the buttons.
 
+## The recommended arrangement
+
+Physically place your buttons following the standard RetroBat arrangement — it is the one the Data Pack's per-game panels expect:
+
+```text
+SELECT   START
+
+ B4·Y    B3·X    B5·L1    B7·L2
+ B1·A    B2·B    B6·R1    B8·R2
+```
+
+Its strength: it stays **functional from 2 to 8 buttons without rewiring**, because each button keeps its identity. A 2-button panel = `B1 B2`; with 4 buttons you add the top row `B4 B3`; with 6 you add the `B5/B6` column (L1/R1); with 8 the `B7/B8` column (L2/R2). Growing your panel never forces you to move an existing button, and per-game colors always land in the right place.
+
+`SELECT` then `START` sit at the top-left of the panel. This arrangement is described in `resources\setup\layouts\retrobat_standard.json` — it is what the virtual panel in `LedManagerSetup.exe` displays.
+
 ## Flashing the firmware
 
 The Pico firmware ships in the plugin's `fw\` folder. To deploy it:

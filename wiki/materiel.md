@@ -16,6 +16,21 @@ Les points essentiels du plan :
 !!! warning "Important"
     Seul le **3V3(OUT)** alimente les fils communs des boutons et LED. Ne câblez pas les GND du Pico vers les boutons.
 
+## La disposition conseillée
+
+Placez physiquement vos boutons selon la disposition RetroBat standard — c'est elle qu'attendent les panels par jeu du Data Pack :
+
+```text
+SELECT   START
+
+ B4·Y    B3·X    B5·L1    B7·L2
+ B1·A    B2·B    B6·R1    B8·R2
+```
+
+Sa force : elle reste **fonctionnelle de 2 à 8 boutons sans recâblage**, car chaque bouton garde son identité. Un panel 2 boutons = `B1 B2` ; en 4 boutons on ajoute la rangée du haut `B4 B3` ; en 6 on ajoute la colonne `B5/B6` (L1/R1) ; en 8 la colonne `B7/B8` (L2/R2). Agrandir son panel n'oblige jamais à déplacer un bouton existant, et les couleurs par jeu tombent toujours au bon endroit.
+
+`SELECT` puis `START` se placent en haut à gauche du panel. Cette disposition est décrite dans `resources\setup\layouts\retrobat_standard.json` — c'est elle que le panel virtuel de `LedManagerSetup.exe` affiche.
+
 ## Flasher le firmware
 
 Le firmware du Pico est fourni dans le dossier `fw\` du plugin. Pour le déployer :

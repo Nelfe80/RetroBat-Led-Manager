@@ -1,0 +1,28 @@
+{
+  "schema": "ledmanager.layout.v1",
+  "id": "retrobat_standard",
+  "name": "Disposition RetroBat conseillée",
+  "description_fr": "Mise en place physique conseillée : elle reste fonctionnelle de 2 à 8 boutons sans recâblage, car chaque bouton garde son identité RetroBat (B1=A, B2=B, B3=X, B4=Y, B5=L1, B6=R1, B7=L2, B8=R2). Un panel 2 boutons = B1 B2 ; passer à 4, 6 ou 8 boutons ne fait qu'ajouter des colonnes, jamais déplacer l'existant. SELECT puis START se placent en haut à gauche du panel.",
+  "description_en": "Recommended physical arrangement: it stays functional from 2 to 8 buttons without rewiring, because each button keeps its RetroBat identity (B1=A, B2=B, B3=X, B4=Y, B5=L1, B6=R1, B7=L2, B8=R2). A 2-button panel = B1 B2; growing to 4, 6 or 8 buttons only adds columns, never moves existing buttons. SELECT then START sit at the top-left of the panel.",
+  "source": "panel_curator LAYOUT_SLOTS / dynpanels convention retrobat_standard",
+  "buttons": {
+    "1": { "retrobat": "A" },
+    "2": { "retrobat": "B" },
+    "3": { "retrobat": "X" },
+    "4": { "retrobat": "Y" },
+    "5": { "retrobat": "L1" },
+    "6": { "retrobat": "R1" },
+    "7": { "retrobat": "L2" },
+    "8": { "retrobat": "R2" }
+  },
+  "layouts": {
+    "2-Button": { "rows": [[1, 2]] },
+    "4-Button": { "rows": [[4, 3], [1, 2]] },
+    "6-Button": { "rows": [[4, 3, 5], [1, 2, 6]] },
+    "8-Button": { "rows": [[4, 3, 5, 7], [1, 2, 6, 8]] }
+  },
+  "system_buttons": {
+    "position": "top_left",
+    "order": ["SELECT", "START"]
+  }
+}

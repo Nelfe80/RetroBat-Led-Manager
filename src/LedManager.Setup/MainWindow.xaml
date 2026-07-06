@@ -21,26 +21,17 @@
                        Foreground="{StaticResource AppForeground}" FontWeight="Bold" FontSize="16" DockPanel.Dock="Right"/>
         </DockPanel>
 
-        <!-- Panel -->
+        <!-- Panel : SELECT puis START en haut à gauche, boutons en rangées
+             selon la disposition RetroBat conseillée (B4 B3 B5 B7 / B1 B2 B6 B8) -->
         <Border Grid.Row="1" Background="{StaticResource PanelBackground}" CornerRadius="12" Padding="24">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <UniformGrid x:Name="ButtonsGrid" Rows="2" HorizontalAlignment="Center"/>
-                    <TextBlock x:Name="MatrixText" Margin="0,20,0,0" HorizontalAlignment="Center"
-                               FontFamily="Consolas" FontSize="22" FontWeight="Bold"
-                               Foreground="#30E850" Text=""/>
-                </StackPanel>
-
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="24,0,0,0">
-                    <ContentControl x:Name="StartButtonHost"/>
-                    <ContentControl x:Name="SelectButtonHost" Margin="0,16,0,0"/>
-                </StackPanel>
-            </Grid>
+            <StackPanel VerticalAlignment="Center">
+                <StackPanel x:Name="SystemButtonsRow" Orientation="Horizontal"
+                            HorizontalAlignment="Left" Margin="8,0,0,4"/>
+                <StackPanel x:Name="ButtonRowsHost" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="MatrixText" Margin="0,16,0,0" HorizontalAlignment="Center"
+                           FontFamily="Consolas" FontSize="22" FontWeight="Bold"
+                           Foreground="#30E850" Text=""/>
+            </StackPanel>
         </Border>
 
         <!-- Log -->

@@ -22,7 +22,8 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         var (buttonCount, hasStart, hasSelect, port) = LoadHardwareDescription();
-        BuildPanel(buttonCount, hasStart, hasSelect);
+        var layout = PanelLayoutDefinition.Load(FindPluginRoot());
+        BuildPanel(layout, buttonCount, hasStart, hasSelect);
 
         _interpreter.SlotChanged += (slot, color) => Dispatch(() => SetSlot(slot, color));
         _interpreter.TargetChanged += (target, color) => Dispatch(() => SetTarget(target, color));
@@ -93,28 +94,38 @@ public partial class MainWindow : Window
         return Directory.GetCurrentDirectory();
     }
 
-    private void BuildPanel(int buttonCount, bool hasStart, bool hasSelect)
+    /// <summary>
+    /// Recommended RetroBat arrangement: SELECT then START at the top-left, and the
+    /// button rows from the layout definition (8 buttons: B4 B3 B5 B7 / B1 B2 B6 B8).
+    /// The same identities work from 2 to 8 buttons without rewiring.
+    /// </summary>
+    private void BuildPanel(PanelLayoutDefinition layout, int buttonCount, bool hasStart, bool hasSelect)
     {
-        ButtonsGrid.Rows = buttonCount > 4 ? 2 : 1;
-        for (var slot = 1; slot <= buttonCount; slot++)
+        if (hasSelect)
         {
-            var visual = new ButtonVisual($"B{slot}", 84);
-            _slots[slot] = visual;
-            ButtonsGrid.Children.Add(visual.Root);
+            var select = new ButtonVisual("SELECT", 52);
+            _targets["SELECT"] = select;
+            SystemButtonsRow.Children.Add(select.Root);
         }
 
         if (hasStart)
         {
-            var start = new ButtonVisual("START", 56);
+            var start = new ButtonVisual("START", 52);
             _targets["START"] = start;
-            StartButtonHost.Content = start.Root;
+            SystemButtonsRow.Children.Add(start.Root);
         }
 
-        if (hasSelect)
+        foreach (var row in layout.RowsFor(buttonCount))
         {
-            var select = new ButtonVisual("SELECT", 56);
-            _targets["SELECT"] = select;
-            SelectButtonHost.Content = select.Root;
+            var rowPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center };
+            foreach (var slot in row)
+            {
+                var visual = new ButtonVisual($"B{slot}", 84, layout.RetrobatLabel(slot));
+                _slots[slot] = visual;
+                rowPanel.Children.Add(visual.Root);
+            }
+
+            ButtonRowsHost.Children.Add(rowPanel);
         }
     }
 
@@ -204,6 +215,114 @@ public partial class MainWindow : Window
     }
 }
 
+/// <summary>
+/// The recommended physical layout (resources\setup\layouts\retrobat_standard.json).
+/// Falls back to the curator's canonical LAYOUT_SLOTS if the file is missing.
+/// </summary>
+internal sealed class PanelLayoutDefinition
+{
+    private static readonly Dictionary<string, int[][]> FallbackRows = new()
+    {
+        ["2-Button"] = new[] { new[] { 1, 2 } },
+        ["4-Button"] = new[] { new[] { 4, 3 }, new[] { 1, 2 } },
+        ["6-Button"] = new[] { new[] { 4, 3, 5 }, new[] { 1, 2, 6 } },
+        ["8-Button"] = new[] { new[] { 4, 3, 5, 7 }, new[] { 1, 2, 6, 8 } }
+    };
+
+    private static readonly Dictionary<int, string> FallbackLabels = new()
+    {
+        [1] = "A", [2] = "B", [3] = "X", [4] = "Y", [5] = "L1", [6] = "R1", [7] = "L2", [8] = "R2"
+    };
+
+    private Dictionary<string, int[][]> _rows = FallbackRows;
+    private Dictionary<int, string> _labels = FallbackLabels;
+
+    public static PanelLayoutDefinition Load(string? pluginRoot)
+    {
+        var definition = new PanelLayoutDefinition();
+        if (pluginRoot is null)
+        {
+            return definition;
+        }
+
+        var path = System.IO.Path.Combine(pluginRoot, "resources", "setup", "layouts", "retrobat_standard.json");
+        if (!File.Exists(path))
+        {
+            return definition;
+        }
+
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+            var root = doc.RootElement;
+
+            if (root.TryGetProperty("layouts", out var layouts))
+            {
+                var rows = new Dictionary<string, int[][]>();
+                foreach (var layout in layouts.EnumerateObject())
+                {
+                    if (layout.Value.TryGetProperty("rows", out var rowsElement))
+                    {
+                        rows[layout.Name] = rowsElement.EnumerateArray()
+                            .Select(r => r.EnumerateArray().Select(v => v.GetInt32()).ToArray())
+                            .ToArray();
+                    }
+                }
+
+                if (rows.Count > 0)
+                {
+                    definition._rows = rows;
+                }
+            }
+
+            if (root.TryGetProperty("buttons", out var buttons))
+            {
+                var labels = new Dictionary<int, string>();
+                foreach (var button in buttons.EnumerateObject())
+                {
+                    if (int.TryParse(button.Name, out var slot)
+                        && button.Value.TryGetProperty("retrobat", out var name))
+                    {
+                        labels[slot] = name.GetString() ?? "";
+                    }
+                }
+
+                if (labels.Count > 0)
+                {
+                    definition._labels = labels;
+                }
+            }
+        }
+        catch
+        {
+            // Malformed file: the canonical fallback still applies.
+        }
+
+        return definition;
+    }
+
+    public IEnumerable<int[]> RowsFor(int buttonCount)
+    {
+        var key = buttonCount switch
+        {
+            <= 2 => "2-Button",
+            <= 4 => "4-Button",
+            <= 6 => "6-Button",
+            _ => "8-Button"
+        };
+
+        var rows = _rows.TryGetValue(key, out var found) ? found : FallbackRows["8-Button"];
+        return rows
+            .Select(row => row.Where(slot => slot <= buttonCount).ToArray())
+            .Where(row => row.Length > 0);
+    }
+
+    public string RetrobatLabel(int slot)
+    {
+        return _labels.TryGetValue(slot, out var label) ? label : "";
+    }
+}
+
 /// <summary>A round arcade button with a glow that follows the LED color.</summary>
 internal sealed class ButtonVisual
 {
@@ -213,7 +332,7 @@ internal sealed class ButtonVisual
     public FrameworkElement Root { get; }
     public Color CurrentColor { get; private set; } = PanelColors.Off;
 
-    public ButtonVisual(string label, double size)
+    public ButtonVisual(string label, double size, string subLabel = "")
     {
         _glow = new DropShadowEffect
         {
@@ -232,9 +351,10 @@ internal sealed class ButtonVisual
             Effect = _glow
         };
 
+        var caption = string.IsNullOrEmpty(subLabel) ? label : $"{label} · {subLabel}";
         var text = new TextBlock
         {
-            Text = label,
+            Text = caption,
             Foreground = new SolidColorBrush(Color.FromRgb(0x8A, 0x8A, 0x9A)),
             FontSize = size >= 70 ? 13 : 10,
             FontWeight = FontWeights.Bold,

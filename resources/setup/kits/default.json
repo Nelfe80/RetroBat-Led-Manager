@@ -3,6 +3,7 @@
   "name": "RetroBat LedManager Kit",
   "version": "1.2",
   "profile": "pico_h_gpio_direct_no_solder_8rgb_plus_start_select_fixed",
+  "recommended_layout": "retrobat_standard",
   "status": "wiring_validated_by_diagram",
   "description": "Kit matériel sans soudure pour piloter 8 boutons arcade RGB complets et 2 boutons Start/Select en couleur fixe avec un Raspberry Pi Pico H. Les entrées de jeu restent gérées par une carte USB au choix de l'utilisateur (exemple : Zero Delay / DragonRise).",
   "reference_diagrams": [
