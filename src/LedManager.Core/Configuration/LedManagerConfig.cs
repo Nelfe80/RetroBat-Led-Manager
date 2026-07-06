@@ -13,6 +13,7 @@ public sealed class LedManagerConfig
     public EffectsConfig Effects { get; init; } = new();
     public FrontendFeedbackConfig FrontendFeedback { get; init; } = new();
     public HardwareConfig Hardware { get; init; } = new();
+    public VirtualPanelConfig VirtualPanel { get; init; } = new();
     public IReadOnlyDictionary<string, CommandSenderConfig> Senders { get; init; } =
         new Dictionary<string, CommandSenderConfig>(StringComparer.OrdinalIgnoreCase);
     public IReadOnlyDictionary<int, string> PlayerRouting { get; init; } = new Dictionary<int, string>();
@@ -108,6 +109,11 @@ public sealed class LedManagerConfig
                 Matrices = ini.GetInt("Hardware", "Matrices", 0),
                 Joysticks = ini.GetInt("Hardware", "Joysticks", 0)
             },
+            VirtualPanel = new VirtualPanelConfig
+            {
+                Enabled = ini.GetBool("VirtualPanel", "Enabled", true),
+                Port = ini.GetInt("VirtualPanel", "Port", 12377)
+            },
             Senders = senders,
             PlayerRouting = playerRouting,
             TargetRouting = ini.Section("TargetRouting"),
@@ -172,6 +178,15 @@ public sealed class HardwareConfig
 
     /// <summary>Used when no [Hardware] declaration is loaded (e.g. unit tests) so nothing is filtered.</summary>
     public static HardwareConfig AllEnabled { get; } = new() { PanelPlayers = 99, Strips = 99, Circles = 99, Matrices = 99, Joysticks = 99 };
+}
+
+public sealed class VirtualPanelConfig
+{
+    /// <summary>Mirrors every resolved command (DryRun senders included) to local subscribers such as the Setup app's virtual panel.</summary>
+    public bool Enabled { get; init; } = true;
+
+    /// <summary>Loopback-only TCP port publishing one JSON message per line.</summary>
+    public int Port { get; init; } = 12377;
 }
 
 public sealed class CommandSenderConfig

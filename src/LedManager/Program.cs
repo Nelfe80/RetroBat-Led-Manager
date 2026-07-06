@@ -23,6 +23,7 @@ internal sealed class LedManagerApp
     private LedManagerConfig _config = new();
     private CommandRouter _router = null!;
     private SenderHost _senders = null!;
+    private VirtualPanelBroadcaster? _virtualPanel;
     private DefaultEffectCatalog _effectCatalog = DefaultEffectCatalog.Empty;
     private readonly IngamePanelOverlay _ingamePanel = new();
     private readonly object _ingameIdleRestoreLock = new();
@@ -48,12 +49,30 @@ internal sealed class LedManagerApp
         _config = LedManagerConfig.Load(iniPath);
         _router = new CommandRouter(_config);
         _effectCatalog = _config.Effects.Enabled ? DefaultEffectCatalog.Load(_config.Effects.CatalogPath, _config.Hardware) : DefaultEffectCatalog.Empty;
-        _senders = new SenderHost(_config);
+        if (_config.VirtualPanel.Enabled)
+        {
+            _virtualPanel = new VirtualPanelBroadcaster(_config.VirtualPanel.Port);
+        }
 
-        Console.WriteLine($"[startup] ini={Path.GetFullPath(iniPath)} senders={_config.Senders.Count} apiExpose={_config.ApiExpose.Enabled} effects={_config.Effects.Enabled}");
+        _senders = new SenderHost(_config, _virtualPanel);
+
+        Console.WriteLine($"[startup] ini={Path.GetFullPath(iniPath)} senders={_config.Senders.Count} apiExpose={_config.ApiExpose.Enabled} effects={_config.Effects.Enabled} virtualPanel={_config.VirtualPanel.Enabled}");
         Console.Out.Flush();
         try
         {
+            if (_virtualPanel is not null)
+            {
+                _virtualPanel.SnapshotProvider = _senders.BuildVirtualPanelSnapshot;
+                try
+                {
+                    _virtualPanel.Start();
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"[virtualpanel] disabled: {ex.Message}");
+                }
+            }
+
             await _senders.StartAsync();
 
             var eventFile = GetOption(args, "--event-file");
@@ -91,6 +110,10 @@ internal sealed class LedManagerApp
         {
             CancelIngameIdleSystemPanelRestore();
             await _senders.StopAsync();
+            if (_virtualPanel is not null)
+            {
+                await _virtualPanel.DisposeAsync();
+            }
         }
     }
 
@@ -1201,9 +1224,20 @@ internal sealed class SenderHost
     private readonly object _stateLock = new();
     private readonly object _queueDedupeLock = new();
 
-    public SenderHost(LedManagerConfig config)
+    private readonly VirtualPanelBroadcaster? _virtualPanel;
+
+    public SenderHost(LedManagerConfig config, VirtualPanelBroadcaster? virtualPanel = null)
     {
         _config = config;
+        _virtualPanel = virtualPanel;
+    }
+
+    /// <summary>Greets a new virtual-panel client with the latest panel scene of each sender.</summary>
+    public IReadOnlyList<VirtualPanelMessage> BuildVirtualPanelSnapshot()
+    {
+        return _latestPanelCommands.Values
+            .Select(c => VirtualPanelMessage.Snapshot(c.SenderId, c.Player, c.Command))
+            .ToArray();
     }
 
     public async Task StartAsync()
@@ -1290,7 +1324,10 @@ internal sealed class SenderHost
         if (command.IsPanelUpdate)
         {
             RecordState(command);
+            // Recorded even for DryRun senders so the virtual panel greeting can replay the scene.
+            _latestPanelCommands[sender.Id] = latestPanelCommand;
             Console.WriteLine($"[route] sender={command.SenderId} player={command.Player?.ToString() ?? "-"} command=\"{command.Command}\"");
+            _virtualPanel?.Publish(VirtualPanelMessage.Live(command.SenderId, command.Player, command.Command, panelUpdate: true));
             if (sender.DryRun)
             {
                 return Task.CompletedTask;
@@ -1298,7 +1335,6 @@ internal sealed class SenderHost
 
             if (sender.UseStdIn)
             {
-                _latestPanelCommands[sender.Id] = latestPanelCommand;
                 _panelQueues[sender.Id].Writer.TryWrite(command);
                 return Task.CompletedTask;
             }
@@ -1330,6 +1366,8 @@ internal sealed class SenderHost
 
             Console.WriteLine($"[route] sender={command.SenderId} player={command.Player?.ToString() ?? "-"} command=\"{command.Command}\"");
         }
+
+        _virtualPanel?.Publish(VirtualPanelMessage.Live(command.SenderId, command.Player, command.Command, panelUpdate: false));
 
         if (sender.DryRun)
         {

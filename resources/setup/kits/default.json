@@ -1,0 +1,215 @@
+{
+  "schema": "ledmanager.kit.v1",
+  "name": "RetroBat LedManager Kit",
+  "version": "1.2",
+  "profile": "pico_h_gpio_direct_no_solder_8rgb_plus_start_select_fixed",
+  "status": "wiring_validated_by_diagram",
+  "description": "Kit matériel sans soudure pour piloter 8 boutons arcade RGB complets et 2 boutons Start/Select en couleur fixe avec un Raspberry Pi Pico H. Les entrées de jeu restent gérées par une carte USB au choix de l'utilisateur (exemple : Zero Delay / DragonRise).",
+  "reference_diagrams": [
+    "docs/pico_wiring_diagram_fr.png",
+    "docs/pico_wiring_diagram.png"
+  ],
+  "controller": {
+    "id": "raspberry_pi_pico_h",
+    "name": "Raspberry Pi Pico H",
+    "quantity": 1,
+    "role": "Contrôleur LED des boutons",
+    "connection": "Micro-USB vers PC",
+    "notes": [
+      "Version H retenue pour éviter la soudure côté Pico.",
+      "Le câble micro-USB sert à la fois à la communication et à l'alimentation.",
+      "Le Pico pilote uniquement la lumière, pas les entrées de jeu."
+    ]
+  },
+  "breakout": {
+    "id": "freenove_gpio_breakout_pico",
+    "name": "Carte d'extension GPIO Freenove / breakout Pico",
+    "quantity": 1,
+    "role": "Accès sans soudure aux GPIO et aux broches d'alimentation du Pico",
+    "notes": [
+      "Permet de raccorder les câbles Dupont proprement.",
+      "Sert de point de câblage principal pour les signaux LED."
+    ]
+  },
+  "buttons": {
+    "total": 10,
+    "rgb_full": {
+      "id": "sjx_sajax_rgb_arcade_button_4wire",
+      "name": "Boutons arcade RGB SJ@JX / SAJAX 4 fils",
+      "quantity": 8,
+      "role": "Boutons principaux RGB complets",
+      "channels_per_button": 3,
+      "gpio_outputs_required": 24,
+      "wire_colors": {
+        "yellow": "Canal LED verte — 1er GPIO du bouton (ex. B1 : GP0)",
+        "white": "Canal LED rouge — 2e GPIO du bouton (ex. B1 : GP1)",
+        "red": "Canal LED bleue — 3e GPIO du bouton (ex. B1 : GP2)",
+        "black": "Commun — relié au 3V3(OUT) du Pico"
+      },
+      "wiring_rules": [
+        "Ordre du connecteur 4 broches, de gauche à droite : Jaune / Blanc / Rouge / Noir.",
+        "Les GND du Pico ne sont PAS câblés : seul le 3V3(OUT) alimente les communs.",
+        "Validé par le plan de câblage docs/pico_wiring_diagram_fr.png."
+      ]
+    },
+    "fixed_color": {
+      "id": "sjx_sajax_rgb_arcade_button_4wire_fixed_color",
+      "name": "Boutons Start et Select RGB utilisés en couleur fixe",
+      "quantity": 2,
+      "role": "Boutons Start et Select lumineux",
+      "channels_per_button": 1,
+      "gpio_outputs_required": 2,
+      "principle": "Chaque bouton Start/Select ne câble qu'UN seul fil couleur (jaune = verte, blanc = rouge, rouge = bleue) plus le commun noir vers 3V3. La couleur est donc fixe physiquement selon le fil choisi.",
+      "examples": [
+        "Start sur GP27 : noir → 3V3, + un seul fil parmi jaune (verte) / blanc (rouge) / rouge (bleue)",
+        "Select sur GP28 : même principe"
+      ],
+      "notes": [
+        "Les deux autres canaux couleur du bouton ne sont pas câblés.",
+        "Permet de garder une architecture GPIO directe réaliste sur Pico (26 GPIO utiles)."
+      ]
+    }
+  },
+  "led_connectors": {
+    "id": "dupont_to_xh254_4p",
+    "name": "Connecteurs Dupont vers XH2.54 4P",
+    "quantity": 10,
+    "role": "Connexion sans soudure entre les boutons RGB et le Pico / breakout",
+    "notes": [
+      "Un connecteur 4P par bouton.",
+      "Pour les 8 boutons RGB complets : les 4 fils sont utilisés.",
+      "Pour Start/Select : seuls le commun noir et un fil couleur sont utilisés.",
+      "Ordre du connecteur validé : Jaune / Blanc / Rouge / Noir."
+    ]
+  },
+  "power_distribution": {
+    "id": "dupont_254_common_v_block",
+    "name": "Bloc de connecteurs Dupont 2,54 mm pour commun 3V3",
+    "quantity": 1,
+    "role": "Distribuer le 3V3(OUT) du Pico vers les 10 boutons",
+    "notes": [
+      "Tous les boutons partagent le même commun 3V3(OUT) — jamais les GND.",
+      "Prévoir un câblage propre pour éviter les faux contacts.",
+      "Tester la consommation globale avec tous les boutons allumés."
+    ]
+  },
+  "usb_pico": {
+    "id": "micro_usb_cable_pico_to_pc",
+    "name": "Câble micro-USB (data) pour relier le Pico au PC",
+    "quantity": 1,
+    "role": "Communication PC/Pico et alimentation des LED via le Pico",
+    "notes": [
+      "Attention aux câbles de charge seuls : il faut un câble DATA.",
+      "Suffisant selon l'objectif actuel pour alimenter les 10 boutons.",
+      "À valider en test réel avec les 8 RGB + Start/Select allumés."
+    ]
+  },
+  "joystick": {
+    "id": "arcade_joystick",
+    "name": "Joystick arcade",
+    "quantity": 1,
+    "role": "Entrées directionnelles joueur",
+    "connected_to": "Carte USB d'entrées (au choix de l'utilisateur)"
+  },
+  "input_controller": {
+    "id": "usb_input_encoder_user_choice",
+    "name": "Carte USB d'entrées (au choix : Zero Delay, DragonRise, I-PAC…)",
+    "quantity": 1,
+    "role": "Gestion des entrées boutons et joystick côté PC / RetroBat",
+    "user_choice": true,
+    "included_cables": [
+      "Câbles pour relier les contacts des boutons à la carte d'entrées",
+      "Câble pour relier le joystick à la carte d'entrées",
+      "Câble USB pour relier la carte au PC"
+    ],
+    "notes": [
+      "Le modèle n'a pas d'importance : l'assistant lit les entrées de façon générique.",
+      "Les contacts des boutons vont à la carte d'entrées ; les LED vont au Pico.",
+      "La synchronisation LED ↔ boutons est faite par l'assistant (« appuyez sur le bouton allumé »)."
+    ]
+  },
+  "architecture": {
+    "inputs": {
+      "path": "Boutons + joystick -> Carte USB d'entrées -> PC / RetroBat",
+      "managed_by": "Carte USB d'entrées (au choix)"
+    },
+    "leds": {
+      "path": "LED boutons -> Connecteurs XH2.54/Dupont -> Breakout Pico -> Raspberry Pi Pico H -> PC",
+      "managed_by": "Raspberry Pi Pico H"
+    },
+    "power": {
+      "path": "PC -> micro-USB -> Raspberry Pi Pico H -> 3V3(OUT) -> communs boutons RGB",
+      "managed_by": "Raspberry Pi Pico H / breakout"
+    }
+  },
+  "gpio_capacity_check": {
+    "full_rgb_buttons": 8,
+    "fixed_color_buttons": 2,
+    "channels_per_full_rgb_button": 3,
+    "channels_per_fixed_color_button": 1,
+    "required_gpio_outputs": 26,
+    "status": "compatible",
+    "notes": [
+      "8 boutons RGB complets nécessitent 24 sorties GPIO.",
+      "Start et Select en couleur fixe nécessitent 1 sortie GPIO chacun.",
+      "Total : 26 sorties = GP0..GP22 + GP26..GP28 (les 26 GPIO utiles du Pico).",
+      "GP23, GP24 et GP25 sont réservés/inaccessibles : ne pas les utiliser."
+    ]
+  },
+  "gpio_map": {
+    "status": "validated_by_diagram",
+    "B1": [0, 1, 2],
+    "B2": [3, 4, 5],
+    "B3": [6, 7, 8],
+    "B4": [9, 10, 11],
+    "B5": [12, 13, 14],
+    "B6": [15, 16, 17],
+    "B7": [18, 19, 20],
+    "B8": [21, 22, 26],
+    "START": [27],
+    "SELECT": [28],
+    "notes": [
+      "Chaque triplet suit l'ordre des fils : jaune (verte), blanc (rouge), rouge (bleue).",
+      "B8 : GP23 n'étant pas disponible sur le connecteur, le fil rouge est câblé sur GP26.",
+      "START et SELECT utilisent un seul canal LED chacun (couleur au choix)."
+    ]
+  },
+  "possibly_missing_or_recommended": [
+    {
+      "id": "short_dupont_jumpers",
+      "name": "Petits câbles Dupont supplémentaires",
+      "required": "recommended",
+      "reason": "Utile pour répartir proprement le commun 3V3 et corriger un câblage sans refaire le faisceau."
+    },
+    {
+      "id": "labels",
+      "name": "Étiquettes de repérage câbles",
+      "required": "recommended",
+      "reason": "Très utile pour identifier B1 à B8, Start, Select et les canaux couleur."
+    },
+    {
+      "id": "cable_management",
+      "name": "Colliers, serre-câbles ou guides-câbles",
+      "required": "optional",
+      "reason": "Permet de garder le panel propre et réparable."
+    },
+    {
+      "id": "multimeter",
+      "name": "Multimètre",
+      "required": "optional",
+      "reason": "Utile pour vérifier la continuité en cas de doute — l'assistant valide de toute façon chaque canal par un test lumineux."
+    },
+    {
+      "id": "external_5v_power_supply",
+      "name": "Alimentation 5V externe",
+      "required": "optional",
+      "reason": "À envisager seulement si l'USB du Pico ne suffit pas lors du test pleine luminosité de l'assistant."
+    }
+  ],
+  "validation_todo": [
+    "Choisir la couleur fixe de Start (fil jaune = verte, blanc = rouge, rouge = bleue).",
+    "Choisir la couleur fixe de Select (même choix).",
+    "Tester la consommation avec les 8 boutons RGB + Start/Select allumés (étape stress test de l'assistant).",
+    "Valider la correspondance des broches sur la carte Freenove utilisée (étape test de câblage de l'assistant)."
+  ]
+}
