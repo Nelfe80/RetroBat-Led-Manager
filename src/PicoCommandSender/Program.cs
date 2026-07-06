@@ -1228,7 +1228,9 @@ internal readonly record struct ParsedColorCommand(string Command, string Target
 internal sealed class PicoSerial : IAsyncDisposable
 {
     private readonly PicoSenderConfig _config;
-    private readonly SafeFileHandle? _handle;
+    private SafeFileHandle? _handle;
+    private readonly object _ioLock = new();
+    private readonly CancellationTokenSource _readerCts = new();
     private readonly Action<string>? _bridgeOutput;
     private Process? _bridge;
 
@@ -1239,6 +1241,69 @@ internal sealed class PicoSerial : IAsyncDisposable
         _handle = handle;
         _bridge = bridge;
         _bridgeOutput = bridgeOutput;
+
+        if (_handle is not null)
+        {
+            // Native transport: pump Pico replies to the same callback the PowerShell
+            // bridge used, so firmware-ready detection and logging behave identically.
+            _ = Task.Run(() => NativeReadPumpAsync(_readerCts.Token));
+        }
+    }
+
+    private async Task NativeReadPumpAsync(CancellationToken token)
+    {
+        var carry = "";
+        while (!token.IsCancellationRequested)
+        {
+            SafeFileHandle? handle;
+            lock (_ioLock)
+            {
+                handle = _handle;
+            }
+
+            if (handle is null || handle.IsClosed)
+            {
+                await Task.Delay(200, token).ContinueWith(_ => { });
+                continue;
+            }
+
+            string chunk;
+            try
+            {
+                // Blocks up to ReadTotalTimeoutConstant when idle, so this loop self-paces.
+                chunk = ReadSome(handle);
+            }
+            catch
+            {
+                chunk = "";
+            }
+
+            if (chunk.Length == 0)
+            {
+                try
+                {
+                    await Task.Delay(30, token);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+
+                continue;
+            }
+
+            carry += chunk;
+            var lines = carry.Split('\n');
+            carry = lines[^1];
+            for (var i = 0; i < lines.Length - 1; i++)
+            {
+                var line = lines[i].Trim('\r', ' ', '\t');
+                if (line.Length > 0)
+                {
+                    _bridgeOutput?.Invoke(line);
+                }
+            }
+        }
     }
 
     public string PortName { get; }
@@ -1333,12 +1398,15 @@ internal sealed class PicoSerial : IAsyncDisposable
             return;
         }
 
-        if (_handle is null)
+        lock (_ioLock)
         {
-            throw new InvalidOperationException("Serial handle is not open.");
-        }
+            if (_handle is null || _handle.IsClosed)
+            {
+                throw new InvalidOperationException("Serial handle is not open.");
+            }
 
-        WriteLine(_handle, command, _config.LineEnding);
+            WriteLine(_handle, command, _config.LineEnding);
+        }
     }
 
     public async Task ReconnectAsync()
@@ -1362,12 +1430,65 @@ internal sealed class PicoSerial : IAsyncDisposable
             {
                 await Task.Delay(_config.BootDelayMs);
             }
+
+            return;
         }
+
+        if (_config.DryRun)
+        {
+            return;
+        }
+
+        // Native transport: reopen the COM handle (same recovery the PowerShell
+        // bridge provided). When COM is stuck in timeout, closing then reopening
+        // is the reliable escape; the daemon replays init commands afterwards.
+        lock (_ioLock)
+        {
+            _handle?.Dispose();
+            _handle = null;
+        }
+
+        const int maxAttempts = 10;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                ConfigurePort(PortName, _config.BaudRate);
+                var handle = OpenPortHandle(PortName);
+                ConfigureHandle(handle, _config.BaudRate);
+                SetSerialTimeouts(handle, _config.ProbeTimeoutMs);
+                NativeMethods.PurgeComm(handle, NativeMethods.PurgeRxClear | NativeMethods.PurgeTxClear);
+                lock (_ioLock)
+                {
+                    _handle = handle;
+                }
+
+                if (_config.BootDelayMs > 0)
+                {
+                    await Task.Delay(_config.BootDelayMs);
+                }
+
+                Console.Error.WriteLine($"[serial] reopened {PortName} (attempt {attempt}/{maxAttempts})");
+                return;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[serial] reopen attempt {attempt}/{maxAttempts} failed for {PortName}: {ex.Message}");
+                await Task.Delay(1000);
+            }
+        }
+
+        Console.Error.WriteLine($"[serial] {PortName} could not be reopened; next command will retry.");
     }
 
     public ValueTask DisposeAsync()
     {
-        _handle?.Dispose();
+        _readerCts.Cancel();
+        lock (_ioLock)
+        {
+            _handle?.Dispose();
+            _handle = null;
+        }
         if (_bridge is not null && !_bridge.HasExited)
         {
             try

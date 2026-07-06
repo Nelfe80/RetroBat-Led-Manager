@@ -73,8 +73,13 @@ public partial class MainWindow : Window
             return;
         }
 
+        // Snapshot-bounded drain: never chase a queue that refills while we loop,
+        // otherwise a busy in-game stream keeps the UI thread captive (frozen window).
+        // Commands are applied in order, so the LAST state always wins; the log only
+        // shows a sample of the pass.
+        var toProcess = Math.Min(_pending.Count, 5000);
         var logged = 0;
-        while (_pending.TryDequeue(out var evt))
+        for (var i = 0; i < toProcess && _pending.TryDequeue(out var evt); i++)
         {
             _interpreter.Apply(evt.Command);
             if (logged < 25)

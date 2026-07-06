@@ -37,6 +37,8 @@ Les points essentiels du plan :
 
 Placez physiquement vos boutons selon cette disposition — c'est elle qu'attendent les panels par jeu du Data Pack :
 
+![Disposition standard conseillée pour RetroBat](assets/panel_layout.svg)
+
 ```text
 SELECT   START
 

@@ -14,7 +14,9 @@ namespace LedManager.Core.Runtime;
 /// </summary>
 public sealed class VirtualPanelBroadcaster : IAsyncDisposable
 {
-    private const int ClientQueueCapacity = 256;
+    // DropOldest keeps the NEWEST messages under pressure: a mirror may skip
+    // intermediate states but must always converge to the last one.
+    private const int ClientQueueCapacity = 2048;
 
     private readonly TcpListener _listener;
     private readonly ConcurrentDictionary<Guid, Channel<string>> _clients = new();

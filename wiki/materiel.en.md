@@ -37,6 +37,8 @@ Key points of the diagram:
 
 Physically place your buttons following this arrangement — it is the one the Data Pack's per-game panels expect:
 
+![The standard arrangement recommended for RetroBat](assets/panel_layout.svg)
+
 ```text
 SELECT   START
 
