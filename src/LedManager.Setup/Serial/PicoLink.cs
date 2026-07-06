@@ -43,7 +43,11 @@ public sealed class PicoLink : IDisposable
             port.Open();
             port.DiscardInBuffer();
             port.DiscardOutBuffer();
+            // The Pico may emit a boot banner right after the port opens; let it settle
+            // then flush, so the first PING reply is not mixed with startup noise.
             Thread.Sleep(bootDelayMs);
+            try { port.ReadExisting(); } catch { }
+            try { port.DiscardInBuffer(); } catch { }
 
             var link = new PicoLink(port, portName);
             if (!link.Handshake())
@@ -63,9 +67,15 @@ public sealed class PicoLink : IDisposable
 
     private bool Handshake()
     {
-        // PING then VERSION; accept either PONG or a VERSION/DYNAMIC PANEL banner.
-        var ping = Exchange("PING", TimeSpan.FromMilliseconds(600));
-        var version = Exchange("VERSION", TimeSpan.FromMilliseconds(600));
+        // PING twice then VERSION; the first exchange may still catch trailing boot
+        // output, so a single miss is not conclusive.
+        var ping = Exchange("PING", TimeSpan.FromMilliseconds(700));
+        if (ping is null || !ping.Contains("PONG", StringComparison.OrdinalIgnoreCase))
+        {
+            ping = Exchange("PING", TimeSpan.FromMilliseconds(700)) ?? ping;
+        }
+
+        var version = Exchange("VERSION", TimeSpan.FromMilliseconds(700));
 
         var banner = version ?? ping ?? "";
         if (banner.Contains("VERSION", StringComparison.OrdinalIgnoreCase))

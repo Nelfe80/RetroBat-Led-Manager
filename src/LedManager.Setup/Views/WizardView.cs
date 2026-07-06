@@ -184,8 +184,19 @@ public sealed class WizardView : UserControl, IDisposable
             return;
         }
 
-        // Give the sender time to initialize the firmware GPIO profile, then light up.
-        await Task.Delay(2500);
+        // Wait for the sender's READY (firmware GPIO profile initialized) rather than
+        // a blind delay; StartupDelayMs in the ini can be many seconds. The 30 s cap
+        // covers the largest configured delay while never hanging the UI forever.
+        _status.Text = "Initialisation du Pico (profil GPIO)…";
+        await _sender.WaitForReadyAsync(TimeSpan.FromSeconds(30));
+
+        if (!_sender.IsAlive)
+        {
+            _status.Text = "Le pilote PicoCommandSender s'est arrêté. Vérifiez le port COM et le firmware.";
+            _primary.IsEnabled = true;
+            return;
+        }
+
         _sender.Send("ALL WHITE");
         _panel.SetAll(Color.FromRgb(0xF0, 0xF0, 0xF0));
 

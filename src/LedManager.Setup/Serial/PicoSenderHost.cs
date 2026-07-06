@@ -13,10 +13,22 @@ namespace LedManager.Setup.Serial;
 public sealed class PicoSenderHost : IDisposable
 {
     private readonly Process _process;
+    private readonly TaskCompletionSource _ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     private PicoSenderHost(Process process)
     {
         _process = process;
+    }
+
+    /// <summary>
+    /// Completes when the sender prints "READY sender=…" — i.e. the firmware GPIO
+    /// profile is initialized and commands will actually light LEDs. Replaces a
+    /// blind delay (the ini StartupDelayMs can be many seconds). Always await with
+    /// a safety timeout in case the sender never reports ready.
+    /// </summary>
+    public Task WaitForReadyAsync(TimeSpan timeout)
+    {
+        return Task.WhenAny(_ready.Task, Task.Delay(timeout));
     }
 
     public static PicoSenderHost? Start(string pluginRoot, string sender = "P1")
@@ -51,17 +63,29 @@ public sealed class PicoSenderHost : IDisposable
                 return null;
             }
 
-            // Drain output so the pipe never blocks; the wizard does not need replies.
+            var host = new PicoSenderHost(process);
+
+            // Drain output so the pipe never blocks, and detect the READY signal.
             _ = Task.Run(async () =>
             {
-                try { while (await process.StandardOutput.ReadLineAsync() is not null) { } } catch { }
+                try
+                {
+                    while (await process.StandardOutput.ReadLineAsync() is { } line)
+                    {
+                        if (line.Contains("READY sender=", StringComparison.OrdinalIgnoreCase))
+                        {
+                            host._ready.TrySetResult();
+                        }
+                    }
+                }
+                catch { }
             });
             _ = Task.Run(async () =>
             {
                 try { while (await process.StandardError.ReadLineAsync() is not null) { } } catch { }
             });
 
-            return new PicoSenderHost(process);
+            return host;
         }
         catch
         {
