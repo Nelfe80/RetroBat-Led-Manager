@@ -1398,14 +1398,23 @@ internal sealed class PicoSerial : IAsyncDisposable
             return;
         }
 
+        var started = Environment.TickCount64;
+        long lockAcquired;
         lock (_ioLock)
         {
+            lockAcquired = Environment.TickCount64;
             if (_handle is null || _handle.IsClosed)
             {
                 throw new InvalidOperationException("Serial handle is not open.");
             }
 
             WriteLine(_handle, command, _config.LineEnding);
+        }
+
+        var total = Environment.TickCount64 - started;
+        if (total > 30)
+        {
+            Console.Error.WriteLine($"[serial] slow write {total}ms (lock wait {lockAcquired - started}ms) command=\"{command}\"");
         }
     }
 
@@ -1701,7 +1710,9 @@ internal sealed class PicoSerial : IAsyncDisposable
         dcb.ByteSize = 8;
         dcb.Parity = 0; // NOPARITY
         dcb.StopBits = 0; // ONESTOPBIT
-        dcb.Flags = 1 | (1 << 4) | (1 << 12); // fBinary + DTR enable + RTS enable
+        // fBinary only: DTR and RTS stay deasserted, matching the proven
+        // PowerShell bridge settings (DtrEnable=false, RtsEnable=false).
+        dcb.Flags = 1;
 
         if (!NativeMethods.SetCommState(handle, ref dcb))
         {
