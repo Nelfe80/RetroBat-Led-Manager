@@ -2,6 +2,23 @@
 
 The reference build uses a **Raspberry Pi Pico** driving 8 RGB buttons plus START/SELECT LEDs. It is the best-supported hardware; for other boards, see [External LED boards](cartes-externes.md).
 
+## The component list
+
+The reference kit, **fully solder-free** (full detail in `resources\setup\kits\default.json`):
+
+| Component | Qty | Role |
+|---|---|---|
+| Raspberry Pi Pico **H** | 1 | LED controller (the H version avoids soldering) |
+| GPIO breakout board (Freenove-style) | 1 | Solder-free access to GPIOs and 3V3 |
+| 4-wire RGB arcade buttons (SJ@JX / SAJAX) | 8 | Main buttons, full RGB (3 GPIOs each) |
+| RGB buttons used in fixed color | 2 | START and SELECT (only one color wire connected) |
+| Dupont → XH2.54 4P connectors | 10 | One per button, solder-free connection |
+| Dupont 2.54 mm block for the common | 1 | Distributes 3V3(OUT) to the 10 buttons |
+| **Micro-USB data** cable | 1 | Communication + power (not a charge-only cable!) |
+| Arcade joystick + USB input encoder | 1+1 | The game **inputs** — any board you like (Zero Delay, DragonRise, I-PAC…), LedManager never touches them |
+
+Also recommended: spare Dupont wires, **labels** to mark B1–B8 and the color channels, cable ties; optionally a multimeter and an external 5 V supply if USB is not enough at full brightness.
+
 ## Wiring
 
 ![Raspberry Pi Pico wiring diagram — 8 RGB buttons + START/SELECT](assets/pico_wiring_diagram.png)
@@ -16,9 +33,9 @@ Key points of the diagram:
 !!! warning "Important"
     Only **3V3(OUT)** powers the buttons' and LEDs' common wires. Do not wire the Pico's GND pins to the buttons.
 
-## The recommended arrangement
+## The standard arrangement recommended for RetroBat
 
-Physically place your buttons following the standard RetroBat arrangement — it is the one the Data Pack's per-game panels expect:
+Physically place your buttons following this arrangement — it is the one the Data Pack's per-game panels expect:
 
 ```text
 SELECT   START
@@ -30,6 +47,9 @@ SELECT   START
 Its strength: it stays **functional from 2 to 8 buttons without rewiring**, because each button keeps its identity. A 2-button panel = `B1 B2`; with 4 buttons you add the top row `B4 B3`; with 6 you add the `B5/B6` column (L1/R1); with 8 the `B7/B8` column (L2/R2). Growing your panel never forces you to move an existing button, and per-game colors always land in the right place.
 
 `SELECT` then `START` sit at the top-left of the panel. This arrangement is described in `resources\setup\layouts\retrobat_standard.json` — it is what the virtual panel in `LedManagerSetup.exe` displays.
+
+!!! note "Slowdowns when launching the Setup Manager are normal"
+    When `LedManagerSetup.exe` starts, a few slowdowns are expected: the executable unpacks itself, the antivirus scans it and the app waits for the LedManager connection. Give it a few seconds — once the green dot shows, everything is smooth.
 
 ## Flashing the firmware
 
