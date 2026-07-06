@@ -89,6 +89,25 @@ Clear=CLEAR
 
 Available variables: `{slot}`, `{target}`, `{color}`, `{durationMs}`, `{value}`, `{text}`, `{player}`, `{system}`, `{rom}`… Integration methods are detailed in [External LED boards](cartes-externes.md).
 
+## Customizing a game or a system: overrides
+
+Want Rainbow Road colors for Super Mario Kart? Create a **sparse patch** — only what you change goes in it, everything else keeps coming from APIExpose and its updates:
+
+```text
+overrides\systems\snes.json          → every SNES game
+overrides\games\snes\smk.json        → just Super Mario Kart (wins over the system)
+```
+
+```json
+{
+  "schema": "ledmanager.panel-override.v1",
+  "slots":   { "1": { "color": "GREEN" }, "2:3": { "color": "RED" } },
+  "outputs": { "VR1 Lamp": { "slot": 1 } }
+}
+```
+
+`"1"` = player 1 slot 1, `"2:3"` = player 2 slot 3; `outputs` keys are the game's output names (arcade lamps). The plugin's `overrides\README.txt` contains full examples, and the LedManagerSetup app will generate these files for you.
+
 ## During a game
 
 A few behaviours worth knowing (no settings required):

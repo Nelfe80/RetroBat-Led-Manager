@@ -315,7 +315,9 @@ internal sealed class LedManagerApp
 
         if (evt.IsPanelState)
         {
-            var nextPanel = PanelState.FromPanelEvent(evt).EnrichFromDynpanel(_config.BaseDirectory);
+            var nextPanel = PanelState.FromPanelEvent(evt)
+                .EnrichFromDynpanel(_config.BaseDirectory)
+                .ApplyUserOverrides(_config.BaseDirectory);
             if (nextPanel.Sequence > 0 && nextPanel.Sequence <= _lastPanelSequence)
             {
                 if (LooksLikePanelSequenceReset(nextPanel.Sequence))

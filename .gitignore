@@ -72,3 +72,8 @@ OLD_lip/
 # MkDocs build output
 site/
 
+# User panel overrides stay local (only the README ships with the repo)
+overrides/**
+!overrides/
+!overrides/README.txt
+
