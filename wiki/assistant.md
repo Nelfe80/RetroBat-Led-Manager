@@ -10,6 +10,12 @@ Il propose deux modes, dans la barre latérale :
 !!! note "Français ou anglais"
     L'outil s'affiche dans la langue de RetroBat (réglage EmulationStation), sinon celle de Windows. Pour forcer : `LedManagerSetup.exe --lang fr` ou `--lang en`.
 
+## L'accueil : état de l'installation
+
+![Accueil](assets/setup/setup-home.png)
+
+L'onglet d'ouverture vérifie chaque maillon de la chaîne : LedManager (avec boutons Démarrer/Arrêter), le Pico (port configuré, détection à la demande quand LedManager est arrêté), APIExpose et le miroir du panel virtuel, le Data Pack (systèmes et jeux curatés disponibles) et vos personnalisations. Un maillon rouge = le point à régler en premier.
+
 ## Le panel virtuel
 
 ![Panel virtuel](assets/setup/setup-monitor.png)

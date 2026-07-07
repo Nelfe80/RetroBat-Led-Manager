@@ -10,6 +10,12 @@ It offers two modes in the sidebar:
 !!! note "French or English"
     The tool follows RetroBat's language (EmulationStation setting), else Windows'. To force it: `LedManagerSetup.exe --lang fr` or `--lang en`.
 
+## Home: installation status
+
+![Home](assets/setup/setup-home.png)
+
+The landing tab checks every link of the chain: LedManager (with Start/Stop buttons), the Pico (configured port, on-demand detection while LedManager is stopped), APIExpose and the virtual panel mirror, the Data Pack (available curated systems and games) and your customizations. A red link = the first thing to fix.
+
 ## The virtual panel
 
 ![Virtual panel](assets/setup/setup-monitor.png)

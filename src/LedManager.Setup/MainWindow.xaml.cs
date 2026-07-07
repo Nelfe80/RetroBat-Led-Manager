@@ -24,6 +24,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         TryLowerProcessPriority();
 
+        NavHome.Content = L.T("Accueil", "Home");
         NavMonitor.Content = L.T("Panel virtuel", "Virtual panel");
         NavGames.Content = L.T("Mes jeux", "My games");
         NavWizard.Content = L.T("Assistant matériel", "Hardware assistant");
@@ -38,7 +39,7 @@ public partial class MainWindow : Window
             + $"\nPort {_hardware.SerialPort} · {_hardware.BaudRate} bauds"
             + "\n" + L.T("Miroir", "Mirror") + $" 127.0.0.1:{_hardware.MirrorPort}";
 
-        ShowMonitor();
+        ShowHome();
 
         Closed += (_, _) =>
         {
@@ -60,6 +61,9 @@ public partial class MainWindow : Window
     private async System.Threading.Tasks.Task CaptureAllTabsAsync(string directory)
     {
         System.IO.Directory.CreateDirectory(directory);
+        NavHome.IsChecked = true;
+        await System.Threading.Tasks.Task.Delay(3000); // async probes settle
+        SaveScreenshot(directory, "setup-home");
         NavMonitor.IsChecked = true;
         await System.Threading.Tasks.Task.Delay(1200);
         SaveScreenshot(directory, "setup-monitor");
@@ -88,11 +92,30 @@ public partial class MainWindow : Window
         encoder.Save(stream);
     }
 
+    private void NavHome_Checked(object sender, RoutedEventArgs e) => ShowHome();
+
     private void NavMonitor_Checked(object sender, RoutedEventArgs e) => ShowMonitor();
 
     private void NavGames_Checked(object sender, RoutedEventArgs e) => ShowGames();
 
     private void NavWizard_Checked(object sender, RoutedEventArgs e) => ShowWizard();
+
+    private void ShowHome()
+    {
+        if (ContentHost is null)
+        {
+            return;
+        }
+
+        _monitor?.Dispose();
+        _monitor = null;
+        _wizard?.Dispose();
+        _wizard = null;
+        _games?.Dispose();
+        _games = null;
+
+        ContentHost.Content = new HomeView(_hardware);
+    }
 
     private void ShowMonitor()
     {
