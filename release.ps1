@@ -29,6 +29,7 @@ $ex = @(
     "-x!$name\artifacts", "-x!$name\wiki", "-x!$name\mkdocs.yml", "-x!$name\site",
     "-x!$name\build.bat", "-x!$name\build-LedManager.bat", "-x!$name\build-PicoCommandSender.bat",
     "-x!$name\release.ps1", "-x!$name\LedManager.sln", "-x!$name\Directory.Build.props",
+    "-x!$name\build-Setup.bat", "-x!$name\tools\wiki-panels-generator",
     '-xr!CAHIER_DES_CHARGES*', '-xr!*.log', '-xr!__pycache__', '-xr!*.pyc'
 )
 
