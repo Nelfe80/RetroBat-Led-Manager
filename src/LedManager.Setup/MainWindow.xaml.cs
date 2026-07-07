@@ -24,6 +24,7 @@ public partial class MainWindow : Window
         TryLowerProcessPriority();
 
         NavMonitor.Content = L.T("Panel virtuel", "Virtual panel");
+        NavGames.Content = L.T("Mes jeux", "My games");
         NavWizard.Content = L.T("Assistant matériel", "Hardware assistant");
 
         var root = HardwareDescription.FindPluginRoot();
@@ -60,6 +61,9 @@ public partial class MainWindow : Window
         NavMonitor.IsChecked = true;
         await System.Threading.Tasks.Task.Delay(1200);
         SaveScreenshot(directory, "setup-monitor");
+        NavGames.IsChecked = true;
+        await System.Threading.Tasks.Task.Delay(1200);
+        SaveScreenshot(directory, "setup-games");
         NavWizard.IsChecked = true;
         await System.Threading.Tasks.Task.Delay(1200);
         SaveScreenshot(directory, "setup-wizard");
@@ -84,6 +88,8 @@ public partial class MainWindow : Window
 
     private void NavMonitor_Checked(object sender, RoutedEventArgs e) => ShowMonitor();
 
+    private void NavGames_Checked(object sender, RoutedEventArgs e) => ShowGames();
+
     private void NavWizard_Checked(object sender, RoutedEventArgs e) => ShowWizard();
 
     private void ShowMonitor()
@@ -99,6 +105,16 @@ public partial class MainWindow : Window
         _monitor = new MonitorView(_hardware, _layout);
         ContentHost.Content = _monitor;
         _monitor.Activate();
+    }
+
+    private void ShowGames()
+    {
+        _monitor?.Dispose();
+        _monitor = null;
+        _wizard?.Dispose();
+        _wizard = null;
+
+        ContentHost.Content = new GamesView(_hardware, _layout);
     }
 
     private void ShowWizard()

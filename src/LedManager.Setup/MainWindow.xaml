@@ -20,6 +20,9 @@
                 <RadioButton x:Name="NavMonitor" Content="Panel virtuel" GroupName="nav" IsChecked="True"
                              Margin="0,4" Foreground="{StaticResource AppForeground}" FontSize="14"
                              Checked="NavMonitor_Checked"/>
+                <RadioButton x:Name="NavGames" Content="Mes jeux" GroupName="nav"
+                             Margin="0,4" Foreground="{StaticResource AppForeground}" FontSize="14"
+                             Checked="NavGames_Checked"/>
                 <RadioButton x:Name="NavWizard" Content="Assistant matériel" GroupName="nav"
                              Margin="0,4" Foreground="{StaticResource AppForeground}" FontSize="14"
                              Checked="NavWizard_Checked"/>
