@@ -51,6 +51,7 @@ plugins:
             Premiers pas: Getting started
             Assistant de configuration: Setup assistant
             Matériel: Hardware
+            Panels par système: Per-system panels
             Configuration: Configuration
             Cartes LED externes: External LED boards
             Dépannage: Troubleshooting
@@ -72,6 +73,7 @@ nav:
   - Premiers pas: premiers-pas.md
   - Assistant de configuration: assistant.md
   - Matériel: materiel.md
+  - Panels par système: systemes.md
   - Configuration: configuration.md
   - Cartes LED externes: cartes-externes.md
   - Dépannage: depannage.md

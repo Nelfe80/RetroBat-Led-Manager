@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 524 330" font-family="Segoe UI, Arial, sans-serif">
+  <defs><radialGradient id="dome" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#ffffff" stop-opacity="0.5"/>
+    <stop offset="0.55" stop-color="#ffffff" stop-opacity="0"/>
+    <stop offset="1" stop-color="#000000" stop-opacity="0.35"/>
+  </radialGradient></defs>
+  <rect x="6" y="6" width="512" height="318" rx="16" fill="#1d1d2a" stroke="#3a3a48" stroke-width="2"/>
+  <text x="262" y="36" text-anchor="middle" fill="#8a8a9a" font-size="15" font-weight="bold" letter-spacing="1">ATARI5200 — 8 BOUTONS</text>
+  <circle cx="62" cy="84" r="17" fill="#e8c020"/>
+  <circle cx="62" cy="84" r="17" fill="url(#dome)"/>
+  <circle cx="62" cy="84" r="17" fill="none" stroke="#3a3a48" stroke-width="3"/>
+  <text x="62" y="122" text-anchor="middle" fill="#8a8a9a" font-size="11" font-weight="bold">SELECT</text>
+  <circle cx="122" cy="84" r="17" fill="#30b050"/>
+  <circle cx="122" cy="84" r="17" fill="url(#dome)"/>
+  <circle cx="122" cy="84" r="17" fill="none" stroke="#3a3a48" stroke-width="3"/>
+  <text x="122" y="122" text-anchor="middle" fill="#8a8a9a" font-size="11" font-weight="bold">START</text>
+  <circle cx="82" cy="215" r="26" fill="#e83030"/>
+  <circle cx="82" cy="215" r="26" fill="url(#dome)"/>
+  <circle cx="82" cy="215" r="26" fill="none" stroke="#3a3a48" stroke-width="3"/>
+  <text x="82" y="265" text-anchor="middle" fill="#8a8a9a" font-size="11" font-weight="bold">JOY</text>
+  <circle cx="168" cy="160" r="30" fill="#26262f"/>
+  <circle cx="168" cy="160" r="30" fill="url(#dome)"/>
+  <circle cx="168" cy="160" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>
+  <text x="168" y="166" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="bold">B4</text>
+  <text x="168" y="208" text-anchor="middle" fill="#8a8a9a" font-size="11" font-weight="bold">X</text>
+  <circle cx="252" cy="160" r="30" fill="#26262f"/>
+  <circle cx="252" cy="160" r="30" fill="url(#dome)"/>
+  <circle cx="252" cy="160" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>
+  <text x="252" y="166" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="bold">B3</text>
+  <text x="252" y="208" text-anchor="middle" fill="#8a8a9a" font-size="11" font-weight="bold">Y</text>
+  <circle cx="336" cy="160" r="30" fill="#26262f"/>
+  <circle cx="336" cy="160" r="30" fill="url(#dome)"/>
+  <circle cx="336" cy="160" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>
+  <text x="336" y="166" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="bold">B5</text>
+  <text x="336" y="208" text-anchor="middle" fill="#8a8a9a" font-size="11" font-weight="bold">L1</text>
+  <circle cx="420" cy="160" r="30" fill="#26262f"/>
+  <circle cx="420" cy="160" r="30" fill="url(#dome)"/>
+  <circle cx="420" cy="160" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>
+  <text x="420" y="166" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="bold">B7</text>
+  <text x="420" y="208" text-anchor="middle" fill="#8a8a9a" font-size="11" font-weight="bold">L2</text>
+  <circle cx="168" cy="252" r="30" fill="#e83030"/>
+  <circle cx="168" cy="252" r="30" fill="url(#dome)"/>
+  <circle cx="168" cy="252" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>
+  <text x="168" y="258" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="bold">B1</text>
+  <text x="168" y="300" text-anchor="middle" fill="#8a8a9a" font-size="11" font-weight="bold">A</text>
+  <circle cx="252" cy="252" r="30" fill="#e83030"/>
+  <circle cx="252" cy="252" r="30" fill="url(#dome)"/>
+  <circle cx="252" cy="252" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>
+  <text x="252" y="258" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="bold">B2</text>
+  <text x="252" y="300" text-anchor="middle" fill="#8a8a9a" font-size="11" font-weight="bold">B</text>
+  <circle cx="336" cy="252" r="30" fill="#26262f"/>
+  <circle cx="336" cy="252" r="30" fill="url(#dome)"/>
+  <circle cx="336" cy="252" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>
+  <text x="336" y="258" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="bold">B6</text>
+  <text x="336" y="300" text-anchor="middle" fill="#8a8a9a" font-size="11" font-weight="bold">R1</text>
+  <circle cx="420" cy="252" r="30" fill="#26262f"/>
+  <circle cx="420" cy="252" r="30" fill="url(#dome)"/>
+  <circle cx="420" cy="252" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>
+  <text x="420" y="258" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="bold">B8</text>
+  <text x="420" y="300" text-anchor="middle" fill="#8a8a9a" font-size="11" font-weight="bold">R2</text>
+</svg>
