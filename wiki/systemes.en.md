@@ -8,7 +8,8 @@ several historical panels, each variant is illustrated; pick it in the system's 
 menu ("Panel" setting).
 
 Positions follow the [standard arrangement](materiel.md): SELECT/START top-left,
-top row B4 B3 B5 B7, bottom row B1 B2 B6 B8.
+top row B4 B3 B5 B7, bottom row B1 B2 B6 B8. Under each button sits the **system's original
+function** (Circle, Triangle, A, B, C…); dimmed buttons are not used by that panel.
 
 ## amiga1200
 

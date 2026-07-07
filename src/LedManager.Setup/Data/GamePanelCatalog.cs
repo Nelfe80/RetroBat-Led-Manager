@@ -16,7 +16,15 @@ public sealed class GamePanelCatalog
         string System,
         string Rom,
         string GameName,
-        IReadOnlyDictionary<int, (string Color, string Label)> BySlot);
+        IReadOnlyDictionary<int, (string Color, string Label)> BySlot)
+    {
+        /// <summary>
+        /// Folder used for the override patch. The curated dynpanels say "mame" but
+        /// the RetroBat ES system (and the media tree) is "arcade" — the runtime
+        /// accepts both, the setup writes the canonical one.
+        /// </summary>
+        public string OverrideSystem => System.Equals("mame", StringComparison.OrdinalIgnoreCase) ? "arcade" : System;
+    }
 
     private readonly string _pluginRoot;
     private readonly string _gamesDir;

@@ -29,10 +29,11 @@ Open `LedManagerSetup.exe` while RetroBat is running: the dot turns green and th
 
 ![My games](assets/setup/setup-games.png)
 
-The **My games** tab shows each system's panel as the pack defines it (see [Per-system panels](systemes.md)), and lets you repaint it: click a button, pick its color from the firmware palette (19 colors), save. Your customization is written as a **sparse patch** to `overrides\systems\<system>.json` — the pack is never modified, and LedManager applies the patch from the next game selection, no restart needed.
+The **My games** tab shows each system's panel as the pack defines it (see [Per-system panels](systemes.md)), and lets you **change its LED configuration**: click a button, pick its color from the firmware palette (19 colors), save. Your configuration is written as a **sparse patch** to `overrides\systems\<system>.json` — the pack is never modified, and LedManager applies the patch from the next game selection, no restart needed.
 
 - The **Panel** selector is a preview: 2/4/6/8 buttons and historical variants (Score Master, Fighting Stick…). The override applies to the whole system.
-- **Arcade game**: type a rom name (mslug, chasehq, seawolf…) to edit one specific game among the 3280 curated ones — the displayed panel is exactly what the runtime resolves (pack + system patch), and your paint is written to `overrides\games\<system>\<rom>.json`, which beats the system patch.
+- **Arcade game**: type a rom name (mslug, chasehq, seawolf…) to edit one specific game among the 3280 **curated arcade games** (the only ones with a per-game LED configuration; their media live in `media\systems\arcade`). The displayed panel is exactly what the runtime resolves (pack + system patch), and your LED configuration is written to `overrides\games\arcade\<rom>.json` — it beats the system patch. LedManager accepts both `arcade` and `mame` as folder names.
+- **Console games**: no per-game LED configuration in the pack — customize at the system level. A per-console-game patch remains possible by hand in `overrides\games\<system>\<rom>.json` (e.g. `games\snes\smw.json`, same format), the runtime applies it.
 - **"Original color"** in the palette removes a button's override; **"Back to pack colors"** deletes the whole patch.
 - **"Test on the real panel"** stops LedManager for the duration and sends your colors to the Pico: they follow your clicks live on the real buttons.
 
@@ -50,7 +51,7 @@ Plug your Pico in over USB (a **data** cable, not a charge-only one), then click
 - searches the serial ports for your Pico and reads its firmware version;
 - restarts the driver and lights the whole panel white.
 
-If nothing is detected: check the cable, and that the [firmware is installed](materiel.md#flashing-the-firmware).
+If nothing is detected, the **"Install the firmware"** button appears: the assistant deploys the panel firmware to the Pico itself (over the MicroPython serial link), then re-runs detection. For a **blank** Pico (never flashed), plug it in while holding BOOTSEL: the assistant guides you through dropping MicroPython once (automatic copy if a `.uf2` file sits in `fw\`), then installs the panel firmware. Also check the USB cable (data, not charge-only) — details in [Hardware](materiel.md#flashing-the-firmware).
 
 ### 2. Panel test
 

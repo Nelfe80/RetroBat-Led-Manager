@@ -29,10 +29,11 @@ Ouvrez `LedManagerSetup.exe` pendant que RetroBat tourne : la pastille devient v
 
 ![Mes jeux](assets/setup/setup-games.png)
 
-L'onglet **Mes jeux** affiche le panel de chaque système tel que le pack le définit (voir [Panels par système](systemes.md)), et vous laisse le repeindre : cliquez un bouton, choisissez sa couleur dans la palette du firmware (19 couleurs), enregistrez. Votre personnalisation est écrite en **patch épars** dans `overrides\systems\<système>.json` — le pack n'est jamais modifié, et LedManager applique le patch dès la prochaine sélection de jeu, sans redémarrage.
+L'onglet **Mes jeux** affiche le panel de chaque système tel que le pack le définit (voir [Panels par système](systemes.md)), et vous laisse **modifier sa configuration LED** : cliquez un bouton, choisissez sa couleur dans la palette du firmware (19 couleurs), enregistrez. Votre configuration est écrite en **patch épars** dans `overrides\systems\<système>.json` — le pack n'est jamais modifié, et LedManager applique le patch dès la prochaine sélection de jeu, sans redémarrage.
 
 - Le sélecteur **Panel** sert d'aperçu : 2/4/6/8 boutons et variantes historiques (Score Master, Fighting Stick…). L'override s'applique au système entier.
-- **Jeu arcade** : tapez un nom de rom (mslug, chasehq, seawolf…) pour éditer un jeu précis parmi les 3280 jeux curatés — le panel affiché est exactement celui que le runtime résout (pack + patch système), et votre peinture est écrite dans `overrides\games\<système>\<rom>.json`, prioritaire sur le patch système.
+- **Jeu arcade** : tapez un nom de rom (mslug, chasehq, seawolf…) pour éditer un jeu précis parmi les 3280 **jeux arcade curatés** (les seuls avec une configuration LED par jeu ; leurs médias vivent dans `media\systems\arcade`). Le panel affiché est exactement celui que le runtime résout (pack + patch système), et votre configuration LED est écrite dans `overrides\games\arcade\<rom>.json` — prioritaire sur le patch système. LedManager accepte indifféremment `arcade` et `mame` comme nom de dossier.
+- **Jeux console** : pas de configuration LED par jeu dans le pack — personnalisez au niveau du système. Un patch par jeu console reste possible à la main dans `overrides\games\<système>\<rom>.json` (ex. `games\snes\smw.json`, même format), le runtime l'applique.
 - **« Couleur d'origine »** dans la palette retire l'override d'un bouton ; **« Revenir aux couleurs du pack »** supprime tout le patch.
 - **« Tester sur le panneau réel »** arrête LedManager le temps du test et envoie vos couleurs au Pico : elles suivent vos clics en direct sur les vrais boutons.
 
@@ -50,7 +51,7 @@ Branchez votre Pico en USB (câble **data**, pas un câble de charge seul), puis
 - cherche votre Pico sur les ports série et lit sa version de firmware ;
 - relance le pilote et allume tout le panneau en blanc.
 
-Si rien n'est détecté : vérifiez le câble, et que le [firmware est installé](materiel.md#flasher-le-firmware).
+Si rien n'est détecté, le bouton **« Installer le firmware »** apparaît : l'assistant dépose lui-même le firmware du panel sur le Pico (par la liaison série MicroPython), puis relance la détection. Pour un Pico **neuf** (jamais flashé), branchez-le en maintenant le bouton BOOTSEL : l'assistant vous guide pour déposer MicroPython une première fois (copie automatique si un fichier `.uf2` est présent dans `fw\`), puis installe le firmware du panel. Vérifiez aussi le câble USB (data, pas charge seule) — détails dans [Matériel](materiel.md#flasher-le-firmware).
 
 ### 2. Test du panneau
 

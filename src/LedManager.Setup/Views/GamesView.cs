@@ -308,12 +308,20 @@ public sealed class GamesView : UserControl, IDisposable
             return;
         }
 
-        var overrideSystem = _currentGame?.System ?? SelectedSystem!;
+        // arcade/mame are interchangeable for the runtime; the setup reads whichever
+        // file exists and always writes the canonical "arcade" one
+        var overrideSystem = _currentGame?.OverrideSystem ?? SelectedSystem!;
         _systemPatch = _store.LoadSlotColors(overrideSystem);
+        if (_systemPatch.Count == 0 && _currentGame is { } aliased && aliased.OverrideSystem != aliased.System)
+        {
+            _systemPatch = _store.LoadSlotColors(aliased.System);
+        }
 
         _edited.Clear();
         var saved = _currentGame is { } game
-            ? _store.LoadGameSlotColors(game.System, game.Rom)
+            ? FirstNonEmpty(
+                _store.LoadGameSlotColors(game.OverrideSystem, game.Rom),
+                game.OverrideSystem != game.System ? _store.LoadGameSlotColors(game.System, game.Rom) : null)
             : _systemPatch;
         foreach (var (slot, color) in saved)
         {
@@ -437,7 +445,7 @@ public sealed class GamesView : UserControl, IDisposable
         string path;
         if (_currentGame is { } game)
         {
-            path = _store.SaveGame(game.System, game.Rom, _edited);
+            path = _store.SaveGame(game.OverrideSystem, game.Rom, _edited);
         }
         else if (SelectedSystem is { } system)
         {
@@ -469,7 +477,11 @@ public sealed class GamesView : UserControl, IDisposable
 
         if (_currentGame is { } g)
         {
-            _store.DeleteGame(g.System, g.Rom);
+            _store.DeleteGame(g.OverrideSystem, g.Rom);
+            if (g.OverrideSystem != g.System)
+            {
+                _store.DeleteGame(g.System, g.Rom);
+            }
         }
         else if (SelectedSystem is { } system)
         {
@@ -562,6 +574,10 @@ public sealed class GamesView : UserControl, IDisposable
         _liveTest.Content = L.T("Tester sur le panneau réel", "Test on the real panel");
         _liveTest.IsEnabled = true;
     }
+
+    private static IReadOnlyDictionary<int, string> FirstNonEmpty(
+        IReadOnlyDictionary<int, string> primary, IReadOnlyDictionary<int, string>? fallback)
+        => primary.Count > 0 || fallback is null ? primary : fallback;
 
     private static Button Action(string text, RoutedEventHandler onClick, bool primary = false)
     {

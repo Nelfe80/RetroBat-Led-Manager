@@ -26,16 +26,48 @@ public static class PanelStateOverrides
         }
 
         var current = state;
-        var systemPatch = Path.Combine(baseDirectory, "overrides", "systems", SafeName(state.System) + ".json");
-        current = ApplyPatchFile(current, systemPatch);
+        foreach (var system in CandidateSystems(state.System))
+        {
+            var systemPatch = Path.Combine(baseDirectory, "overrides", "systems", SafeName(system) + ".json");
+            if (File.Exists(systemPatch))
+            {
+                current = ApplyPatchFile(current, systemPatch);
+                break;
+            }
+        }
 
         if (!string.IsNullOrWhiteSpace(state.Rom))
         {
-            var gamePatch = Path.Combine(baseDirectory, "overrides", "games", SafeName(state.System), SafeName(state.Rom) + ".json");
-            current = ApplyPatchFile(current, gamePatch);
+            foreach (var system in CandidateSystems(state.System))
+            {
+                var gamePatch = Path.Combine(baseDirectory, "overrides", "games", SafeName(system), SafeName(state.Rom) + ".json");
+                if (File.Exists(gamePatch))
+                {
+                    current = ApplyPatchFile(current, gamePatch);
+                    break;
+                }
+            }
         }
 
         return current;
+    }
+
+    /// <summary>
+    /// The ES system of an arcade game varies per installation ("arcade" folder,
+    /// "mame"…) while the curated dynpanels say "mame". Patches written under either
+    /// name apply to both, so a setup-created override never misses its game.
+    /// </summary>
+    private static IEnumerable<string> CandidateSystems(string system)
+    {
+        yield return system;
+        if (system.Equals("arcade", StringComparison.OrdinalIgnoreCase))
+        {
+            yield return "mame";
+        }
+        else if (system.Equals("mame", StringComparison.OrdinalIgnoreCase))
+        {
+            yield return "arcade";
+        }
     }
 
     private static PanelState ApplyPatchFile(PanelState state, string path)

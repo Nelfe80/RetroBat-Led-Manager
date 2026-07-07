@@ -8,7 +8,9 @@ propose plusieurs panels historiques, chaque variante est illustrée ; elle se c
 EmulationStation du système (réglage « Panel »).
 
 Les positions suivent la [disposition standard](materiel.md) : SELECT/START en haut à gauche,
-rangée haute B4 B3 B5 B7, rangée basse B1 B2 B6 B8.
+rangée haute B4 B3 B5 B7, rangée basse B1 B2 B6 B8. Sous chaque bouton figure la **fonction
+d'origine du système** (Circle, Triangle, A, B, C…) ; les boutons estompés ne sont pas utilisés
+par ce panel.
 
 ## amiga1200
 

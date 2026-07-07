@@ -242,9 +242,15 @@ public sealed class WizardView : UserControl, IDisposable
 
         if (!_detection.Found)
         {
+            // firmware missing or Pico blank: offer the one-button installer
+            _secondary.Content = L.T("Installer le firmware", "Install the firmware");
+            _secondary.Visibility = Visibility.Visible;
+            _secondary.IsEnabled = true;
             _primary.IsEnabled = true;
             return;
         }
+
+        _secondary.Visibility = Visibility.Collapsed;
 
         var started = await StartSenderAsync();
         _primary.IsEnabled = true;
@@ -376,6 +382,72 @@ public sealed class WizardView : UserControl, IDisposable
                 + "the channel wires are crossed somewhere.");
         _secondary.Content = L.T("Corriger l'ordre des canaux", "Fix the channel order");
         _secondary.Visibility = Visibility.Visible;
+    }
+
+    /// <summary>
+    /// One-button firmware install. Blank Pico (BOOTSEL drive visible): MicroPython
+    /// UF2 first — copied automatically if fw\*.uf2 exists, otherwise guided download.
+    /// Then the panel firmware goes over the MicroPython raw REPL, and detection re-runs.
+    /// </summary>
+    private async Task InstallFirmwareAsync()
+    {
+        _secondary.IsEnabled = false;
+        _primary.IsEnabled = false;
+
+        if (FirmwareInstaller.FindBootselDrive() is { } drive)
+        {
+            if (FirmwareInstaller.FindLocalUf2(_pluginRoot) is { } uf2)
+            {
+                _status.Text = L.T($"Pico en mode BOOTSEL : copie de {System.IO.Path.GetFileName(uf2)}…",
+                    $"Pico in BOOTSEL mode: copying {System.IO.Path.GetFileName(uf2)}…");
+                var copy = FirmwareInstaller.CopyUf2ToBootsel(uf2, drive);
+                if (!copy.Success)
+                {
+                    _status.Text = L.T("Copie du UF2 impossible : ", "Could not copy the UF2: ") + copy.Message;
+                    _secondary.IsEnabled = true;
+                    _primary.IsEnabled = true;
+                    return;
+                }
+
+                _status.Text = L.T("MicroPython copié, le Pico redémarre…", "MicroPython copied, the Pico is rebooting…");
+                await Task.Delay(9000);
+            }
+            else
+            {
+                _status.Text = L.T(
+                    "Pico en mode BOOTSEL : il lui faut d'abord MicroPython. Téléchargez le fichier .uf2 officiel "
+                    + "(la page vient de s'ouvrir), déposez-le sur le lecteur RPI-RP2, puis recliquez « Installer le firmware ».",
+                    "Pico in BOOTSEL mode: it needs MicroPython first. Download the official .uf2 file "
+                    + "(the page just opened), drop it on the RPI-RP2 drive, then click \"Install the firmware\" again.");
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
+                        "https://micropython.org/download/RPI_PICO/") { UseShellExecute = true });
+                }
+                catch
+                {
+                    // browser launch is best effort; the URL is in the message
+                }
+
+                _secondary.IsEnabled = true;
+                _primary.IsEnabled = true;
+                return;
+            }
+        }
+
+        await Task.Run(LedManagerProcess.StopAll);
+        var progress = new Progress<string>(message => _status.Text = message);
+        var result = await FirmwareInstaller.InstallAsync(_pluginRoot, _hardware.SerialPort, progress);
+        _status.Text = result.Message;
+        _secondary.IsEnabled = true;
+        _primary.IsEnabled = true;
+
+        if (result.Success)
+        {
+            _secondary.Visibility = Visibility.Collapsed;
+            await Task.Delay(2500); // let the fresh firmware boot before probing
+            await PrepareAsync();
+        }
     }
 
     private async Task FixColorChannelsAsync()
@@ -522,6 +594,10 @@ public sealed class WizardView : UserControl, IDisposable
     {
         switch (_step)
         {
+            case Step.Prepare:
+                await InstallFirmwareAsync();
+                break;
+
             case Step.ColorTest:
                 await FixColorChannelsAsync();
                 break;
