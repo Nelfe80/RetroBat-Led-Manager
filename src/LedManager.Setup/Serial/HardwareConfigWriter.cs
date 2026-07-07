@@ -1,4 +1,5 @@
 using System.IO;
+using LedManager.Setup.Localization;
 
 namespace LedManager.Setup.Serial;
 
@@ -24,7 +25,7 @@ public static class HardwareConfigWriter
         var iniPath = Path.Combine(pluginRoot, "PicoCommandSender.ini");
         if (!File.Exists(iniPath))
         {
-            return new Result(false, "PicoCommandSender.ini introuvable.");
+            return new Result(false, L.T("PicoCommandSender.ini introuvable.", "PicoCommandSender.ini not found."));
         }
 
         var editor = IniEditor.Load(iniPath);
@@ -42,7 +43,7 @@ public static class HardwareConfigWriter
             // slightly generous beats a panel that misses its first commands.
             var delay = Math.Max(500, (int)(measured * 1.25));
             editor.Set($"Serial:{sender}", "PostInitDelayMs", delay.ToString());
-            written.Add($"PostInitDelayMs={delay} (mesuré {measured} ms)");
+            written.Add($"PostInitDelayMs={delay} " + L.T($"(mesuré {measured} ms)", $"(measured {measured} ms)"));
         }
 
         editor.Set($"Hardware:{sender}", "PanelButtons", buttonCount.ToString());
@@ -52,7 +53,8 @@ public static class HardwareConfigWriter
 
         editor.Save();
         return new Result(true,
-            "Configuration enregistrée dans PicoCommandSender.ini (sauvegarde .bak créée) :\n   • "
-            + string.Join("\n   • ", written));
+            L.T("Configuration enregistrée dans PicoCommandSender.ini (sauvegarde .bak créée) :",
+                "Configuration saved to PicoCommandSender.ini (.bak backup created):")
+            + "\n   • " + string.Join("\n   • ", written));
     }
 }

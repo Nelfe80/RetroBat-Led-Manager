@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Windows;
 using LedManager.Setup.Controls;
+using LedManager.Setup.Localization;
 using LedManager.Setup.Views;
 
 namespace LedManager.Setup;
@@ -22,15 +23,18 @@ public partial class MainWindow : Window
         InitializeComponent();
         TryLowerProcessPriority();
 
+        NavMonitor.Content = L.T("Panel virtuel", "Virtual panel");
+        NavWizard.Content = L.T("Assistant matériel", "Hardware assistant");
+
         var root = HardwareDescription.FindPluginRoot();
         _hardware = HardwareDescription.Load(root);
         _layout = PanelLayoutDefinition.Load(root);
 
-        HardwareInfo.Text = $"{_hardware.ButtonCount} boutons"
+        HardwareInfo.Text = $"{_hardware.ButtonCount} " + L.T("boutons", "buttons")
             + (_hardware.HasStart ? " · START" : "")
             + (_hardware.HasSelect ? " · SELECT" : "")
             + $"\nPort {_hardware.SerialPort} · {_hardware.BaudRate} bauds"
-            + $"\nMiroir 127.0.0.1:{_hardware.MirrorPort}";
+            + "\n" + L.T("Miroir", "Mirror") + $" 127.0.0.1:{_hardware.MirrorPort}";
 
         ShowMonitor();
 
@@ -39,6 +43,43 @@ public partial class MainWindow : Window
             _monitor?.Dispose();
             _wizard?.Dispose();
         };
+
+        // documentation mode: `--screenshots <dir>` renders both views to PNG and exits.
+        // Used to keep the wiki illustrations in sync with the real UI.
+        var args = Environment.GetCommandLineArgs();
+        var shotIndex = Array.IndexOf(args, "--screenshots");
+        if (shotIndex >= 0 && shotIndex + 1 < args.Length)
+        {
+            Loaded += (_, _) => _ = CaptureAllTabsAsync(args[shotIndex + 1]);
+        }
+    }
+
+    private async System.Threading.Tasks.Task CaptureAllTabsAsync(string directory)
+    {
+        System.IO.Directory.CreateDirectory(directory);
+        NavMonitor.IsChecked = true;
+        await System.Threading.Tasks.Task.Delay(1200);
+        SaveScreenshot(directory, "setup-monitor");
+        NavWizard.IsChecked = true;
+        await System.Threading.Tasks.Task.Delay(1200);
+        SaveScreenshot(directory, "setup-wizard");
+        Close();
+    }
+
+    private void SaveScreenshot(string directory, string name)
+    {
+        if (Content is not FrameworkElement root || root.ActualWidth <= 0)
+        {
+            return;
+        }
+
+        var bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap(
+            (int)root.ActualWidth, (int)root.ActualHeight, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+        bitmap.Render(root);
+        var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+        encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
+        using var stream = System.IO.File.Create(System.IO.Path.Combine(directory, name + ".png"));
+        encoder.Save(stream);
     }
 
     private void NavMonitor_Checked(object sender, RoutedEventArgs e) => ShowMonitor();

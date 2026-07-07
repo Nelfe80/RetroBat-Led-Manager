@@ -1,4 +1,5 @@
 using System.IO.Ports;
+using LedManager.Setup.Localization;
 
 namespace LedManager.Setup.Serial;
 
@@ -34,7 +35,8 @@ public static class PicoDetector
             if (ordered.Count == 0)
             {
                 return new PicoDetectionResult(false, null, null, null, ordered,
-                    "Aucun port série détecté. Le Pico est-il branché en USB (câble data) ?");
+                    L.T("Aucun port série détecté. Le Pico est-il branché en USB (câble data) ?",
+                        "No serial port detected. Is the Pico plugged in over USB (data cable)?"));
             }
 
             foreach (var port in ordered)
@@ -44,13 +46,15 @@ public static class PicoDetector
                 {
                     var version = link.FirmwareVersion is null ? "" : $" {link.FirmwareName} {link.FirmwareVersion}";
                     return new PicoDetectionResult(true, port, link.FirmwareName, link.FirmwareVersion, ordered,
-                        $"Pico détecté sur {port}{version}.");
+                        L.T($"Pico détecté sur {port}{version}.", $"Pico detected on {port}{version}."));
                 }
             }
 
             return new PicoDetectionResult(false, null, null, null, ordered,
-                $"Aucun Pico ne répond sur les ports testés ({string.Join(", ", ordered)}). " +
-                "Firmware installé ? LedManager arrêté (il occupe le port) ?");
+                L.T($"Aucun Pico ne répond sur les ports testés ({string.Join(", ", ordered)}). " +
+                    "Firmware installé ? LedManager arrêté (il occupe le port) ?",
+                    $"No Pico answers on the tested ports ({string.Join(", ", ordered)}). " +
+                    "Firmware installed? LedManager stopped (it holds the port)?"));
         });
     }
 }

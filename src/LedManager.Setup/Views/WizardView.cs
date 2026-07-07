@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using LedManager.Setup.Controls;
+using LedManager.Setup.Localization;
 using LedManager.Setup.Serial;
 using LedManager.Setup.VirtualPanel;
 
@@ -71,9 +72,9 @@ public sealed class WizardView : UserControl, IDisposable
         _body = new TextBlock { Margin = new Thickness(0, 12, 0, 0), FontSize = 13, Foreground = Text(0xB8, 0xB8, 0xC6), TextWrapping = TextWrapping.Wrap, LineHeight = 20 };
         _status = new TextBlock { Margin = new Thickness(0, 12, 0, 0), FontSize = 12, Foreground = Text(0x8A, 0x8A, 0x9A), TextWrapping = TextWrapping.Wrap };
         _choices = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0), Visibility = Visibility.Collapsed };
-        _primary = new Button { Content = "Commencer", Padding = new Thickness(18, 8, 18, 8), Margin = new Thickness(0, 20, 8, 0), MinWidth = 130 };
+        _primary = new Button { Content = L.T("Commencer", "Start"), Padding = new Thickness(18, 8, 18, 8), Margin = new Thickness(0, 20, 8, 0), MinWidth = 130 };
         _secondary = new Button { Padding = new Thickness(18, 8, 18, 8), Margin = new Thickness(0, 20, 8, 0), MinWidth = 130, Visibility = Visibility.Collapsed };
-        _back = new Button { Content = "Précédent", Padding = new Thickness(18, 8, 18, 8), Margin = new Thickness(0, 20, 0, 0), MinWidth = 100, IsEnabled = false };
+        _back = new Button { Content = L.T("Précédent", "Back"), Padding = new Thickness(18, 8, 18, 8), Margin = new Thickness(0, 20, 0, 0), MinWidth = 100, IsEnabled = false };
         _primary.Click += (_, _) => OnPrimary();
         _secondary.Click += (_, _) => OnSecondary();
         _back.Click += (_, _) => OnBack();
@@ -112,47 +113,64 @@ public sealed class WizardView : UserControl, IDisposable
         switch (_step)
         {
             case Step.Prepare:
-                _title.Text = "1. Préparation";
-                _body.Text = "L'assistant va prendre le contrôle direct de votre Pico pour tester le câblage. "
+                _title.Text = L.T("1. Préparation", "1. Preparation");
+                _body.Text = L.T(
+                    "L'assistant va prendre le contrôle direct de votre Pico pour tester le câblage. "
                     + "Pour cela, LedManager doit être arrêté (il occupe le port du Pico).\n\n"
-                    + "Branchez votre Pico en USB, puis cliquez sur « Détecter le Pico ».";
-                _primary.Content = "Détecter le Pico";
+                    + "Branchez votre Pico en USB, puis cliquez sur « Détecter le Pico ».",
+                    "The assistant takes direct control of your Pico to test the wiring. "
+                    + "LedManager must be stopped for that (it holds the Pico's port).\n\n"
+                    + "Plug your Pico in over USB, then click \"Detect the Pico\".");
+                _primary.Content = L.T("Détecter le Pico", "Detect the Pico");
                 _status.Text = LedManagerProcess.IsRunning()
-                    ? "⚠ LedManager est en cours d'exécution — il sera arrêté à la détection."
-                    : "LedManager n'est pas en cours d'exécution. ✓";
+                    ? L.T("⚠ LedManager est en cours d'exécution — il sera arrêté à la détection.",
+                        "⚠ LedManager is running — it will be stopped at detection.")
+                    : L.T("LedManager n'est pas en cours d'exécution. ✓", "LedManager is not running. ✓");
                 _panel.ClearAll();
                 break;
 
             case Step.PanelTest:
-                _title.Text = "2. Test du panneau";
-                _body.Text = "Vos boutons devraient tous s'allumer en blanc sur le vrai panneau. "
+                _title.Text = L.T("2. Test du panneau", "2. Panel test");
+                _body.Text = L.T(
+                    "Vos boutons devraient tous s'allumer en blanc sur le vrai panneau. "
                     + "Utilisez les boutons ci-dessous pour vérifier que chaque LED répond.\n\n"
-                    + "Si rien ne s'allume : vérifiez l'alimentation (câble USB data) et le firmware.";
-                _primary.Content = "Le panneau s'allume →";
+                    + "Si rien ne s'allume : vérifiez l'alimentation (câble USB data) et le firmware.",
+                    "Your buttons should all light up white on the real panel. "
+                    + "Use the buttons below to check that every LED answers.\n\n"
+                    + "If nothing lights up: check the power (USB data cable) and the firmware.");
+                _primary.Content = L.T("Le panneau s'allume →", "The panel lights up →");
                 break;
 
             case Step.ColorTest:
-                _title.Text = "3. Test des couleurs";
-                _body.Text = "L'assistant vérifie l'ordre des fils R, G, B. Le panneau virtuel montre la couleur "
+                _title.Text = L.T("3. Test des couleurs", "3. Color test");
+                _body.Text = L.T(
+                    "L'assistant vérifie l'ordre des fils R, G, B. Le panneau virtuel montre la couleur "
                     + "attendue : si le vrai panneau affiche autre chose, indiquez la couleur réellement vue.\n\n"
-                    + "L'assistant corrigera alors l'ordre des canaux dans la configuration — sans ressouder.";
-                _primary.Content = "Passer ce test";
+                    + "L'assistant corrigera alors l'ordre des canaux dans la configuration — sans ressouder.",
+                    "The assistant checks the R, G, B wire order. The virtual panel shows the expected "
+                    + "color: if the real panel shows something else, report the color you actually see.\n\n"
+                    + "The assistant will then fix the channel order in the configuration — no re-soldering.");
+                _primary.Content = L.T("Passer ce test", "Skip this test");
                 StartColorTest();
                 break;
 
             case Step.WiringTest:
-                _title.Text = "4. Test du câblage";
-                _body.Text = "Un bouton va s'allumer sur votre panneau physique, un par un. "
+                _title.Text = L.T("4. Test du câblage", "4. Wiring test");
+                _body.Text = L.T(
+                    "Un bouton va s'allumer sur votre panneau physique, un par un. "
                     + "À chaque fois, cliquez ici sur le bouton virtuel qui correspond au bouton allumé en vrai.\n\n"
-                    + "Cela permet à l'assistant de vérifier — et corriger — la correspondance entre les GPIO et vos boutons.";
-                _primary.Content = "Passer";
+                    + "Cela permet à l'assistant de vérifier — et corriger — la correspondance entre les GPIO et vos boutons.",
+                    "One button lights up on your physical panel, one at a time. "
+                    + "Each time, click here the virtual button matching the one really lit.\n\n"
+                    + "This lets the assistant verify — and fix — the mapping between GPIOs and your buttons.");
+                _primary.Content = L.T("Passer", "Skip");
                 StartWiringTest();
                 break;
 
             case Step.Done:
-                _title.Text = "✓ Terminé";
+                _title.Text = L.T("✓ Terminé", "✓ Done");
                 _body.Text = BuildWiringSummary();
-                _primary.Content = "Fermer l'assistant";
+                _primary.Content = L.T("Fermer l'assistant", "Close the assistant");
                 _panel.ClearAll();
                 RenderDoneActions();
                 break;
@@ -215,10 +233,10 @@ public sealed class WizardView : UserControl, IDisposable
     private async Task PrepareAsync()
     {
         _primary.IsEnabled = false;
-        _status.Text = "Arrêt de LedManager…";
+        _status.Text = L.T("Arrêt de LedManager…", "Stopping LedManager…");
         await Task.Run(LedManagerProcess.StopAll);
 
-        _status.Text = "Recherche du Pico sur les ports série…";
+        _status.Text = L.T("Recherche du Pico sur les ports série…", "Scanning serial ports for the Pico…");
         _detection = await PicoDetector.DetectAsync(_hardware.SerialPort);
         _status.Text = _detection.Message;
 
@@ -249,19 +267,21 @@ public sealed class WizardView : UserControl, IDisposable
         _sender = PicoSenderHost.Start(_pluginRoot);
         if (_sender is null)
         {
-            _status.Text = "PicoCommandSender.exe introuvable à la racine du plugin.";
+            _status.Text = L.T("PicoCommandSender.exe introuvable à la racine du plugin.",
+                "PicoCommandSender.exe not found at the plugin root.");
             return false;
         }
 
         // Wait for the sender's READY (firmware GPIO profile initialized) rather than
         // a blind delay; PostInitDelayMs in the ini can be many seconds. The 30 s cap
         // covers the largest configured delay while never hanging the UI forever.
-        _status.Text = "Initialisation du Pico (profil GPIO)…";
+        _status.Text = L.T("Initialisation du Pico (profil GPIO)…", "Initializing the Pico (GPIO profile)…");
         await _sender.WaitForReadyAsync(TimeSpan.FromSeconds(30));
 
         if (!_sender.IsAlive)
         {
-            _status.Text = "Le pilote PicoCommandSender s'est arrêté. Vérifiez le port COM et le firmware.";
+            _status.Text = L.T("Le pilote PicoCommandSender s'est arrêté. Vérifiez le port COM et le firmware.",
+                "The PicoCommandSender driver stopped. Check the COM port and the firmware.");
             return false;
         }
 
@@ -283,9 +303,9 @@ public sealed class WizardView : UserControl, IDisposable
         _choices.Children.Clear();
         foreach (var (label, name, color) in new[]
                  {
-                     ("ROUGE", "R", ColorChannels[0].Expected),
-                     ("VERT", "G", ColorChannels[1].Expected),
-                     ("BLEU", "B", ColorChannels[2].Expected)
+                     (L.T("ROUGE", "RED"), "R", ColorChannels[0].Expected),
+                     (L.T("VERT", "GREEN"), "G", ColorChannels[1].Expected),
+                     (L.T("BLEU", "BLUE"), "B", ColorChannels[2].Expected)
                  })
         {
             var choice = new Button
@@ -311,9 +331,11 @@ public sealed class WizardView : UserControl, IDisposable
         _sender?.Send("CLEAR");
         _sender?.Send(command);
         _panel.SetAll(expected);
-        _status.Text = $"Canal {_colorChannel + 1}/3 : le panneau virtuel montre du "
-            + (name == "R" ? "ROUGE" : name == "G" ? "VERT" : "BLEU")
-            + ". Quelle couleur voyez-vous sur le VRAI panneau ?";
+        var expectedName = name == "R" ? L.T("ROUGE", "RED") : name == "G" ? L.T("VERT", "GREEN") : L.T("BLEU", "BLUE");
+        _status.Text = L.T($"Canal {_colorChannel + 1}/3 : le panneau virtuel montre du {expectedName}. "
+                + "Quelle couleur voyez-vous sur le VRAI panneau ?",
+            $"Channel {_colorChannel + 1}/3: the virtual panel shows {expectedName}. "
+                + "Which color do you see on the REAL panel?");
     }
 
     private void OnColorAnswer(string seen)
@@ -342,15 +364,17 @@ public sealed class WizardView : UserControl, IDisposable
 
         if (_colorSeen.Count == 3 && _colorSeen[0] == "R" && _colorSeen[1] == "G" && _colorSeen[2] == "B")
         {
-            _status.Text = "Ordre des canaux R,G,B correct. ✓";
+            _status.Text = L.T("Ordre des canaux R,G,B correct. ✓", "R,G,B channel order correct. ✓");
             _step = Step.WiringTest;
             RenderStep();
             return;
         }
 
-        _status.Text = $"Les couleurs vues ({string.Join(", ", _colorSeen)}) ne suivent pas l'ordre R, G, B : "
-            + "les fils des canaux sont inversés quelque part.";
-        _secondary.Content = "Corriger l'ordre des canaux";
+        _status.Text = L.T($"Les couleurs vues ({string.Join(", ", _colorSeen)}) ne suivent pas l'ordre R, G, B : "
+                + "les fils des canaux sont inversés quelque part.",
+            $"The colors seen ({string.Join(", ", _colorSeen)}) do not follow the R, G, B order: "
+                + "the channel wires are crossed somewhere.");
+        _secondary.Content = L.T("Corriger l'ordre des canaux", "Fix the channel order");
         _secondary.Visibility = Visibility.Visible;
     }
 
@@ -370,7 +394,7 @@ public sealed class WizardView : UserControl, IDisposable
         _secondary.IsEnabled = true;
         if (await StartSenderAsync())
         {
-            _status.Text = result.Message + "\nRefaites le test pour confirmer.";
+            _status.Text = result.Message + L.T("\nRefaites le test pour confirmer.", "\nRe-run the test to confirm.");
             StartColorTest();
         }
     }
@@ -411,8 +435,10 @@ public sealed class WizardView : UserControl, IDisposable
         _sender?.Send(item.Light("GREEN"));
 
         _panel.ClearAll();
-        _status.Text = $"Élément {_wiringIndex + 1}/{_wiringItems.Count} : un bouton s'allume en VERT sur le panneau. "
-            + "Cliquez le bouton virtuel qui correspond.";
+        _status.Text = L.T($"Élément {_wiringIndex + 1}/{_wiringItems.Count} : un bouton s'allume en VERT sur le panneau. "
+                + "Cliquez le bouton virtuel qui correspond.",
+            $"Item {_wiringIndex + 1}/{_wiringItems.Count}: one button lights up GREEN on the panel. "
+                + "Click the matching virtual button.");
     }
 
     private async void OnWiringClick(int? clickedSlot, string? clickedTarget)
@@ -453,31 +479,39 @@ public sealed class WizardView : UserControl, IDisposable
     {
         if (_wiringMap.Count == 0)
         {
-            return "Test du câblage passé. Vous pourrez le relancer à tout moment.";
+            return L.T("Test du câblage passé. Vous pourrez le relancer à tout moment.",
+                "Wiring test skipped. You can re-run it anytime.");
         }
 
         var mismatches = WiringMismatches();
         if (mismatches.Count == 0)
         {
-            return $"Câblage vérifié : les {_wiringMap.Count} éléments correspondent à la disposition attendue. "
-                + "Aucune correction nécessaire.";
+            return L.T($"Câblage vérifié : les {_wiringMap.Count} éléments correspondent à la disposition attendue. "
+                    + "Aucune correction nécessaire.",
+                $"Wiring verified: all {_wiringMap.Count} items match the expected arrangement. "
+                    + "No fix needed.");
         }
 
-        var lines = string.Join("\n", mismatches.Select(kv => $"   • {kv.Key.Label} allumé → cliqué {kv.Value?.Label ?? "?"}"));
-        return $"{mismatches.Count} différence(s) détectée(s) entre le câblage et la disposition :\n{lines}\n\n"
-            + "« Corriger automatiquement » réécrit le câblage logiciel ([GPIO:P1]) pour que chaque bouton "
-            + "réponde à sa place — sans ressouder. Le test se relancera pour confirmer.";
+        var lines = string.Join("\n", mismatches.Select(kv => L.T(
+            $"   • {kv.Key.Label} allumé → cliqué {kv.Value?.Label ?? "?"}",
+            $"   • {kv.Key.Label} lit → clicked {kv.Value?.Label ?? "?"}")));
+        return L.T($"{mismatches.Count} différence(s) détectée(s) entre le câblage et la disposition :\n{lines}\n\n"
+                + "« Corriger automatiquement » réécrit le câblage logiciel ([GPIO:P1]) pour que chaque bouton "
+                + "réponde à sa place — sans ressouder. Le test se relancera pour confirmer.",
+            $"{mismatches.Count} difference(s) detected between the wiring and the arrangement:\n{lines}\n\n"
+                + "\"Fix automatically\" rewrites the software wiring ([GPIO:P1]) so every button "
+                + "answers at its place — no re-soldering. The test will re-run to confirm.");
     }
 
     private void RenderDoneActions()
     {
         if (_wiringMap.Count > 0 && WiringMismatches().Count > 0)
         {
-            _secondary.Content = "Corriger automatiquement";
+            _secondary.Content = L.T("Corriger automatiquement", "Fix automatically");
         }
         else
         {
-            _secondary.Content = "Enregistrer la configuration";
+            _secondary.Content = L.T("Enregistrer la configuration", "Save the configuration");
         }
 
         _secondary.Visibility = Visibility.Visible;
@@ -536,7 +570,9 @@ public sealed class WizardView : UserControl, IDisposable
             _hardware.ButtonCount,
             _hardware.HasStart,
             _hardware.HasSelect);
-        _status.Text = result.Message + (result.Success ? "\nLedManager utilisera ces réglages au prochain démarrage." : "");
+        _status.Text = result.Message + (result.Success
+            ? L.T("\nLedManager utilisera ces réglages au prochain démarrage.", "\nLedManager will use these settings on its next start.")
+            : "");
         if (result.Success)
         {
             _secondary.IsEnabled = false;

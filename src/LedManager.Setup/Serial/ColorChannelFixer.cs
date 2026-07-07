@@ -1,5 +1,6 @@
 using System.IO;
 using LedManager.Core.Ini;
+using LedManager.Setup.Localization;
 
 namespace LedManager.Setup.Serial;
 
@@ -20,26 +21,29 @@ public static class ColorChannelFixer
     {
         if (seen.Count != 3)
         {
-            return new Result(false, "Test incomplet : trois réponses attendues.");
+            return new Result(false, L.T("Test incomplet : trois réponses attendues.", "Incomplete test: three answers expected."));
         }
 
         var normalized = seen.Select(s => s.ToUpperInvariant()).ToArray();
         if (!new HashSet<string>(normalized).SetEquals(new[] { "R", "G", "B" }))
         {
-            return new Result(false,
+            return new Result(false, L.T(
                 "Réponses incohérentes (une couleur vue deux fois). Deux fils peuvent être en court-circuit "
-                + "ou une LED défaillante — refaites le test ou vérifiez le câblage.");
+                + "ou une LED défaillante — refaites le test ou vérifiez le câblage.",
+                "Inconsistent answers (one color seen twice). Two wires may be shorted "
+                + "or an LED is failing — re-run the test or check the wiring."));
         }
 
         if (normalized[0] == "R" && normalized[1] == "G" && normalized[2] == "B")
         {
-            return new Result(true, "L'ordre des canaux est déjà correct, rien à corriger.");
+            return new Result(true, L.T("L'ordre des canaux est déjà correct, rien à corriger.",
+                "The channel order is already correct, nothing to fix."));
         }
 
         var iniPath = Path.Combine(pluginRoot, "PicoCommandSender.ini");
         if (!File.Exists(iniPath))
         {
-            return new Result(false, "PicoCommandSender.ini introuvable.");
+            return new Result(false, L.T("PicoCommandSender.ini introuvable.", "PicoCommandSender.ini not found."));
         }
 
         var gpioSection = $"GPIO:{sender}";
@@ -70,12 +74,15 @@ public static class ColorChannelFixer
 
         if (fixedKeys.Count == 0)
         {
-            return new Result(false, $"Aucun triplet RGB trouvé dans [{gpioSection}].");
+            return new Result(false, L.T($"Aucun triplet RGB trouvé dans [{gpioSection}].",
+                $"No RGB triplet found in [{gpioSection}]."));
         }
 
         editor.Save();
-        return new Result(true,
+        return new Result(true, L.T(
             $"Ordre des canaux corrigé sur {fixedKeys.Count} bouton(s) dans [{gpioSection}] "
-            + $"(vu {normalized[0]}/{normalized[1]}/{normalized[2]} → réordonné). Sauvegarde .bak créée.");
+            + $"(vu {normalized[0]}/{normalized[1]}/{normalized[2]} → réordonné). Sauvegarde .bak créée.",
+            $"Channel order fixed on {fixedKeys.Count} button(s) in [{gpioSection}] "
+            + $"(saw {normalized[0]}/{normalized[1]}/{normalized[2]} → reordered). .bak backup created."));
     }
 }

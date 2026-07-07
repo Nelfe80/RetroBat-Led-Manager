@@ -1,5 +1,6 @@
 using System.IO;
 using LedManager.Core.Ini;
+using LedManager.Setup.Localization;
 
 namespace LedManager.Setup.Serial;
 
@@ -18,7 +19,7 @@ public static class GpioMappingFixer
         var iniPath = Path.Combine(pluginRoot, "PicoCommandSender.ini");
         if (!File.Exists(iniPath))
         {
-            return new Result(false, "PicoCommandSender.ini introuvable.");
+            return new Result(false, L.T("PicoCommandSender.ini introuvable.", "PicoCommandSender.ini not found."));
         }
 
         var gpioSection = $"GPIO:{sender}";
@@ -27,7 +28,8 @@ public static class GpioMappingFixer
         var toFix = map.Where(kv => !kv.Key.Equals(kv.Value, StringComparison.OrdinalIgnoreCase)).ToList();
         if (toFix.Count == 0)
         {
-            return new Result(true, "Aucune correction nécessaire : le câblage correspond déjà.");
+            return new Result(true, L.T("Aucune correction nécessaire : le câblage correspond déjà.",
+                "No fix needed: the wiring already matches."));
         }
 
         // Safety: the clicked keys must be a permutation of the lit keys (a clean swap),
@@ -36,9 +38,11 @@ public static class GpioMappingFixer
         var clickedKeys = toFix.Select(kv => kv.Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
         if (clickedKeys.Count != toFix.Count || !litKeys.SetEquals(clickedKeys))
         {
-            return new Result(false,
+            return new Result(false, L.T(
                 "Correction impossible automatiquement : les correspondances ne forment pas un simple échange "
-                + "(un bouton cliqué en double, ou un bouton hors du groupe). Vérifiez le câblage et relancez le test.");
+                + "(un bouton cliqué en double, ou un bouton hors du groupe). Vérifiez le câblage et relancez le test.",
+                "Automatic fix impossible: the matches do not form a clean swap "
+                + "(a button clicked twice, or a button outside the group). Check the wiring and re-run the test."));
         }
 
         // Every clicked key must have a known GPIO to move over.
@@ -46,7 +50,8 @@ public static class GpioMappingFixer
         {
             if (!current.ContainsKey(clicked))
             {
-                return new Result(false, $"GPIO du bouton {clicked} introuvable dans [{gpioSection}].");
+                return new Result(false, L.T($"GPIO du bouton {clicked} introuvable dans [{gpioSection}].",
+                    $"GPIO of button {clicked} not found in [{gpioSection}]."));
             }
         }
 
@@ -61,7 +66,10 @@ public static class GpioMappingFixer
         editor.Save();
 
         var lines = string.Join(", ", newValues.Select(kv => $"{kv.Key}→[{kv.Value}]"));
-        return new Result(true, $"{newValues.Count} correspondance(s) GPIO corrigée(s) dans [{gpioSection}] : {lines}. "
-            + "Sauvegarde .bak créée. Relancez le test pour confirmer.");
+        return new Result(true, L.T(
+            $"{newValues.Count} correspondance(s) GPIO corrigée(s) dans [{gpioSection}] : {lines}. "
+            + "Sauvegarde .bak créée. Relancez le test pour confirmer.",
+            $"{newValues.Count} GPIO mapping(s) fixed in [{gpioSection}]: {lines}. "
+            + ".bak backup created. Re-run the test to confirm."));
     }
 }

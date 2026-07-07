@@ -7,7 +7,12 @@ Il propose deux modes, dans la barre latérale :
 - **Panel virtuel** : un miroir en temps réel de votre panneau. Quand LedManager tourne (en jeu ou dans les menus), il affiche exactement les couleurs envoyées à vos LEDs. Idéal pour vérifier que tout réagit, ou déboguer sans avoir les yeux sur la borne.
 - **Assistant matériel** : le parcours guidé pour configurer et tester votre Pico.
 
+!!! note "Français ou anglais"
+    L'outil s'affiche dans la langue de RetroBat (réglage EmulationStation), sinon celle de Windows. Pour forcer : `LedManagerSetup.exe --lang fr` ou `--lang en`.
+
 ## Le panel virtuel
+
+![Panel virtuel](assets/setup/setup-monitor.png)
 
 Ouvrez `LedManagerSetup.exe` pendant que RetroBat tourne : la pastille devient verte et le panneau virtuel s'anime en même temps que le vrai. Vous y retrouvez la [disposition standard conseillée](materiel.md#la-disposition-standard-conseillee-pour-retrobat) (SELECT/START en haut à gauche, puis les deux rangées).
 
@@ -15,6 +20,8 @@ Ouvrez `LedManagerSetup.exe` pendant que RetroBat tourne : la pastille devient v
     L'outil tourne en priorité basse pour ne pas gêner l'émulation, mais gardez-le fermé pendant vos parties sérieuses — c'est un outil de réglage.
 
 ## L'assistant matériel
+
+![Assistant matériel](assets/setup/setup-wizard.png)
 
 L'assistant prend le **contrôle direct** de votre Pico pour le tester. Comme LedManager occupe le port du Pico, l'assistant l'arrête automatiquement au démarrage du test (vos LEDs s'éteignent le temps de la configuration, c'est normal).
 

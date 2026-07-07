@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using LedManager.Setup.Controls;
+using LedManager.Setup.Localization;
 using LedManager.Setup.VirtualPanel;
 
 namespace LedManager.Setup.Views;
@@ -35,7 +36,7 @@ public sealed class MonitorView : UserControl, IDisposable
         _interpreter.Flashed += _panel.Flash;
 
         _statusDot = new Ellipse { Width = 12, Height = 12, Fill = new SolidColorBrush(Color.FromRgb(0xD0, 0x40, 0x40)), VerticalAlignment = VerticalAlignment.Center };
-        _statusText = new TextBlock { Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Foreground = new SolidColorBrush(Color.FromRgb(0x8A, 0x8A, 0x9A)), Text = "En attente de LedManager…" };
+        _statusText = new TextBlock { Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Foreground = new SolidColorBrush(Color.FromRgb(0x8A, 0x8A, 0x9A)), Text = L.T("En attente de LedManager…", "Waiting for LedManager…") };
         _log = new ListBox { Height = 120, Background = new SolidColorBrush(Color.FromRgb(0x10, 0x10, 0x18)), Foreground = new SolidColorBrush(Color.FromRgb(0x8A, 0x8A, 0x9A)), FontFamily = new FontFamily("Consolas"), FontSize = 11, BorderThickness = new Thickness(0), Margin = new Thickness(0, 12, 0, 0) };
 
         var header = new DockPanel { Margin = new Thickness(0, 0, 0, 12) };
@@ -76,8 +77,10 @@ public sealed class MonitorView : UserControl, IDisposable
     {
         _statusDot.Fill = new SolidColorBrush(connected ? Color.FromRgb(0x30, 0xE8, 0x50) : Color.FromRgb(0xD0, 0x40, 0x40));
         _statusText.Text = connected
-            ? "Connecté à LedManager — le panel reflète en direct ce que le matériel reçoit."
-            : "En attente de LedManager — lancez RetroBat ou LedManager.exe…";
+            ? L.T("Connecté à LedManager — le panel reflète en direct ce que le matériel reçoit.",
+                "Connected to LedManager — the panel mirrors live what the hardware receives.")
+            : L.T("En attente de LedManager — lancez RetroBat ou LedManager.exe…",
+                "Waiting for LedManager — start RetroBat or LedManager.exe…");
         if (!connected)
         {
             _panel.ClearAll();
