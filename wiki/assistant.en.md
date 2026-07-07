@@ -26,8 +26,9 @@ Open `LedManagerSetup.exe` while RetroBat is running: the dot turns green and th
 The **My games** tab shows each system's panel as the pack defines it (see [Per-system panels](systemes.md)), and lets you repaint it: click a button, pick its color from the firmware palette (19 colors), save. Your customization is written as a **sparse patch** to `overrides\systems\<system>.json` — the pack is never modified, and LedManager applies the patch from the next game selection, no restart needed.
 
 - The **Panel** selector is a preview: 2/4/6/8 buttons and historical variants (Score Master, Fighting Stick…). The override applies to the whole system.
-- **"Pack color"** in the palette removes a button's override; **"Back to pack colors"** deletes the whole patch.
-- **Per-game** overrides (arcade) remain possible by hand in `overrides\games\<system>\<rom>.json` — same format; visual per-game editing comes in a future version.
+- **Arcade game**: type a rom name (mslug, chasehq, seawolf…) to edit one specific game among the 3280 curated ones — the displayed panel is exactly what the runtime resolves (pack + system patch), and your paint is written to `overrides\games\<system>\<rom>.json`, which beats the system patch.
+- **"Original color"** in the palette removes a button's override; **"Back to pack colors"** deletes the whole patch.
+- **"Test on the real panel"** stops LedManager for the duration and sends your colors to the Pico: they follow your clicks live on the real buttons.
 
 ## The hardware assistant
 

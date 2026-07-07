@@ -17,6 +17,7 @@ public partial class MainWindow : Window
     private readonly PanelLayoutDefinition _layout;
     private MonitorView? _monitor;
     private WizardView? _wizard;
+    private GamesView? _games;
 
     public MainWindow()
     {
@@ -43,6 +44,7 @@ public partial class MainWindow : Window
         {
             _monitor?.Dispose();
             _wizard?.Dispose();
+            _games?.Dispose();
         };
 
         // documentation mode: `--screenshots <dir>` renders both views to PNG and exits.
@@ -101,6 +103,8 @@ public partial class MainWindow : Window
 
         _wizard?.Dispose();
         _wizard = null;
+        _games?.Dispose();
+        _games = null;
 
         _monitor = new MonitorView(_hardware, _layout);
         ContentHost.Content = _monitor;
@@ -113,14 +117,18 @@ public partial class MainWindow : Window
         _monitor = null;
         _wizard?.Dispose();
         _wizard = null;
+        _games?.Dispose();
 
-        ContentHost.Content = new GamesView(_hardware, _layout);
+        _games = new GamesView(_hardware, _layout);
+        ContentHost.Content = _games;
     }
 
     private void ShowWizard()
     {
         _monitor?.Dispose();
         _monitor = null;
+        _games?.Dispose();
+        _games = null;
 
         _wizard = new WizardView(_hardware, _layout);
         ContentHost.Content = _wizard;

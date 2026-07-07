@@ -5,10 +5,11 @@ using System.Text.Json.Nodes;
 namespace LedManager.Setup.Data;
 
 /// <summary>
-/// Reads/writes overrides\systems\&lt;system&gt;.json — the sparse patch the runtime
-/// applies on top of the Data Pack (schema ledmanager.panel-override.v1). This store
-/// only manages the player-1 slot colors ("1".."8"); every other key the user may
-/// have written by hand (player-prefixed slots "2:3", "outputs"…) is preserved as-is.
+/// Reads/writes the sparse override patches the runtime applies on top of the Data
+/// Pack (schema ledmanager.panel-override.v1): overrides\systems\&lt;system&gt;.json and
+/// overrides\games\&lt;system&gt;\&lt;rom&gt;.json. This store only manages the player-1 slot
+/// colors ("1".."8"); every other key the user may have written by hand
+/// (player-prefixed slots "2:3", "outputs"…) is preserved as-is.
 /// </summary>
 public sealed class SystemOverrideStore
 {
@@ -22,13 +23,34 @@ public sealed class SystemOverrideStore
     public string PathFor(string system)
         => Path.Combine(_pluginRoot, "overrides", "systems", SafeName(system) + ".json");
 
+    public string PathForGame(string system, string rom)
+        => Path.Combine(_pluginRoot, "overrides", "games", SafeName(system), SafeName(rom) + ".json");
+
     public bool Exists(string system) => File.Exists(PathFor(system));
 
-    /// <summary>Player-1 slot colors of the patch (slot → COLOR).</summary>
+    public bool ExistsGame(string system, string rom) => File.Exists(PathForGame(system, rom));
+
+    /// <summary>Player-1 slot colors of the system patch (slot → COLOR).</summary>
     public IReadOnlyDictionary<int, string> LoadSlotColors(string system)
+        => LoadSlotColorsAt(PathFor(system));
+
+    /// <summary>Player-1 slot colors of the game patch (slot → COLOR).</summary>
+    public IReadOnlyDictionary<int, string> LoadGameSlotColors(string system, string rom)
+        => LoadSlotColorsAt(PathForGame(system, rom));
+
+    public string Save(string system, IReadOnlyDictionary<int, string> slotColors)
+        => SaveAt(PathFor(system), slotColors);
+
+    public string SaveGame(string system, string rom, IReadOnlyDictionary<int, string> slotColors)
+        => SaveAt(PathForGame(system, rom), slotColors);
+
+    public void Delete(string system) => DeleteAt(PathFor(system));
+
+    public void DeleteGame(string system, string rom) => DeleteAt(PathForGame(system, rom));
+
+    private static IReadOnlyDictionary<int, string> LoadSlotColorsAt(string path)
     {
         var result = new Dictionary<int, string>();
-        var path = PathFor(system);
         if (!File.Exists(path))
         {
             return result;
@@ -73,9 +95,8 @@ public sealed class SystemOverrideStore
     /// Writes the player-1 slot patch. Empty dictionary removes those keys; the file
     /// is deleted entirely when nothing else remains in it.
     /// </summary>
-    public string Save(string system, IReadOnlyDictionary<int, string> slotColors)
+    private static string SaveAt(string path, IReadOnlyDictionary<int, string> slotColors)
     {
-        var path = PathFor(system);
         JsonObject root;
         try
         {
@@ -118,9 +139,8 @@ public sealed class SystemOverrideStore
         return path;
     }
 
-    public void Delete(string system)
+    private static void DeleteAt(string path)
     {
-        var path = PathFor(system);
         if (File.Exists(path))
         {
             File.Delete(path);
