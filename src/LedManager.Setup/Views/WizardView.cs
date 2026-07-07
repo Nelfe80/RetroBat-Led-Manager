@@ -10,12 +10,14 @@ namespace LedManager.Setup.Views;
 
 /// <summary>
 /// Hardware setup wizard: prepare (stop LedManager + detect Pico) → panel test →
-/// wiring test (light each slot, the user clicks the button that lit up). Drives the
-/// Pico through PicoCommandSender so the firmware init/GPIO profile is reused as-is.
+/// color channel test (R/G/B wire order, auto-fixed) → wiring test (light each
+/// slot, the user clicks the button that lit up; mismatches are auto-fixed by
+/// rewriting [GPIO:P1]) → save the validated configuration. Drives the Pico
+/// through PicoCommandSender so the firmware init/GPIO profile is reused as-is.
 /// </summary>
 public sealed class WizardView : UserControl, IDisposable
 {
-    private enum Step { Prepare, PanelTest, WiringTest, Done }
+    private enum Step { Prepare, PanelTest, ColorTest, WiringTest, Done }
 
     private readonly HardwareDescription _hardware;
     private readonly string _pluginRoot;
@@ -24,8 +26,10 @@ public sealed class WizardView : UserControl, IDisposable
     private readonly TextBlock _title;
     private readonly TextBlock _body;
     private readonly Button _primary;
+    private readonly Button _secondary;
     private readonly Button _back;
     private readonly TextBlock _status;
+    private readonly StackPanel _choices;
 
     private Step _step = Step.Prepare;
     private PicoSenderHost? _sender;
@@ -44,6 +48,17 @@ public sealed class WizardView : UserControl, IDisposable
     private int _wiringIndex;
     private readonly Dictionary<WiringItem, WiringItem?> _wiringMap = new();
 
+    // Color channel test state: one driven channel at a time, user reports the color seen.
+    private static readonly (string Command, string Name, Color Expected)[] ColorChannels =
+    {
+        ("ALLPCT 100 0 0", "R", Color.FromRgb(0xE8, 0x30, 0x30)),
+        ("ALLPCT 0 100 0", "G", Color.FromRgb(0x30, 0xE8, 0x50)),
+        ("ALLPCT 0 0 100", "B", Color.FromRgb(0x30, 0x60, 0xE8))
+    };
+
+    private int _colorChannel;
+    private readonly List<string> _colorSeen = new();
+
     public WizardView(HardwareDescription hardware, PanelLayoutDefinition layout)
     {
         _hardware = hardware;
@@ -55,17 +70,22 @@ public sealed class WizardView : UserControl, IDisposable
         _title = new TextBlock { FontSize = 18, FontWeight = FontWeights.Bold, Foreground = Text(0xE8, 0xE8, 0xF0), TextWrapping = TextWrapping.Wrap };
         _body = new TextBlock { Margin = new Thickness(0, 12, 0, 0), FontSize = 13, Foreground = Text(0xB8, 0xB8, 0xC6), TextWrapping = TextWrapping.Wrap, LineHeight = 20 };
         _status = new TextBlock { Margin = new Thickness(0, 12, 0, 0), FontSize = 12, Foreground = Text(0x8A, 0x8A, 0x9A), TextWrapping = TextWrapping.Wrap };
+        _choices = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0), Visibility = Visibility.Collapsed };
         _primary = new Button { Content = "Commencer", Padding = new Thickness(18, 8, 18, 8), Margin = new Thickness(0, 20, 8, 0), MinWidth = 130 };
+        _secondary = new Button { Padding = new Thickness(18, 8, 18, 8), Margin = new Thickness(0, 20, 8, 0), MinWidth = 130, Visibility = Visibility.Collapsed };
         _back = new Button { Content = "Précédent", Padding = new Thickness(18, 8, 18, 8), Margin = new Thickness(0, 20, 0, 0), MinWidth = 100, IsEnabled = false };
         _primary.Click += (_, _) => OnPrimary();
+        _secondary.Click += (_, _) => OnSecondary();
         _back.Click += (_, _) => OnBack();
 
         var rightStack = new StackPanel { Margin = new Thickness(24, 8, 8, 8) };
         rightStack.Children.Add(_title);
         rightStack.Children.Add(_body);
         rightStack.Children.Add(_status);
+        rightStack.Children.Add(_choices);
         var buttons = new StackPanel { Orientation = Orientation.Horizontal };
         buttons.Children.Add(_primary);
+        buttons.Children.Add(_secondary);
         buttons.Children.Add(_back);
         rightStack.Children.Add(buttons);
 
@@ -86,6 +106,9 @@ public sealed class WizardView : UserControl, IDisposable
     private void RenderStep()
     {
         _back.IsEnabled = _step != Step.Prepare;
+        _secondary.Visibility = Visibility.Collapsed;
+        _choices.Visibility = Visibility.Collapsed;
+
         switch (_step)
         {
             case Step.Prepare:
@@ -108,8 +131,17 @@ public sealed class WizardView : UserControl, IDisposable
                 _primary.Content = "Le panneau s'allume →";
                 break;
 
+            case Step.ColorTest:
+                _title.Text = "3. Test des couleurs";
+                _body.Text = "L'assistant vérifie l'ordre des fils R, G, B. Le panneau virtuel montre la couleur "
+                    + "attendue : si le vrai panneau affiche autre chose, indiquez la couleur réellement vue.\n\n"
+                    + "L'assistant corrigera alors l'ordre des canaux dans la configuration — sans ressouder.";
+                _primary.Content = "Passer ce test";
+                StartColorTest();
+                break;
+
             case Step.WiringTest:
-                _title.Text = "3. Test du câblage";
+                _title.Text = "4. Test du câblage";
                 _body.Text = "Un bouton va s'allumer sur votre panneau physique, un par un. "
                     + "À chaque fois, cliquez ici sur le bouton virtuel qui correspond au bouton allumé en vrai.\n\n"
                     + "Cela permet à l'assistant de vérifier — et corriger — la correspondance entre les GPIO et vos boutons.";
@@ -122,6 +154,7 @@ public sealed class WizardView : UserControl, IDisposable
                 _body.Text = BuildWiringSummary();
                 _primary.Content = "Fermer l'assistant";
                 _panel.ClearAll();
+                RenderDoneActions();
                 break;
         }
     }
@@ -135,6 +168,11 @@ public sealed class WizardView : UserControl, IDisposable
                 break;
 
             case Step.PanelTest:
+                _step = Step.ColorTest;
+                RenderStep();
+                break;
+
+            case Step.ColorTest:
                 _step = Step.WiringTest;
                 RenderStep();
                 break;
@@ -158,8 +196,13 @@ public sealed class WizardView : UserControl, IDisposable
                 _step = Step.Prepare;
                 StopSender();
                 break;
-            case Step.WiringTest:
+            case Step.ColorTest:
                 _step = Step.PanelTest;
+                _sender?.Send("ALL WHITE");
+                _panel.SetAll(Color.FromRgb(0xF0, 0xF0, 0xF0));
+                break;
+            case Step.WiringTest:
+                _step = Step.ColorTest;
                 break;
             case Step.Done:
                 _step = Step.WiringTest;
@@ -185,16 +228,33 @@ public sealed class WizardView : UserControl, IDisposable
             return;
         }
 
+        var started = await StartSenderAsync();
+        _primary.IsEnabled = true;
+        if (!started)
+        {
+            return;
+        }
+
+        _sender!.Send("ALL WHITE");
+        _panel.SetAll(Color.FromRgb(0xF0, 0xF0, 0xF0));
+
+        _step = Step.PanelTest;
+        RenderStep();
+    }
+
+    /// <summary>Starts (or restarts) PicoCommandSender and waits for its READY.</summary>
+    private async Task<bool> StartSenderAsync()
+    {
+        StopSender();
         _sender = PicoSenderHost.Start(_pluginRoot);
         if (_sender is null)
         {
             _status.Text = "PicoCommandSender.exe introuvable à la racine du plugin.";
-            _primary.IsEnabled = true;
-            return;
+            return false;
         }
 
         // Wait for the sender's READY (firmware GPIO profile initialized) rather than
-        // a blind delay; StartupDelayMs in the ini can be many seconds. The 30 s cap
+        // a blind delay; PostInitDelayMs in the ini can be many seconds. The 30 s cap
         // covers the largest configured delay while never hanging the UI forever.
         _status.Text = "Initialisation du Pico (profil GPIO)…";
         await _sender.WaitForReadyAsync(TimeSpan.FromSeconds(30));
@@ -202,17 +262,120 @@ public sealed class WizardView : UserControl, IDisposable
         if (!_sender.IsAlive)
         {
             _status.Text = "Le pilote PicoCommandSender s'est arrêté. Vérifiez le port COM et le firmware.";
-            _primary.IsEnabled = true;
+            return false;
+        }
+
+        return true;
+    }
+
+    // ----- Color channel test (P1.c) -----
+
+    private void StartColorTest()
+    {
+        _colorChannel = 0;
+        _colorSeen.Clear();
+        BuildColorChoices();
+        LightCurrentColorChannel();
+    }
+
+    private void BuildColorChoices()
+    {
+        _choices.Children.Clear();
+        foreach (var (label, name, color) in new[]
+                 {
+                     ("ROUGE", "R", ColorChannels[0].Expected),
+                     ("VERT", "G", ColorChannels[1].Expected),
+                     ("BLEU", "B", ColorChannels[2].Expected)
+                 })
+        {
+            var choice = new Button
+            {
+                Content = label,
+                Tag = name,
+                Padding = new Thickness(16, 8, 16, 8),
+                Margin = new Thickness(0, 0, 8, 0),
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.White,
+                Background = new SolidColorBrush(color)
+            };
+            choice.Click += (_, _) => OnColorAnswer((string)choice.Tag);
+            _choices.Children.Add(choice);
+        }
+
+        _choices.Visibility = Visibility.Visible;
+    }
+
+    private void LightCurrentColorChannel()
+    {
+        var (command, name, expected) = ColorChannels[_colorChannel];
+        _sender?.Send("CLEAR");
+        _sender?.Send(command);
+        _panel.SetAll(expected);
+        _status.Text = $"Canal {_colorChannel + 1}/3 : le panneau virtuel montre du "
+            + (name == "R" ? "ROUGE" : name == "G" ? "VERT" : "BLEU")
+            + ". Quelle couleur voyez-vous sur le VRAI panneau ?";
+    }
+
+    private void OnColorAnswer(string seen)
+    {
+        if (_step != Step.ColorTest)
+        {
             return;
         }
 
-        _sender.Send("ALL WHITE");
-        _panel.SetAll(Color.FromRgb(0xF0, 0xF0, 0xF0));
+        _colorSeen.Add(seen);
+        _colorChannel++;
+        if (_colorChannel < ColorChannels.Length)
+        {
+            LightCurrentColorChannel();
+            return;
+        }
 
-        _primary.IsEnabled = true;
-        _step = Step.PanelTest;
-        RenderStep();
+        EvaluateColorTest();
     }
+
+    private void EvaluateColorTest()
+    {
+        _choices.Visibility = Visibility.Collapsed;
+        _sender?.Send("CLEAR");
+        _panel.ClearAll();
+
+        if (_colorSeen.Count == 3 && _colorSeen[0] == "R" && _colorSeen[1] == "G" && _colorSeen[2] == "B")
+        {
+            _status.Text = "Ordre des canaux R,G,B correct. ✓";
+            _step = Step.WiringTest;
+            RenderStep();
+            return;
+        }
+
+        _status.Text = $"Les couleurs vues ({string.Join(", ", _colorSeen)}) ne suivent pas l'ordre R, G, B : "
+            + "les fils des canaux sont inversés quelque part.";
+        _secondary.Content = "Corriger l'ordre des canaux";
+        _secondary.Visibility = Visibility.Visible;
+    }
+
+    private async Task FixColorChannelsAsync()
+    {
+        _secondary.IsEnabled = false;
+        var result = ColorChannelFixer.Apply(_pluginRoot, "P1", _colorSeen);
+        _status.Text = result.Message;
+        if (!result.Success)
+        {
+            _secondary.IsEnabled = true;
+            return;
+        }
+
+        // the daemon reads [GPIO:P1] at startup: restart it, then re-run the test to confirm
+        _secondary.Visibility = Visibility.Collapsed;
+        _secondary.IsEnabled = true;
+        if (await StartSenderAsync())
+        {
+            _status.Text = result.Message + "\nRefaites le test pour confirmer.";
+            StartColorTest();
+        }
+    }
+
+    // ----- Wiring test (P1.a/P1.b) -----
 
     private static readonly Color FeedbackColor = Color.FromRgb(0x20, 0xE8, 0xE8); // cyan
 
@@ -281,6 +444,11 @@ public sealed class WizardView : UserControl, IDisposable
         LightCurrentWiringItem();
     }
 
+    // ----- Done step: fix mapping (P1.b) or save config (P1.d) -----
+
+    private List<KeyValuePair<WiringItem, WiringItem?>> WiringMismatches()
+        => _wiringMap.Where(kv => kv.Value is null || !kv.Key.Matches(kv.Value!.Slot, kv.Value.Target)).ToList();
+
     private string BuildWiringSummary()
     {
         if (_wiringMap.Count == 0)
@@ -288,7 +456,7 @@ public sealed class WizardView : UserControl, IDisposable
             return "Test du câblage passé. Vous pourrez le relancer à tout moment.";
         }
 
-        var mismatches = _wiringMap.Where(kv => kv.Value is null || !kv.Key.Matches(kv.Value!.Slot, kv.Value.Target)).ToList();
+        var mismatches = WiringMismatches();
         if (mismatches.Count == 0)
         {
             return $"Câblage vérifié : les {_wiringMap.Count} éléments correspondent à la disposition attendue. "
@@ -297,8 +465,82 @@ public sealed class WizardView : UserControl, IDisposable
 
         var lines = string.Join("\n", mismatches.Select(kv => $"   • {kv.Key.Label} allumé → cliqué {kv.Value?.Label ?? "?"}"));
         return $"{mismatches.Count} différence(s) détectée(s) entre le câblage et la disposition :\n{lines}\n\n"
-            + "La correction automatique du mapping GPIO arrive dans une prochaine version — "
-            + "en attendant, ces informations vous aident à ajuster le câblage ou PicoCommandSender.ini.";
+            + "« Corriger automatiquement » réécrit le câblage logiciel ([GPIO:P1]) pour que chaque bouton "
+            + "réponde à sa place — sans ressouder. Le test se relancera pour confirmer.";
+    }
+
+    private void RenderDoneActions()
+    {
+        if (_wiringMap.Count > 0 && WiringMismatches().Count > 0)
+        {
+            _secondary.Content = "Corriger automatiquement";
+        }
+        else
+        {
+            _secondary.Content = "Enregistrer la configuration";
+        }
+
+        _secondary.Visibility = Visibility.Visible;
+        _status.Text = "";
+    }
+
+    private async void OnSecondary()
+    {
+        switch (_step)
+        {
+            case Step.ColorTest:
+                await FixColorChannelsAsync();
+                break;
+
+            case Step.Done when _wiringMap.Count > 0 && WiringMismatches().Count > 0:
+                await FixWiringMappingAsync();
+                break;
+
+            case Step.Done:
+                SaveHardwareConfig();
+                break;
+        }
+    }
+
+    private async Task FixWiringMappingAsync()
+    {
+        _secondary.IsEnabled = false;
+        var map = _wiringMap
+            .Where(kv => kv.Value is not null)
+            .ToDictionary(kv => kv.Key.Label, kv => kv.Value!.Label, StringComparer.OrdinalIgnoreCase);
+        var result = GpioMappingFixer.Apply(_pluginRoot, "P1", map);
+        _status.Text = result.Message;
+        _secondary.IsEnabled = true;
+        if (!result.Success)
+        {
+            return;
+        }
+
+        // the daemon reads [GPIO:P1] at startup: restart it, then re-run the wiring
+        // test so the user confirms every button now answers at its place
+        _secondary.Visibility = Visibility.Collapsed;
+        if (await StartSenderAsync())
+        {
+            _step = Step.WiringTest;
+            RenderStep();
+        }
+    }
+
+    private void SaveHardwareConfig()
+    {
+        var result = HardwareConfigWriter.Apply(
+            _pluginRoot,
+            "P1",
+            _detection?.PortName,
+            _sender?.MeasuredFirmwareInitMs,
+            _hardware.ButtonCount,
+            _hardware.HasStart,
+            _hardware.HasSelect);
+        _status.Text = result.Message + (result.Success ? "\nLedManager utilisera ces réglages au prochain démarrage." : "");
+        if (result.Success)
+        {
+            _secondary.IsEnabled = false;
+        }
     }
 
     private void StopSender()

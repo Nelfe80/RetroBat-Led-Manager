@@ -14,11 +14,24 @@ public sealed class PicoSenderHost : IDisposable
 {
     private readonly Process _process;
     private readonly TaskCompletionSource _ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly Stopwatch _clock = Stopwatch.StartNew();
+    private long _initStartedMs = -1;
+    private long _firmwareReadyMs = -1;
 
     private PicoSenderHost(Process process)
     {
         _process = process;
     }
+
+    /// <summary>
+    /// Real firmware init time, measured between the sender's "[init]" and the
+    /// firmware's own READY announcement — the honest value for PostInitDelayMs,
+    /// which ships as a very conservative guess. Null until both were observed.
+    /// </summary>
+    public int? MeasuredFirmwareInitMs
+        => _initStartedMs >= 0 && _firmwareReadyMs > _initStartedMs
+            ? (int)(_firmwareReadyMs - _initStartedMs)
+            : null;
 
     /// <summary>
     /// Completes when the sender prints "READY sender=…" — i.e. the firmware GPIO
@@ -72,6 +85,11 @@ public sealed class PicoSenderHost : IDisposable
                 {
                     while (await process.StandardOutput.ReadLineAsync() is { } line)
                     {
+                        if (line.Contains("[init]", StringComparison.OrdinalIgnoreCase) && host._initStartedMs < 0)
+                        {
+                            host._initStartedMs = host._clock.ElapsedMilliseconds;
+                        }
+
                         if (line.Contains("READY sender=", StringComparison.OrdinalIgnoreCase))
                         {
                             host._ready.TrySetResult();
@@ -82,7 +100,19 @@ public sealed class PicoSenderHost : IDisposable
             });
             _ = Task.Run(async () =>
             {
-                try { while (await process.StandardError.ReadLineAsync() is not null) { } } catch { }
+                try
+                {
+                    while (await process.StandardError.ReadLineAsync() is { } line)
+                    {
+                        // the daemon logs the firmware's initial READY on stderr: that is
+                        // the real end of the GPIO profile init on the Pico side
+                        if (line.Contains("firmware-ready", StringComparison.OrdinalIgnoreCase) && host._firmwareReadyMs < 0)
+                        {
+                            host._firmwareReadyMs = host._clock.ElapsedMilliseconds;
+                        }
+                    }
+                }
+                catch { }
             });
 
             return host;

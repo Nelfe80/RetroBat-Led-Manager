@@ -32,13 +32,20 @@ Si rien n'est détecté : vérifiez le câble, et que le [firmware est installé
 
 Vos boutons doivent être **tous allumés en blanc**. C'est la confirmation que l'alimentation et le firmware fonctionnent. Si certains restent éteints, c'est un problème de câblage ou d'alimentation (voir [Dépannage](depannage.md)).
 
-### 3. Test du câblage
+### 3. Test des couleurs
+
+L'assistant allume chaque canal l'un après l'autre : tout le panneau en rouge, puis en vert, puis en bleu. Le panneau virtuel montre la couleur attendue ; si le vrai panneau affiche autre chose (les fils R/G/B ont été croisés au montage), indiquez la couleur réellement vue.
+
+L'assistant en déduit l'ordre réel des fils et **corrige l'ordre des canaux dans la configuration** — sans ressouder. Le test se relance ensuite pour confirmer.
+
+### 4. Test du câblage
 
 C'est l'étape maligne : un bouton s'allume en **vert** sur votre vrai panneau, un par un. À chaque fois, **cliquez sur le bouton virtuel qui correspond** au bouton allumé en vrai. Un clignotement cyan confirme votre clic, sur l'écran comme sur le panneau.
 
 START et SELECT sont testés en fin de séquence.
 
-L'assistant compare ainsi votre câblage réel à la disposition attendue. À la fin, il vous dit si tout correspond, ou liste les différences éventuelles — pratique pour repérer une inversion de fils sans tout démonter.
+L'assistant compare ainsi votre câblage réel à la disposition attendue. Si des différences apparaissent (deux fils inversés, par exemple), le bouton **« Corriger automatiquement »** réécrit le câblage logiciel (`[GPIO:P1]` de `PicoCommandSender.ini`, avec sauvegarde `.bak`) pour que chaque bouton réponde à sa place — sans rien démonter. Le test se relance pour confirmer.
 
-!!! tip "À venir"
-    La correction automatique du mapping (l'assistant réécrit le câblage logiciel au lieu de vous faire ressouder), le test des canaux couleur et la génération complète de la configuration arrivent dans les prochaines versions.
+### 5. Enregistrer la configuration
+
+Quand tout correspond, **« Enregistrer la configuration »** écrit dans `PicoCommandSender.ini` ce que l'assistant a vérifié sur votre matériel : le port COM qui a répondu, la composition du panneau (nombre de boutons, START/SELECT), et un délai d'initialisation **mesuré** sur votre Pico plutôt que la valeur prudente livrée par défaut — LedManager démarre d'autant plus vite.

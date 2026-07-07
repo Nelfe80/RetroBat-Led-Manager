@@ -32,13 +32,20 @@ If nothing is detected: check the cable, and that the [firmware is installed](ma
 
 Your buttons should all be **lit white**. That confirms power and firmware work. If some stay dark, it's a wiring or power issue (see [Troubleshooting](depannage.md)).
 
-### 3. Wiring test
+### 3. Color test
+
+The assistant lights each channel in turn: the whole panel in red, then green, then blue. The virtual panel shows the expected color; if the real panel shows something else (the R/G/B wires got crossed during assembly), report the color you actually see.
+
+The assistant deduces the real wire order and **fixes the channel order in the configuration** — no re-soldering. The test then re-runs to confirm.
+
+### 4. Wiring test
 
 This is the clever step: one button lights up **green** on your real panel, one at a time. Each time, **click the virtual button that matches** the one lit for real. A cyan blink confirms your click, both on screen and on the panel.
 
 START and SELECT are tested at the end of the sequence.
 
-The assistant thus compares your real wiring to the expected arrangement. At the end, it tells you whether everything matches, or lists any differences — handy to spot a swapped wire without dismantling anything.
+The assistant thus compares your real wiring to the expected arrangement. If differences show up (two swapped wires, say), the **"Fix automatically"** button rewrites the software wiring (`[GPIO:P1]` in `PicoCommandSender.ini`, with a `.bak` backup) so every button answers at its place — nothing to dismantle. The test re-runs to confirm.
 
-!!! tip "Coming soon"
-    Automatic mapping correction (the assistant rewrites the software wiring instead of making you re-solder), the color-channel test and full config generation are coming in future versions.
+### 5. Save the configuration
+
+Once everything matches, **"Save the configuration"** writes into `PicoCommandSender.ini` what the assistant verified on your hardware: the COM port that answered, the panel composition (button count, START/SELECT), and an initialization delay **measured** on your Pico instead of the conservative shipped default — LedManager starts that much faster.
