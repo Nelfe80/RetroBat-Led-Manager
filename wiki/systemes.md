@@ -12,6 +12,10 @@ rangée haute B4 B3 B5 B7, rangée basse B1 B2 B6 B8. Sous chaque bouton figure 
 d'origine du système** (Circle, Triangle, A, B, C…) ; les boutons estompés ne sont pas utilisés
 par ce panel.
 
+## 3do
+
+![3do](assets/systems/3do.svg)
+
 ## amiga1200
 
 ![amiga1200](assets/systems/amiga1200.svg)

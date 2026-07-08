@@ -18,16 +18,16 @@
   <circle cx="82" cy="215" r="26" fill="url(#dome)"/>
   <circle cx="82" cy="215" r="26" fill="none" stroke="#3a3a48" stroke-width="3"/>
   <text x="82" y="265" text-anchor="middle" fill="#8a8a9a" font-size="11" font-weight="bold">JOY</text>
-  <circle cx="168" cy="160" r="30" fill="#9a9aa4"/>
-  <circle cx="168" cy="160" r="30" fill="url(#dome)"/>
-  <circle cx="168" cy="160" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>
-  <text x="168" y="166" text-anchor="middle" fill="#16161c" font-size="15" font-weight="bold">B4</text>
-  <text x="168" y="208" text-anchor="middle" fill="#b8b8c6" font-size="12" font-weight="bold">Y</text>
-  <circle cx="252" cy="160" r="30" fill="#9a9aa4"/>
-  <circle cx="252" cy="160" r="30" fill="url(#dome)"/>
-  <circle cx="252" cy="160" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>
-  <text x="252" y="166" text-anchor="middle" fill="#16161c" font-size="15" font-weight="bold">B3</text>
-  <text x="252" y="208" text-anchor="middle" fill="#b8b8c6" font-size="12" font-weight="bold">X</text>
+  <g opacity="0.18">
+    <circle cx="168" cy="160" r="30" fill="#3a3a48"/>
+    <circle cx="168" cy="160" r="30" fill="none" stroke="#55556a" stroke-width="2"/>
+    <text x="168" y="166" text-anchor="middle" fill="#8a8a9a" font-size="13" font-weight="bold">B4</text>
+  </g>
+  <g opacity="0.18">
+    <circle cx="252" cy="160" r="30" fill="#3a3a48"/>
+    <circle cx="252" cy="160" r="30" fill="none" stroke="#55556a" stroke-width="2"/>
+    <text x="252" y="166" text-anchor="middle" fill="#8a8a9a" font-size="13" font-weight="bold">B3</text>
+  </g>
   <g opacity="0.18">
     <circle cx="336" cy="160" r="30" fill="#3a3a48"/>
     <circle cx="336" cy="160" r="30" fill="none" stroke="#55556a" stroke-width="2"/>
@@ -42,12 +42,12 @@
   <circle cx="168" cy="252" r="30" fill="url(#dome)"/>
   <circle cx="168" cy="252" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>
   <text x="168" y="258" text-anchor="middle" fill="#16161c" font-size="15" font-weight="bold">B1</text>
-  <text x="168" y="300" text-anchor="middle" fill="#b8b8c6" font-size="12" font-weight="bold">A</text>
+  <text x="168" y="300" text-anchor="middle" fill="#b8b8c6" font-size="12" font-weight="bold">1</text>
   <circle cx="252" cy="252" r="30" fill="#9a9aa4"/>
   <circle cx="252" cy="252" r="30" fill="url(#dome)"/>
   <circle cx="252" cy="252" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>
   <text x="252" y="258" text-anchor="middle" fill="#16161c" font-size="15" font-weight="bold">B2</text>
-  <text x="252" y="300" text-anchor="middle" fill="#b8b8c6" font-size="12" font-weight="bold">B</text>
+  <text x="252" y="300" text-anchor="middle" fill="#b8b8c6" font-size="12" font-weight="bold">2</text>
   <g opacity="0.18">
     <circle cx="336" cy="252" r="30" fill="#3a3a48"/>
     <circle cx="336" cy="252" r="30" fill="none" stroke="#55556a" stroke-width="2"/>

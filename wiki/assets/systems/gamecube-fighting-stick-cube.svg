@@ -22,12 +22,12 @@
   <circle cx="168" cy="160" r="30" fill="url(#dome)"/>
   <circle cx="168" cy="160" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>
   <text x="168" y="166" text-anchor="middle" fill="#16161c" font-size="15" font-weight="bold">B4</text>
-  <text x="168" y="208" text-anchor="middle" fill="#b8b8c6" font-size="12" font-weight="bold">Y</text>
+  <text x="168" y="208" text-anchor="middle" fill="#b8b8c6" font-size="12" font-weight="bold">A</text>
   <circle cx="252" cy="160" r="30" fill="#90d030"/>
   <circle cx="252" cy="160" r="30" fill="url(#dome)"/>
   <circle cx="252" cy="160" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>
   <text x="252" y="166" text-anchor="middle" fill="#16161c" font-size="15" font-weight="bold">B3</text>
-  <text x="252" y="208" text-anchor="middle" fill="#b8b8c6" font-size="12" font-weight="bold">A</text>
+  <text x="252" y="208" text-anchor="middle" fill="#b8b8c6" font-size="12" font-weight="bold">Y</text>
   <circle cx="336" cy="160" r="30" fill="#90d030"/>
   <circle cx="336" cy="160" r="30" fill="url(#dome)"/>
   <circle cx="336" cy="160" r="30" fill="none" stroke="#3a3a48" stroke-width="3"/>

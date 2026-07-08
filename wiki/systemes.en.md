@@ -11,6 +11,10 @@ Positions follow the [standard arrangement](materiel.md): SELECT/START top-left,
 top row B4 B3 B5 B7, bottom row B1 B2 B6 B8. Under each button sits the **system's original
 function** (Circle, Triangle, A, B, C…); dimmed buttons are not used by that panel.
 
+## 3do
+
+![3do](assets/systems/3do.svg)
+
 ## amiga1200
 
 ![amiga1200](assets/systems/amiga1200.svg)
