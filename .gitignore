@@ -68,6 +68,7 @@ OLD_lip/
 # Root runtime binaries (shipped via GitHub Releases, not source control)
 /LedManager.exe
 /PicoCommandSender.exe
+/LedManagerSetup.exe
 
 # MkDocs build output
 site/
