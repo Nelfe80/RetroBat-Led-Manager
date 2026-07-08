@@ -95,6 +95,12 @@ function** (Circle, Triangle, A, B, C…); dimmed buttons are not used by that p
 
 ![dreamcast — HKT-7300](assets/systems/dreamcast-hkt-7300.svg)
 
+## fbneo
+
+![fbneo](assets/systems/fbneo.svg)
+
+Same example panel as MAME: FinalBurn Neo games use their per-game curated configuration.
+
 ## fds
 
 ![fds](assets/systems/fds.svg)
@@ -154,6 +160,8 @@ function** (Circle, Triangle, A, B, C…); dimmed buttons are not used by that p
 ## mame
 
 ![mame](assets/systems/mame.svg)
+
+Example panel Street Fighter style (LP/MP/HP top, LK/MK/HK bottom, white = light, yellow = medium, red = heavy). In practice, **every arcade game has its own curated configuration** (3000+ games): that's what lights up at launch.
 
 ## mastersystem
 

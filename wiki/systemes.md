@@ -96,6 +96,12 @@ par ce panel.
 
 ![dreamcast — HKT-7300](assets/systems/dreamcast-hkt-7300.svg)
 
+## fbneo
+
+![fbneo](assets/systems/fbneo.svg)
+
+Même panel d'exemple que MAME : les jeux FinalBurn Neo utilisent leur configuration curée par jeu.
+
 ## fds
 
 ![fds](assets/systems/fds.svg)
@@ -155,6 +161,8 @@ par ce panel.
 ## mame
 
 ![mame](assets/systems/mame.svg)
+
+Panel d'exemple façon Street Fighter (LP/MP/HP en haut, LK/MK/HK en bas, blanc = faible, jaune = moyen, rouge = fort). En pratique, **chaque jeu arcade a sa propre configuration curée** (plus de 3000 jeux) : c'est elle qui s'affiche au lancement.
 
 ## mastersystem
 
