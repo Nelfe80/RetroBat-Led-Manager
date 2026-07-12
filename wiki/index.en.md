@@ -27,12 +27,16 @@
 
 ## How it works
 
-```text
-APIExpose (game events)
-   → LedManager.exe (decides what to display)
-      → generic commands (SLOT 1 RED, FLASH 6 YELLOW 80…)
-         → PicoCommandSender.exe (adapts to your hardware)
-            → Raspberry Pi Pico → your LEDs
-```
+![The game speaks, your cabinet lights up](assets/flow-game-to-leds.en.svg)
+
+??? note "Under the hood — the full pipeline"
+
+    ```text
+    APIExpose (game events)
+       → LedManager.exe (decides what to display)
+          → generic commands (SLOT 1 RED, FLASH 6 YELLOW 80…)
+             → PicoCommandSender.exe (adapts to your hardware)
+                → Raspberry Pi Pico → your LEDs
+    ```
 
 LedManager is part of the RetroBat plugin family together with [APIExpose](https://github.com/Nelfe80/RetroBat-APIExpose) (the data engine, **required**) and [MarqueeManager](https://github.com/Nelfe80/RetroBat-Marquee-Manager) (marquee screens and DMD).
