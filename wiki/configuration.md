@@ -117,3 +117,29 @@ Quelques comportements utiles à connaître (aucun réglage requis) :
 - après 2 secondes sans activité, le panel du système est restauré ;
 - START et SELECT vivent leur vie indépendamment des boutons B1–B8 ;
 - les lampes MAME gardent leur propre état : une restauration du panel ne rallume pas une lampe éteinte par le jeu.
+
+## Les effets ingame : `default.mem.effects.json`
+
+Les réactions aux **moments de jeu** (vie perdue, boss touché, pièce ramassée…)
+sont décrites dans `default.mem.effects.json`, à la racine du plugin — un
+catalogue éditable, sans toucher au code :
+
+- **Règles par famille** (`genericRules`) : une règle par famille de moments
+  (`resources.lives`, `scoring.collectibles`, `combat.enemies`…) — elle
+  s'applique à **tous les jeux**, sans mapping par jeu.
+- **Effets** : `flash_restore`, `sweep`, `pulse`, `sparkle`, `health_feedback`,
+  `matrix_score`… avec cibles (`ALL_BUTTONS`, `STRIP1`, `RANDOM_COLUMN`,
+  `MATRIX1`), couleurs, durées et anti-spam (`throttleMs`).
+- **Couleur du jeu** : quand l'événement porte sa propre couleur (les deltas de
+  score arcade : l'avion orange de 1944…), elle **prime** sur la couleur de la
+  règle — l'effet prend la teinte de la cible détruite.
+- **Par joueur** : les événements qui portent un index joueur sont routés vers
+  le panel du bon joueur (`playerField`), sinon vers `GLOBAL`.
+- **Couches** (`effectLayers`) : les effets ingame vivent au-dessus du panel du
+  jeu et sous les alertes — chaque source a sa priorité, rien ne s'écrase.
+
+!!! example "Exemple : flash doré sur chaque trésor"
+    Dans `genericRules`, la famille `inventory.items` déclenche `sparkle`
+    doré sur `ALL_BUTTONS` + `STRIP1` avec restauration automatique : ramassez
+    une clé dans Zelda ou une émeraude dans Sonic, la borne scintille — deux
+    jeux, zéro configuration.

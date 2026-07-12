@@ -110,10 +110,37 @@ overrides\games\snes\smk.json        → just Super Mario Kart (wins over the sy
 
 ## During a game
 
-A few behaviours worth knowing (no settings required):
+A few useful behaviours (no setting required):
 
-- when a game starts, the system panel is memorized (*snapshot*);
-- in-game effects are targeted overlays; an `OFF` on a button restores it from the snapshot;
-- after 2 seconds without button activity, the system panel is restored;
+- when a game starts, the system panel is memorised (*snapshot*);
+- ingame effects are targeted overlays; an `OFF` on a button restores it from the snapshot;
+- after 2 seconds without activity, the system panel is restored;
 - START and SELECT live their own life, independent of buttons B1–B8;
 - MAME lamps keep their own state: a panel restore never relights a lamp the game turned off.
+
+## Ingame effects: `default.mem.effects.json`
+
+Reactions to **game moments** (life lost, boss hit, coin collected…) are
+described in `default.mem.effects.json`, at the plugin root — an editable
+catalogue, no code involved:
+
+- **Family rules** (`genericRules`): one rule per family of moments
+  (`resources.lives`, `scoring.collectibles`, `combat.enemies`…) — it applies
+  to **every game**, no per-game mapping.
+- **Effects**: `flash_restore`, `sweep`, `pulse`, `sparkle`,
+  `health_feedback`, `matrix_score`… with targets (`ALL_BUTTONS`, `STRIP1`,
+  `RANDOM_COLUMN`, `MATRIX1`), colors, durations and anti-spam (`throttleMs`).
+- **Game color**: when the event carries its own color (arcade score deltas:
+  1944's orange plane…), it **wins** over the rule color — the effect takes
+  the tint of the destroyed target.
+- **Per player**: events carrying a player index are routed to that player's
+  panel (`playerField`), otherwise to `GLOBAL`.
+- **Layers** (`effectLayers`): ingame effects live above the game panel and
+  below alerts — every source has its priority, nothing gets clobbered.
+
+!!! example "Example: golden flash on every treasure"
+    In `genericRules`, the `inventory.items` family triggers a golden
+    `sparkle` on `ALL_BUTTONS` + `STRIP1` with automatic restore: grab a key
+    in Zelda or an emerald in Sonic and the cabinet sparkles — two games,
+    zero configuration.
+
