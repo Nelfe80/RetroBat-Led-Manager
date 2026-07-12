@@ -27,7 +27,7 @@
 
 ## How it works
 
-![The game speaks, your cabinet lights up](assets/flow-game-to-leds.en.svg)
+![The game speaks, your cabinet lights up](assets/flow-game-to-leds.svg)
 
 ??? note "Under the hood — the full pipeline"
 
