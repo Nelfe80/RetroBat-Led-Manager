@@ -100,6 +100,12 @@ public sealed class DefaultEffectCatalog
         }
 
         var family = source.Family ?? "";
+        if (family.Length == 0)
+        {
+            // Payloads sans famille (anciens wrappers RetroArch, sources tierces) :
+            // la famille est retrouvee depuis l'action via la nomenclature V11.
+            family = ActionFamilyMap.Resolve(action);
+        }
         if (family.Length > 0 && _genericRules.TryGetValue(family, out var generic))
         {
             if (IsThrottled(family, 0, generic.ThrottleMs))
