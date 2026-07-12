@@ -75,6 +75,9 @@ public sealed class LedEvent
         var payloadColor = payload.HasValue
             ? ReadString(payload.Value, "color") ?? ReadString(payload.Value, "Color")
             : null;
+        var payloadPlayer = payload.HasValue
+            ? ReadInt(payload.Value, "player") ?? ReadInt(payload.Value, "Player")
+            : null;
         var hasMemPayload = signal.HasValue || !string.IsNullOrWhiteSpace(payloadAction);
 
         var type = ReadString(root, "type") ?? ReadString(root, "Type") ?? (hasMemPayload ? "mem.action" : "");
@@ -84,7 +87,8 @@ public sealed class LedEvent
         {
             Type = type,
             Stream = stream,
-            Player = ReadInt(root, "player") ?? ReadInt(root, "Player"),
+            Player = ReadInt(root, "player") ?? ReadInt(root, "Player") ?? payloadPlayer
+                ?? (signal.HasValue ? ReadInt(signal.Value, "Player") ?? ReadInt(signal.Value, "player") : null),
             Sender = ReadString(root, "sender") ?? ReadString(root, "Sender"),
             Action = ReadString(root, "action") ?? ReadString(root, "Action") ?? payloadAction ?? (signal.HasValue ? ReadString(signal.Value, "Name") : null),
             Family = ReadString(root, "family") ?? ReadString(root, "Family") ?? payloadFamily ?? (signal.HasValue ? ReadString(signal.Value, "Family") ?? ReadString(signal.Value, "family") : null),
