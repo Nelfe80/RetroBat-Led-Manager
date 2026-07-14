@@ -13,8 +13,10 @@ namespace LedManager.Setup.Views;
 /// Hardware setup wizard: prepare (stop LedManager + detect Pico) → panel test →
 /// color channel test (R/G/B wire order, auto-fixed) → wiring test (light each
 /// slot, the user clicks the button that lit up; mismatches are auto-fixed by
-/// rewriting [GPIO:P1]) → save the validated configuration. Drives the Pico
+/// rewriting [GPIO:Pn]) → save the validated configuration. Drives the Pico
 /// through PicoCommandSender so the firmware init/GPIO profile is reused as-is.
+/// The target Pico is the sender selected in the sidebar (hardware.SenderId);
+/// a fresh sender section is seeded automatically once its Pico is detected.
 /// </summary>
 public sealed class WizardView : UserControl, IDisposable
 {
@@ -50,11 +52,14 @@ public sealed class WizardView : UserControl, IDisposable
     private readonly Dictionary<WiringItem, WiringItem?> _wiringMap = new();
 
     // Color channel test state: one driven channel at a time, user reports the color seen.
+    // ALLPCT speaks the firmware's extinction percentages (0 = lit, 100 = off) and the
+    // triplet positions follow the color tables' G,R,B order (RED=100,0,100 lights
+    // position 1). Each command lights exactly ONE position of every button triplet.
     private static readonly (string Command, string Name, Color Expected)[] ColorChannels =
     {
-        ("ALLPCT 100 0 0", "R", Color.FromRgb(0xE8, 0x30, 0x30)),
-        ("ALLPCT 0 100 0", "G", Color.FromRgb(0x30, 0xE8, 0x50)),
-        ("ALLPCT 0 0 100", "B", Color.FromRgb(0x30, 0x60, 0xE8))
+        ("ALLPCT 100 0 100", "R", Color.FromRgb(0xE8, 0x30, 0x30)), // position 1 alone
+        ("ALLPCT 0 100 100", "G", Color.FromRgb(0x30, 0xE8, 0x50)), // position 0 alone
+        ("ALLPCT 100 100 0", "B", Color.FromRgb(0x30, 0x60, 0xE8))  // position 2 alone
     };
 
     private int _colorChannel;
@@ -79,7 +84,17 @@ public sealed class WizardView : UserControl, IDisposable
         _secondary.Click += (_, _) => OnSecondary();
         _back.Click += (_, _) => OnBack();
 
+        var picoBadge = new TextBlock
+        {
+            Text = L.T($"Pico configuré : {hardware.PicoLabel}", $"Configured Pico: {hardware.PicoLabel}"),
+            FontSize = 12,
+            FontWeight = FontWeights.Bold,
+            Foreground = new SolidColorBrush(Color.FromRgb(0x8A, 0x2B, 0xE2)),
+            Margin = new Thickness(0, 0, 0, 8)
+        };
+
         var rightStack = new StackPanel { Margin = new Thickness(24, 8, 8, 8) };
+        rightStack.Children.Add(picoBadge);
         rightStack.Children.Add(_title);
         rightStack.Children.Add(_body);
         rightStack.Children.Add(_status);
@@ -236,8 +251,13 @@ public sealed class WizardView : UserControl, IDisposable
         _status.Text = L.T("Arrêt de LedManager…", "Stopping LedManager…");
         await Task.Run(LedManagerProcess.StopAll);
 
-        _status.Text = L.T("Recherche du Pico sur les ports série…", "Scanning serial ports for the Pico…");
-        _detection = await PicoDetector.DetectAsync(_hardware.SerialPort);
+        _status.Text = L.T($"Recherche du Pico {_hardware.SenderId} sur les ports série…",
+            $"Scanning serial ports for Pico {_hardware.SenderId}…");
+        var otherPicoPorts = HardwareDescription.ListPicos(_pluginRoot)
+            .Where(p => p.SenderId != _hardware.SenderId && !p.Port.Equals("auto", StringComparison.OrdinalIgnoreCase))
+            .Select(p => p.Port)
+            .ToList();
+        _detection = await PicoDetector.DetectAsync(_hardware.SerialPort, otherPicoPorts);
         _status.Text = _detection.Message;
 
         if (!_detection.Found)
@@ -251,6 +271,14 @@ public sealed class WizardView : UserControl, IDisposable
         }
 
         _secondary.Visibility = Visibility.Collapsed;
+
+        // A fresh sender (P2…) ships documentation-only: seed its sections with the
+        // standard GPIO plan and take it out of dry-run so the tests really light LEDs.
+        if (SenderConfigWasSeeded())
+        {
+            _status.Text += L.T($"\nSection {_hardware.SenderId} initialisée dans PicoCommandSender.ini (plan GPIO standard, dry-run désactivé).",
+                $"\n{_hardware.SenderId} section seeded in PicoCommandSender.ini (standard GPIO plan, dry-run disabled).");
+        }
 
         var started = await StartSenderAsync();
         _primary.IsEnabled = true;
@@ -266,11 +294,23 @@ public sealed class WizardView : UserControl, IDisposable
         RenderStep();
     }
 
+    private bool SenderConfigWasSeeded()
+    {
+        try
+        {
+            return SenderConfigSeeder.Ensure(_pluginRoot, _hardware.SenderId, _detection?.PortName ?? "");
+        }
+        catch
+        {
+            return false; // the wizard still works on an already-complete sender
+        }
+    }
+
     /// <summary>Starts (or restarts) PicoCommandSender and waits for its READY.</summary>
     private async Task<bool> StartSenderAsync()
     {
         StopSender();
-        _sender = PicoSenderHost.Start(_pluginRoot);
+        _sender = PicoSenderHost.Start(_pluginRoot, _hardware.SenderId);
         if (_sender is null)
         {
             _status.Text = L.T("PicoCommandSender.exe introuvable à la racine du plugin.",
@@ -453,7 +493,7 @@ public sealed class WizardView : UserControl, IDisposable
     private async Task FixColorChannelsAsync()
     {
         _secondary.IsEnabled = false;
-        var result = ColorChannelFixer.Apply(_pluginRoot, "P1", _colorSeen);
+        var result = ColorChannelFixer.Apply(_pluginRoot, _hardware.SenderId, _colorSeen);
         _status.Text = result.Message;
         if (!result.Success)
         {
@@ -568,10 +608,10 @@ public sealed class WizardView : UserControl, IDisposable
             $"   • {kv.Key.Label} allumé → cliqué {kv.Value?.Label ?? "?"}",
             $"   • {kv.Key.Label} lit → clicked {kv.Value?.Label ?? "?"}")));
         return L.T($"{mismatches.Count} différence(s) détectée(s) entre le câblage et la disposition :\n{lines}\n\n"
-                + "« Corriger automatiquement » réécrit le câblage logiciel ([GPIO:P1]) pour que chaque bouton "
+                + $"« Corriger automatiquement » réécrit le câblage logiciel ([GPIO:{_hardware.SenderId}]) pour que chaque bouton "
                 + "réponde à sa place — sans ressouder. Le test se relancera pour confirmer.",
             $"{mismatches.Count} difference(s) detected between the wiring and the arrangement:\n{lines}\n\n"
-                + "\"Fix automatically\" rewrites the software wiring ([GPIO:P1]) so every button "
+                + $"\"Fix automatically\" rewrites the software wiring ([GPIO:{_hardware.SenderId}]) so every button "
                 + "answers at its place — no re-soldering. The test will re-run to confirm.");
     }
 
@@ -618,7 +658,7 @@ public sealed class WizardView : UserControl, IDisposable
         var map = _wiringMap
             .Where(kv => kv.Value is not null)
             .ToDictionary(kv => kv.Key.Label, kv => kv.Value!.Label, StringComparer.OrdinalIgnoreCase);
-        var result = GpioMappingFixer.Apply(_pluginRoot, "P1", map);
+        var result = GpioMappingFixer.Apply(_pluginRoot, _hardware.SenderId, map);
         _status.Text = result.Message;
         _secondary.IsEnabled = true;
         if (!result.Success)
@@ -640,7 +680,7 @@ public sealed class WizardView : UserControl, IDisposable
     {
         var result = HardwareConfigWriter.Apply(
             _pluginRoot,
-            "P1",
+            _hardware.SenderId,
             _detection?.PortName,
             _sender?.MeasuredFirmwareInitMs,
             _hardware.ButtonCount,

@@ -5,7 +5,7 @@ using LedManager.Setup.Localization;
 namespace LedManager.Setup.Serial;
 
 /// <summary>
-/// Rewrites [GPIO:P1] so the wiring matches the expected layout, in software rather
+/// Rewrites the sender's [GPIO:Pn] so the wiring matches the expected layout, in software rather
 /// than by re-soldering. If lighting SLOT 3 turns on the button the user identifies as
 /// B4, then B3 must be driven by B4's old GPIOs: newGpio[lit] = oldGpio[clicked].
 /// </summary>

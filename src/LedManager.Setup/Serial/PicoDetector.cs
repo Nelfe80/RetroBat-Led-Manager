@@ -15,12 +15,15 @@ public sealed record PicoDetectionResult(
 /// (from PicoCommandSender.ini) is tried first for speed.</summary>
 public static class PicoDetector
 {
-    public static async Task<PicoDetectionResult> DetectAsync(string? preferredPort = null)
+    /// <param name="excludePorts">Ports already assigned to OTHER senders in the ini:
+    /// they are skipped so configuring P2 can never grab P1's Pico by mistake.</param>
+    public static async Task<PicoDetectionResult> DetectAsync(string? preferredPort = null, IReadOnlyCollection<string>? excludePorts = null)
     {
         return await Task.Run(() =>
         {
             var ports = SerialPort.GetPortNames()
                 .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Where(p => excludePorts is null || !excludePorts.Contains(p, StringComparer.OrdinalIgnoreCase))
                 .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 

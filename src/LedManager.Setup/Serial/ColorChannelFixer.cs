@@ -5,10 +5,12 @@ using LedManager.Setup.Localization;
 namespace LedManager.Setup.Serial;
 
 /// <summary>
-/// Fixes the R,G,B wire order in [GPIO:P1]. The color test drives one channel at a
-/// time (ALLPCT 100 0 0 → the pins the ini believes are "R"): if the user reports
-/// seeing GREEN, the first pin of each triplet actually drives the green die. The
-/// fix reorders every B* triplet so each position drives the color it claims.
+/// Fixes the wire order of the [GPIO:*] triplets. The color test lights one channel
+/// at a time in the firmware's dialect: extinction percentages (0 = lit, 100 = off)
+/// applied to triplet positions in the color tables' G,R,B order — ALLPCT 100 0 100
+/// lights the pins the config believes drive red. If the user reports another color,
+/// that die is wired on a different position: the fix reorders every B* triplet so
+/// each position drives the color the firmware tables expect.
 /// Assumes the kit's uniform wiring across buttons (same wire colors everywhere).
 /// </summary>
 public static class ColorChannelFixer
@@ -49,13 +51,18 @@ public static class ColorChannelFixer
         var gpioSection = $"GPIO:{sender}";
         var current = IniDocument.Load(iniPath).Section(gpioSection);
 
-        // Driving ini-position i lights color seen[i] ⇒ the pin that really produces
-        // color C sits at position indexOf(C, seen). New triplet = (pin(R), pin(G), pin(B)).
+        // Rounds run R, G, B but light ini positions 1, 0 and 2 respectively (the
+        // positions the firmware color tables assign to red, green and blue). The die
+        // really wired at each position is therefore (seen in G round, R round, B round).
+        var dieAt = new[] { normalized[1], normalized[0], normalized[2] };
+
+        // Rebuild each triplet in the tables' G,R,B position order:
+        // (pin lighting green, pin lighting red, pin lighting blue).
         var order = new[]
         {
-            Array.IndexOf(normalized, "R"),
-            Array.IndexOf(normalized, "G"),
-            Array.IndexOf(normalized, "B")
+            Array.IndexOf(dieAt, "G"),
+            Array.IndexOf(dieAt, "R"),
+            Array.IndexOf(dieAt, "B")
         };
 
         var editor = IniEditor.Load(iniPath);
