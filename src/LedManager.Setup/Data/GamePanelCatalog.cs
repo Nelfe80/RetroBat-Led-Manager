@@ -29,6 +29,7 @@ public sealed class GamePanelCatalog
     private readonly string _pluginRoot;
     private readonly string _gamesDir;
     private IReadOnlyList<string>? _games;
+    private IReadOnlyDictionary<string, string>? _systemByGame;
 
     public GamePanelCatalog(string pluginRoot)
     {
@@ -57,6 +58,51 @@ public sealed class GamePanelCatalog
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+    }
+
+    /// <summary>
+    /// rom → override system (mame folded into "arcade"), built by scanning every
+    /// game json once. ~3300 small files: call from a background thread, the result
+    /// is cached for the session.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> ListGamesWithSystems()
+    {
+        if (_systemByGame != null)
+        {
+            return _systemByGame;
+        }
+
+        var index = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (Available)
+        {
+            foreach (var path in Directory.EnumerateFiles(_gamesDir, "*.json", SearchOption.AllDirectories))
+            {
+                var rom = Path.GetFileNameWithoutExtension(path);
+                if (string.IsNullOrEmpty(rom) || index.ContainsKey(rom))
+                {
+                    continue;
+                }
+
+                var system = "mame";
+                try
+                {
+                    using var doc = JsonDocument.Parse(File.ReadAllText(path));
+                    if (doc.RootElement.TryGetProperty("system", out var sys) && sys.ValueKind == JsonValueKind.String
+                        && !string.IsNullOrWhiteSpace(sys.GetString()))
+                    {
+                        system = sys.GetString()!.Trim().ToLowerInvariant();
+                    }
+                }
+                catch
+                {
+                    // unreadable json: keep the default system rather than hiding the game
+                }
+
+                index[rom] = system.Equals("mame", StringComparison.OrdinalIgnoreCase) ? "arcade" : system;
+            }
+        }
+
+        return _systemByGame = index;
     }
 
     /// <summary>Resolves a game's pack colors (no overrides) for the given layout.</summary>
