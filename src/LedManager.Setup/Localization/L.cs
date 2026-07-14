@@ -10,12 +10,21 @@ namespace LedManager.Setup.Localization;
 /// </summary>
 public static class L
 {
-    public static bool French { get; } = ResolveFrench();
+    public static bool French { get; private set; } = ResolveFrench();
 
     public static string T(string fr, string en) => French ? fr : en;
 
+    /// <summary>Runtime switch (FR/EN button): views are rebuilt by the caller.</summary>
+    public static void Set(bool french) => French = french;
+
     private static bool ResolveFrench()
     {
+        // explicit user choice first (LedManager.ini [Setup] Language=fr|en)
+        if (TryReadIniLanguage() is { } iniLanguage)
+        {
+            return iniLanguage.StartsWith("fr", StringComparison.OrdinalIgnoreCase);
+        }
+
         var args = Environment.GetCommandLineArgs();
         for (var i = 0; i < args.Length; i++)
         {
@@ -37,6 +46,32 @@ public static class L
 
         return System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName
             .Equals("fr", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string? TryReadIniLanguage()
+    {
+        try
+        {
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir != null)
+            {
+                var ini = Path.Combine(dir.FullName, "LedManager.ini");
+                if (File.Exists(ini))
+                {
+                    var match = Regex.Match(File.ReadAllText(ini),
+                        @"^\s*Language\s*=\s*([A-Za-z-]+)", RegexOptions.Multiline);
+                    return match.Success ? match.Groups[1].Value : null;
+                }
+
+                dir = dir.Parent;
+            }
+        }
+        catch
+        {
+            // fall through to the other sources
+        }
+
+        return null;
     }
 
     /// <summary>RetroBat root is two levels above the plugin folder.</summary>

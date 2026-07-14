@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Windows;
 using LedManager.Setup.Controls;
 using LedManager.Setup.Localization;
@@ -27,16 +27,14 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         TryLowerProcessPriority();
+        SourceInitialized += (_, _) => TryEnableDarkTitleBar();
 
-        NavHome.Content = L.T("Accueil", "Home");
-        NavMonitor.Content = L.T("Panel virtuel", "Virtual panel");
-        NavSystems.Content = L.T("Mes systèmes", "My systems");
-        NavGames.Content = L.T("Mes jeux", "My games");
-        NavWizard.Content = L.T("Assistant matériel", "Hardware assistant");
-        PicoSelectorLabel.Text = L.T("PICO CONFIGURÉ", "CONFIGURED PICO");
-        IdentifyButton.Content = L.T("Identifier (clignote)", "Identify (blinks)");
+        ApplyShellTexts();
 
         _root = HardwareDescription.FindPluginRoot();
+        Ui.Initialize(_root);
+        UpdateThemeGlyph();
+        LoadBrandIcon();
         _hardware = HardwareDescription.Load(_root);
         _layout = PanelLayoutDefinition.Load(_root);
         _picos = HardwareDescription.ListPicos(_root);
@@ -255,6 +253,103 @@ public partial class MainWindow : Window
         _wizard = new WizardView(_hardware, _layout);
         ContentHost.Content = _wizard;
     }
+
+    /// <summary>Native caption color (DWMWA_USE_IMMERSIVE_DARK_MODE), so the title
+    /// bar follows the app theme instead of staying white.</summary>
+    private void TryEnableDarkTitleBar()
+    {
+        try
+        {
+            var handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            var enabled = Ui.IsLight ? 0 : 1;
+            _ = DwmSetWindowAttribute(handle, 20, ref enabled, sizeof(int));
+        }
+        catch
+        {
+            // cosmetic
+        }
+    }
+
+    private void ThemeToggle_Click(object sender, RoutedEventArgs e)
+    {
+        Ui.Toggle(_root);
+        TryEnableDarkTitleBar();
+        UpdateThemeGlyph();
+        RebuildActiveView();
+    }
+
+    /// <summary>FR ↔ EN switch: persisted, shell relabelled, active view rebuilt.</summary>
+    private void LangToggle_Click(object sender, RoutedEventArgs e)
+    {
+        L.Set(!L.French);
+        try
+        {
+            var ini = Serial.IniEditor.Load(System.IO.Path.Combine(_root ?? ".", "LedManager.ini"));
+            ini.Set("Setup", "Language", L.French ? "fr" : "en");
+            ini.Save();
+        }
+        catch
+        {
+            // the switch still applies for the session
+        }
+
+        ApplyShellTexts();
+        UpdateHardwareInfo();
+        UpdateThemeGlyph();
+        RebuildActiveView();
+    }
+
+    private void ApplyShellTexts()
+    {
+        NavHome.Content = L.T("Accueil", "Home");
+        NavMonitor.Content = L.T("Panel virtuel", "Virtual panel");
+        NavSystems.Content = L.T("Mes systèmes", "My systems");
+        NavGames.Content = L.T("Mes jeux", "My games");
+        NavWizard.Content = L.T("Assistant matériel", "Hardware assistant");
+        PicoSelectorLabel.Text = L.T("PICO CONFIGURÉ", "CONFIGURED PICO");
+        IdentifyButton.Content = L.T("Identifier (clignote)", "Identify (blinks)");
+        LangToggle.Content = L.French ? "EN" : "FR";
+        LangToggle.ToolTip = L.T("Switch to English", "Passer en français");
+    }
+
+    private void UpdateThemeGlyph()
+    {
+        // sun proposes the light theme, moon proposes the dark one
+        ThemeToggle.Content = Ui.IsLight ? "\uE708" : "\uE706";
+        ThemeToggle.ToolTip = Ui.IsLight
+            ? L.T("Passer en thème sombre", "Switch to the dark theme")
+            : L.T("Passer en thème clair", "Switch to the light theme");
+    }
+
+    /// <summary>Brand icon (images\icon.png) shown top-left and used as window icon.</summary>
+    private void LoadBrandIcon()
+    {
+        try
+        {
+            var path = System.IO.Path.Combine(_root ?? ".", "images", "icon.png");
+            if (!System.IO.File.Exists(path))
+            {
+                return;
+            }
+
+            var brand = new System.Windows.Media.Imaging.BitmapImage();
+            brand.BeginInit();
+            brand.UriSource = new Uri(path);
+            brand.DecodePixelWidth = 128;
+            brand.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+            brand.EndInit();
+            brand.Freeze();
+            BrandIconHost.Background = new System.Windows.Media.ImageBrush(brand) { Stretch = System.Windows.Media.Stretch.UniformToFill };
+            Icon = brand;
+        }
+        catch
+        {
+            // cosmetic: the placeholder square stays
+        }
+    }
+
+    [System.Runtime.InteropServices.DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
 
     private static void TryLowerProcessPriority()
     {

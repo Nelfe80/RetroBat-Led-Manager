@@ -79,7 +79,7 @@ public sealed class HomeView : UserControl
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-        var dot = new Ellipse { Width = 12, Height = 12, Fill = new SolidColorBrush(Color.FromRgb(0x8A, 0x8A, 0x9A)), VerticalAlignment = VerticalAlignment.Center };
+        var dot = new Ellipse { Width = 12, Height = 12, Fill = Ui.Brush(Color.FromRgb(0x8A, 0x8A, 0x9A)), VerticalAlignment = VerticalAlignment.Center };
         Grid.SetColumn(dot, 0);
         grid.Children.Add(dot);
 
@@ -97,8 +97,8 @@ public sealed class HomeView : UserControl
 
         parent.Children.Add(new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x1D, 0x1D, 0x2A)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x2E, 0x2E, 0x44)),
+            Background = Ui.Brush(Color.FromRgb(0x1D, 0x1D, 0x2A)),
+            BorderBrush = Ui.Brush(Color.FromRgb(0x2E, 0x2E, 0x44)),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(8),
             Padding = new Thickness(14, 12, 14, 12),
@@ -254,7 +254,7 @@ public sealed class HomeView : UserControl
 
         SetState(_overrides, systems + games > 0 ? true : null, null,
             systems + games == 0
-                ? L.T("Aucun override : tout vient du pack. Personnalisez dans l'onglet « Mes jeux ».",
+                ? L.T("Aucune configuration personnelle : tout vient du pack. Personnalisez dans « Mes jeux ».",
                     "No override: everything comes from the pack. Customize in the \"My games\" tab.")
                 : L.T($"{systems} système(s) et {games} jeu(x) personnalisés — gérés dans « Mes jeux ».",
                     $"{systems} customized system(s) and {games} game(s) — managed in \"My games\"."));
@@ -272,5 +272,5 @@ public sealed class HomeView : UserControl
         card.Text.Text = text;
     }
 
-    private static SolidColorBrush Text(byte r, byte g, byte b) => new(Color.FromRgb(r, g, b));
+    private static SolidColorBrush Text(byte r, byte g, byte b) => Ui.Text(r, g, b);
 }

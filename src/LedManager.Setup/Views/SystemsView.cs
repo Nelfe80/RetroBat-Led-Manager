@@ -76,7 +76,7 @@ public sealed class SystemsView : UserControl, IDisposable
         header.Children.Add(new TextBlock
         {
             Text = L.T($"Pico : {hardware.PicoLabel}", $"Pico: {hardware.PicoLabel}"),
-            Foreground = new SolidColorBrush(Color.FromRgb(0x8A, 0x2B, 0xE2)),
+            Foreground = Ui.Brush(Color.FromRgb(0x8A, 0x2B, 0xE2)),
             FontSize = 12,
             FontWeight = FontWeights.Bold,
             Margin = new Thickness(16, 0, 0, 0),
@@ -84,7 +84,7 @@ public sealed class SystemsView : UserControl, IDisposable
         });
 
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0) };
-        buttons.Children.Add(Action(L.T("Enregistrer l'override", "Save the override"), OnSave, primary: true));
+        buttons.Children.Add(Action(L.T("Enregistrer ma configuration", "Save my configuration"), OnSave, primary: true));
         buttons.Children.Add(Action(L.T("Annuler les modifications", "Discard changes"), (_, _) => ReloadOverride()));
         buttons.Children.Add(Action(L.T("Revenir aux couleurs du pack", "Back to pack colors"), OnResetToPack));
         _liveTest = Action(L.T("Tester sur le panneau réel", "Test on the real panel"), OnLiveTest);
@@ -109,7 +109,7 @@ public sealed class SystemsView : UserControl, IDisposable
 
         var panelBorder = new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x1D, 0x1D, 0x2A)),
+            Background = Ui.Viewport,
             CornerRadius = new CornerRadius(12),
             Padding = new Thickness(24),
             Child = _panel
@@ -217,8 +217,8 @@ public sealed class SystemsView : UserControl, IDisposable
 
         Repaint();
         _status.Text = _store.Exists(SelectedSystem)
-            ? L.T("Override système chargé.", "System override loaded.")
-            : L.T("Aucun override : couleurs du pack.", "No override: pack colors.");
+            ? L.T("Votre configuration du système est chargée.", "Your system configuration is loaded.")
+            : L.T("Aucune configuration personnelle : couleurs du pack.", "No personal configuration: pack colors.");
     }
 
     private void Repaint()
@@ -257,7 +257,7 @@ public sealed class SystemsView : UserControl, IDisposable
     private ContextMenu BuildPalette()
     {
         var menu = new ContextMenu();
-        var reset = new MenuItem { Header = L.T("Couleur d'origine (retirer l'override)", "Original color (remove override)") };
+        var reset = new MenuItem { Header = L.T("Couleur d'origine (retirer ma configuration)", "Original color (remove my configuration)") };
         reset.Click += (_, _) => ApplyColor(null);
         menu.Items.Add(reset);
         menu.Items.Add(new Separator());
@@ -296,7 +296,7 @@ public sealed class SystemsView : UserControl, IDisposable
         }
 
         Repaint();
-        _status.Text = L.T("Modification non enregistrée — cliquez « Enregistrer l'override ».",
+        _status.Text = L.T("Modification non enregistrée — cliquez « Enregistrer ma configuration ».",
             "Unsaved change — click \"Save the override\".");
         if (_sender is { IsAlive: true })
         {
@@ -335,7 +335,7 @@ public sealed class SystemsView : UserControl, IDisposable
 
         _store.Delete(system);
         ReloadOverride();
-        _status.Text = L.T("Override supprimé.", "Override deleted.");
+        _status.Text = L.T("Configuration supprimée.", "Configuration deleted.");
     }
 
     // ----- live preview on the real panel -----
@@ -430,11 +430,16 @@ public sealed class SystemsView : UserControl, IDisposable
             Margin = new Thickness(0, 0, 8, 0),
             FontWeight = primary ? FontWeights.Bold : FontWeights.Normal
         };
+        if (primary)
+        {
+            button.Style = (Style)Application.Current.FindResource("AccentButton");
+        }
+
         button.Click += onClick;
         return button;
     }
 
-    private static SolidColorBrush Text(byte r, byte g, byte b) => new(Color.FromRgb(r, g, b));
+    private static SolidColorBrush Text(byte r, byte g, byte b) => Ui.Text(r, g, b);
 
     public void Dispose()
     {

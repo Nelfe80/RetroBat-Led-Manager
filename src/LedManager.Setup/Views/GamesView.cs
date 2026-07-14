@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using LedManager.Setup.Controls;
@@ -31,13 +31,32 @@ public sealed class GamesView : UserControl, IDisposable
     private readonly SystemOverrideStore _store;
     private readonly PanelSurface _panel = new() { Interactive = true };
     private readonly ComboBox _systems;
+    private readonly ComboBox _layoutPicker;
+    private bool _suppressLayout;
     private readonly TextBox _gameSearch;
+    private readonly TextBlock _searchPlaceholder;
     private readonly ListBox _gameList;
     private readonly Button _liveTest;
     private readonly TextBlock _status;
     private readonly TextBlock _summary;
     private readonly ContextMenu _palette;
     private readonly ControlsDeployCard _controlsCard = new();
+    private readonly StackPanel _sheetContent = new();
+    private readonly Border _gameSheet;
+    private readonly PanelPatchBay _patchBay = new();
+    private readonly Dictionary<string, string> _portDetails = new(StringComparer.OrdinalIgnoreCase);
+    private readonly TextBlock _inspector = new()
+    {
+        FontSize = 11,
+        TextWrapping = TextWrapping.Wrap,
+        Margin = new Thickness(0, 6, 0, 0),
+        Visibility = Visibility.Collapsed
+    };
+
+    /// <summary>Persistent host of the patch bay: rebuilding the sheet re-adds the
+    /// same element, because re-parenting a WPF child into a fresh ScrollViewer
+    /// throws (and would silently hide the whole sheet).</summary>
+    private readonly ScrollViewer _patchBayHost;
 
     /// <summary>Systems whose games use the arcade per-game dynpanels.</summary>
     private static readonly HashSet<string> ArcadeFamily = new(StringComparer.OrdinalIgnoreCase)
@@ -52,10 +71,12 @@ public sealed class GamesView : UserControl, IDisposable
     private readonly HashSet<string> _namesLoading = new(StringComparer.OrdinalIgnoreCase);
     private IReadOnlyDictionary<string, string>? _packNames;
     private GamePanelCatalog.GamePanel? _currentGame;
+    private IReadOnlyDictionary<string, IReadOnlyList<int>> _deployedWiring = new Dictionary<string, IReadOnlyList<int>>();
     private IReadOnlyDictionary<int, string> _systemPatch = new Dictionary<int, string>();
     private readonly Dictionary<int, string> _edited = new();
     private int _paletteSlot;
     private PicoSenderHost? _sender;
+    private bool _suppressSearch;
 
     public GamesView(HardwareDescription hardware, PanelLayoutDefinition layout)
     {
@@ -66,11 +87,46 @@ public sealed class GamesView : UserControl, IDisposable
         _store = new SystemOverrideStore(_pluginRoot);
 
         _systems = new ComboBox { Width = 160, Margin = new Thickness(0, 0, 8, 0), VerticalContentAlignment = VerticalAlignment.Center };
-        _systems.SelectionChanged += (_, _) => RefreshGameList();
+        _systems.SelectionChanged += (_, _) => OnSystemChanged();
 
-        _gameSearch = new TextBox { Width = 400, Margin = new Thickness(0, 0, 8, 4), VerticalContentAlignment = VerticalAlignment.Center };
-        _gameSearch.TextChanged += (_, _) => RefreshGameList();
-        _gameList = new ListBox { Width = 400, MaxHeight = 190, FontSize = 12 };
+        _layoutPicker = new ComboBox { Width = 190, Margin = new Thickness(0, 0, 8, 0), VerticalContentAlignment = VerticalAlignment.Center };
+        _layoutPicker.SelectionChanged += (_, _) => OnLayoutChanged();
+
+        _gameSearch = new TextBox
+        {
+            Width = 460,
+            MinHeight = 34,
+            FontSize = 13,
+            Padding = new Thickness(31, 7, 8, 7),
+            HorizontalContentAlignment = HorizontalAlignment.Left,
+            VerticalContentAlignment = VerticalAlignment.Center
+        };
+        _searchPlaceholder = new TextBlock
+        {
+            Text = L.T("Rechercher un jeu ou une rom…", "Search a game or a rom…"),
+            Foreground = Text(0x8A, 0x8A, 0x9A),
+            FontSize = 13,
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Margin = new Thickness(33, 0, 0, 0),
+            IsHitTestVisible = false
+        };
+        _gameSearch.TextChanged += (_, _) =>
+        {
+            _searchPlaceholder.Visibility = string.IsNullOrEmpty(_gameSearch.Text) ? Visibility.Visible : Visibility.Collapsed;
+            if (_suppressSearch)
+            {
+                return;
+            }
+
+            RefreshGameList();
+            UpdateGameListVisibility();
+        };
+        _gameSearch.GotKeyboardFocus += (_, _) => UpdateGameListVisibility();
+        _gameSearch.PreviewKeyDown += OnSearchKeyDown;
+
+        // autocomplete behaviour: the result list only opens while searching
+        _gameList = new ListBox { Width = 460, MaxHeight = 220, FontSize = 12.5, Visibility = Visibility.Collapsed };
         _gameList.SelectionChanged += (_, _) => OnGameSelected();
 
         _status = new TextBlock { Margin = new Thickness(0, 10, 0, 0), FontSize = 12, Foreground = Text(0x8A, 0x8A, 0x9A), TextWrapping = TextWrapping.Wrap };
@@ -78,28 +134,47 @@ public sealed class GamesView : UserControl, IDisposable
 
         _panel.SlotClicked += OnSlotClicked;
         _panel.TargetClicked += _ => _status.Text = L.T(
-            "START/SELECT ne sont pas personnalisables par override pour l'instant.",
-            "START/SELECT are not override-customizable yet.");
+            "START/SELECT ne sont pas encore personnalisables.",
+            "START/SELECT are not customizable yet.");
 
         _palette = BuildPalette();
 
         var header = new StackPanel { Orientation = Orientation.Horizontal };
         header.Children.Add(new TextBlock { Text = L.T("Système", "System"), Foreground = Text(0xE8, 0xE8, 0xF0), Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center });
         header.Children.Add(_systems);
+        header.Children.Add(new TextBlock { Text = L.T("Gabarit", "Template"), Foreground = Text(0xE8, 0xE8, 0xF0), Margin = new Thickness(8, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center });
+        header.Children.Add(_layoutPicker);
         header.Children.Add(new TextBlock
         {
             Text = L.T($"Pico : {hardware.PicoLabel}", $"Pico: {hardware.PicoLabel}"),
-            Foreground = new SolidColorBrush(Color.FromRgb(0x8A, 0x2B, 0xE2)),
+            Foreground = Ui.Brush(Color.FromRgb(0x8A, 0x2B, 0xE2)),
             FontSize = 12,
             FontWeight = FontWeights.Bold,
             Margin = new Thickness(16, 0, 0, 0),
             VerticalAlignment = VerticalAlignment.Center
         });
 
-        var gameRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 0) };
-        gameRow.Children.Add(new TextBlock { Text = L.T("Jeu", "Game"), Foreground = Text(0xE8, 0xE8, 0xF0), Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Top });
+        // search field: single bordered TextBox with the magnifier and placeholder
+        // overlaid, so the focus ring is the field's own border (no double outline)
+        var searchIcon = new TextBlock
+        {
+            Text = "\uE721",
+            FontFamily = new FontFamily("Segoe MDL2 Assets"),
+            FontSize = 13,
+            Foreground = Text(0x8A, 0x8A, 0x9A),
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Margin = new Thickness(12, 0, 0, 0),
+            IsHitTestVisible = false
+        };
+        var searchOverlay = new Grid { Width = 460, Margin = new Thickness(0, 0, 0, 5) };
+        searchOverlay.Children.Add(_gameSearch);
+        searchOverlay.Children.Add(searchIcon);
+        searchOverlay.Children.Add(_searchPlaceholder);
+
+        var gameRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 10, 0, 0) };
         var gamePicker = new StackPanel();
-        gamePicker.Children.Add(_gameSearch);
+        gamePicker.Children.Add(searchOverlay);
         gamePicker.Children.Add(_gameList);
         gameRow.Children.Add(gamePicker);
         gameRow.Children.Add(new TextBlock
@@ -114,7 +189,7 @@ public sealed class GamesView : UserControl, IDisposable
         });
 
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0) };
-        buttons.Children.Add(Action(L.T("Enregistrer l'override", "Save the override"), OnSave, primary: true));
+        buttons.Children.Add(Action(L.T("Enregistrer ma configuration", "Save my configuration"), OnSave, primary: true));
         buttons.Children.Add(Action(L.T("Annuler les modifications", "Discard changes"), (_, _) => ReloadOverride()));
         buttons.Children.Add(Action(L.T("Revenir aux couleurs du pack", "Back to pack colors"), OnResetToPack));
         _liveTest = Action(L.T("Tester sur le panneau réel", "Test on the real panel"), OnLiveTest);
@@ -123,13 +198,13 @@ public sealed class GamesView : UserControl, IDisposable
         var intro = new TextBlock
         {
             Text = L.T(
-                "Choisissez un système puis un jeu : le panel du jeu s'affiche avec ses couleurs résolues "
-                + "(pack + override système + override jeu). Cliquez un bouton pour choisir sa couleur : le patch "
-                + "du jeu est enregistré dans overrides\\ et gagne sur le patch système, qui gagne sur le pack. "
+                "Choisissez un système puis un jeu : le panel s'affiche avec ses couleurs finales. "
+                + "Cliquez un bouton pour choisir sa couleur : votre configuration du jeu est enregistrée et "
+                + "passe devant celle du système, qui passe devant les réglages d'origine. "
                 + "Le gabarit de base d'un système se personnalise dans « Mes systèmes ».",
-                "Pick a system then a game: the game's panel shows its resolved colors "
-                + "(pack + system override + game override). Click a button to pick its color: the game patch "
-                + "is saved under overrides\\ and beats the system patch, which beats the pack. "
+                "Pick a system then a game: the panel shows its final colors. "
+                + "Click a button to pick its color: your game configuration is saved and "
+                + "wins over the system one, which wins over the factory settings. "
                 + "A system's base template is customized in \"My systems\"."),
             Foreground = Text(0xB8, 0xB8, 0xC6),
             FontSize = 12,
@@ -140,10 +215,64 @@ public sealed class GamesView : UserControl, IDisposable
 
         var panelBorder = new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x1D, 0x1D, 0x2A)),
+            Background = Ui.Viewport,
             CornerRadius = new CornerRadius(12),
             Padding = new Thickness(24),
             Child = _panel
+        };
+
+        _patchBayHost = new ScrollViewer
+        {
+            Content = _patchBay,
+            MaxHeight = 640,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
+        };
+
+        _inspector.Foreground = Text(0xB8, 0xB8, 0xC6);
+        _patchBay.PortInspected += port =>
+        {
+            _inspector.Text = _portDetails.TryGetValue(port.Id, out var details)
+                ? details
+                : $"{port.Label} · {port.Id}";
+            _inspector.Visibility = Visibility.Visible;
+        };
+
+        // clicking in the bay echoes the focus on the virtual panel above, and on
+        // the real panel when a live-test session is running
+        _patchBay.SelectionEchoed += (slots, targets) =>
+        {
+            foreach (var slot in slots)
+            {
+                _panel.Flash(slot.ToString(), Colors.White, 600);
+            }
+
+            foreach (var target in targets)
+            {
+                _panel.Flash(target, Colors.White, 600);
+            }
+
+            if (_sender is { IsAlive: true } && (slots.Count > 0 || targets.Count > 0))
+            {
+                foreach (var slot in slots)
+                {
+                    _sender.Send($"SLOT {slot} WHITE");
+                }
+
+                var restore = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(650) };
+                restore.Tick += (_, _) => { restore.Stop(); SendLivePreview(); };
+                restore.Start();
+            }
+        };
+
+        _gameSheet = new Border
+        {
+            Background = Ui.Brush(Color.FromRgb(0x1D, 0x1D, 0x2A)),
+            CornerRadius = new CornerRadius(10),
+            Padding = new Thickness(14),
+            Margin = new Thickness(0, 14, 0, 0),
+            Visibility = Visibility.Collapsed,
+            Child = _sheetContent
         };
 
         var stack = new StackPanel { Margin = new Thickness(20) };
@@ -154,6 +283,7 @@ public sealed class GamesView : UserControl, IDisposable
         stack.Children.Add(_summary);
         stack.Children.Add(buttons);
         stack.Children.Add(_status);
+        stack.Children.Add(_gameSheet);
         stack.Children.Add(_controlsCard);
         Content = new ScrollViewer { Content = stack, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
 
@@ -351,6 +481,102 @@ public sealed class GamesView : UserControl, IDisposable
 
     private string LayoutIdForHardware => $"{_hardware.ButtonCount}-Button";
 
+    /// <summary>Layout the user is editing — defaults to the real panel's one, but
+    /// the 2/4/6/8-button templates (and system specials) stay reachable.</summary>
+    private string SelectedLayoutId
+        => _layoutPicker?.SelectedItem is ComboBoxItem { Tag: string key } ? key : LayoutIdForHardware;
+
+    private int SelectedLayoutButtons
+    {
+        get
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(SelectedLayoutId, @"^(\d+)-Button");
+            return match.Success ? int.Parse(match.Groups[1].Value) : _hardware.ButtonCount;
+        }
+    }
+
+    private void PopulateLayoutChoices()
+    {
+        _suppressLayout = true;
+        _layoutPicker.Items.Clear();
+        foreach (var count in new[] { 2, 4, 6, 8 })
+        {
+            _layoutPicker.Items.Add(new ComboBoxItem
+            {
+                Tag = $"{count}-Button",
+                Content = count == _hardware.ButtonCount
+                    ? L.T($"{count} boutons — mon panel", $"{count} buttons — my panel")
+                    : L.T($"{count} boutons", $"{count} buttons")
+            });
+        }
+
+        // special system templates (e.g. snes CONTROL PANEL accessories)
+        if (SelectedSystem is { } system && !ArcadeFamily.Contains(system) && _catalog is not null)
+        {
+            foreach (var special in _catalog.LoadLayouts(system).Where(l => l.Key.Contains(':')))
+            {
+                _layoutPicker.Items.Add(new ComboBoxItem { Tag = special.Key, Content = special.DisplayName });
+            }
+        }
+
+        _layoutPicker.SelectedIndex = Math.Max(0, Array.IndexOf(new[] { 2, 4, 6, 8 }, _hardware.ButtonCount));
+        _suppressLayout = false;
+    }
+
+    private void OnLayoutChanged()
+    {
+        if (_suppressLayout)
+        {
+            return;
+        }
+
+        _panel.Build(_layoutDefinition, SelectedLayoutButtons, hasStart: true, hasSelect: true);
+        if (_currentGame is { } game)
+        {
+            LoadGame(game.Rom);
+        }
+        else
+        {
+            Repaint();
+        }
+    }
+
+    /// <summary>Changing system resets the whole game context: without this, the
+    /// previous game's panel, sheet and controls card lingered until a new game
+    /// was picked in the new system.</summary>
+    private void OnSystemChanged()
+    {
+        _currentGame = null;
+        _edited.Clear();
+        _systemPatch = new Dictionary<int, string>();
+        _gameSheet.Visibility = Visibility.Collapsed;
+        _suppressSearch = true;
+        _gameSearch.Text = "";
+        _suppressSearch = false;
+        _searchPlaceholder.Visibility = Visibility.Visible;
+        _gameList.Visibility = Visibility.Collapsed;
+        PopulateLayoutChoices();
+        _panel.Build(_layoutDefinition, SelectedLayoutButtons, hasStart: true, hasSelect: true);
+        Repaint();
+
+        if (SelectedSystem is { } system)
+        {
+            if (ArcadeFamily.Contains(system))
+            {
+                _status.Text = L.T("Choisissez un jeu dans la liste.", "Pick a game in the list.");
+                _controlsCard.ShowNone(L.T("Choisissez un jeu pour voir ses contrôles.", "Pick a game to see its controls."));
+            }
+            else
+            {
+                _status.Text = L.T($"Jeux installés de « {system} » : personnalisez un jeu, ou le gabarit dans Mes systèmes.",
+                    $"Installed games of \"{system}\": customize a game, or the template in My systems.");
+                _controlsCard.ShowSystem(system);
+            }
+        }
+
+        RefreshGameList();
+    }
+
     private void RefreshGameList()
     {
         _gameList.Items.Clear();
@@ -379,14 +605,14 @@ public sealed class GamesView : UserControl, IDisposable
                      .OrderBy(rom => rom, StringComparer.OrdinalIgnoreCase)
                      .Take(50))
         {
-            // game name first and prominent, rom as a discreet second line
+            // game name first and prominent, rom as a discreet second line; both
+            // inherit the item Foreground so the selected state can turn them white
             var content = new StackPanel();
             var hasName = names.TryGetValue(rom, out var name);
             content.Children.Add(new TextBlock
             {
                 Text = hasName ? name : rom,
                 FontSize = 12.5,
-                Foreground = Text(0xE8, 0xE8, 0xF0),
                 TextTrimming = TextTrimming.CharacterEllipsis
             });
             if (hasName)
@@ -395,7 +621,7 @@ public sealed class GamesView : UserControl, IDisposable
                 {
                     Text = rom,
                     FontSize = 10.5,
-                    Foreground = Text(0x8A, 0x8A, 0x9A)
+                    Opacity = 0.62
                 });
             }
 
@@ -417,7 +643,14 @@ public sealed class GamesView : UserControl, IDisposable
             return null;
         }
 
-        var index = layouts.ToList().FindIndex(l => !l.Key.Contains(':') && l.PanelButtons == _hardware.ButtonCount);
+        // honor the layout picker: exact key first (specials), then button count
+        var list = layouts.ToList();
+        var index = list.FindIndex(l => l.Key.Equals(SelectedLayoutId, StringComparison.OrdinalIgnoreCase));
+        if (index < 0)
+        {
+            index = list.FindIndex(l => !l.Key.Contains(':') && l.PanelButtons == SelectedLayoutButtons);
+        }
+
         var layout = layouts[index >= 0 ? index : layouts.Count - 1];
         var slug = System.Text.RegularExpressions.Regex
             .Replace(rom.Trim().ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-');
@@ -445,6 +678,36 @@ public sealed class GamesView : UserControl, IDisposable
         return roms.Count == 0 ? null : roms;
     }
 
+    /// <summary>Autocomplete: the result list only shows while a search is typed.</summary>
+    private void UpdateGameListVisibility()
+    {
+        _gameList.Visibility = _gameSearch.Text.Trim().Length > 0 && _gameList.Items.Count > 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    private void OnSearchKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (_gameList.Items.Count == 0)
+        {
+            return;
+        }
+
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            // Enter picks the first result
+            _gameList.SelectedIndex = -1;
+            _gameList.SelectedIndex = 0;
+            e.Handled = true;
+        }
+        else if (e.Key == System.Windows.Input.Key.Down && _gameList.Items[0] is ListBoxItem first)
+        {
+            _gameList.Visibility = Visibility.Visible;
+            first.Focus();
+            e.Handled = true;
+        }
+    }
+
     private void OnGameSelected()
     {
         if (_gameList.SelectedItem is not ListBoxItem selected || selected.Tag is not string rom)
@@ -452,7 +715,22 @@ public sealed class GamesView : UserControl, IDisposable
             return;
         }
 
-        var game = _games.Load(rom, LayoutIdForHardware);
+        // the chosen game takes the search box (like any combobox) and closes the list
+        if (selected.Content is StackPanel lines && lines.Children.Count > 0 && lines.Children[0] is TextBlock nameBlock)
+        {
+            _suppressSearch = true;
+            _gameSearch.Text = nameBlock.Text;
+            _suppressSearch = false;
+        }
+
+        _gameList.Visibility = Visibility.Collapsed;
+        LoadGame(rom);
+    }
+
+    /// <summary>Loads a game under the SELECTED layout (defaults to the real panel's).</summary>
+    private void LoadGame(string rom)
+    {
+        var game = _games.Load(rom, SelectedLayoutId);
         if (game == null && SelectedSystem is { } consoleSystem && !ArcadeFamily.Contains(consoleSystem))
         {
             game = SynthesizeConsoleGame(consoleSystem, rom);
@@ -465,7 +743,7 @@ public sealed class GamesView : UserControl, IDisposable
         }
 
         _currentGame = game;
-        _panel.Build(_layoutDefinition, _hardware.ButtonCount, hasStart: true, hasSelect: true);
+        _panel.Build(_layoutDefinition, SelectedLayoutButtons, hasStart: true, hasSelect: true);
         ReloadOverride();
 
         // Arcade games deploy their MAME cfg; anything else falls back to the
@@ -473,11 +751,677 @@ public sealed class GamesView : UserControl, IDisposable
         if (game.OverrideSystem.Equals("arcade", StringComparison.OrdinalIgnoreCase))
         {
             _controlsCard.ShowMameGame(game.Rom);
+            _ = LoadGameSheetAsync(SelectedSystem ?? game.System, rom);
         }
         else
         {
             _controlsCard.ShowSystem(game.System);
+            _gameSheet.Visibility = Visibility.Collapsed;
         }
+    }
+
+    /// <summary>
+    /// Chantier 2 phase A — read-only game sheet: for each panel button, its TWO
+    /// channels (input: game action / axis; light: game output driving the LED),
+    /// plus the game lights not displayed anywhere. Data comes from the APIExpose
+    /// definition projection; the sheet simply hides when the API is unreachable.
+    /// </summary>
+    private async Task LoadGameSheetAsync(string system, string rom)
+    {
+        _gameSheet.Visibility = Visibility.Collapsed;
+        _sheetContent.Children.Clear();
+
+        var baseUrl = ApiExposeClient.ResolveBaseUrl(_pluginRoot);
+        var (ok, body) = await ApiExposeClient.GetAsync(baseUrl, $"/api/v1/panels/game/{system}/{rom}/definition?activeLayout={Uri.EscapeDataString(SelectedLayoutId)}");
+        if (!ok)
+        {
+            return;
+        }
+
+        _deployedWiring = await LoadCurrentWiringAsync(baseUrl, rom);
+
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(body);
+            var root = doc.RootElement;
+
+            _sheetContent.Children.Add(new TextBlock
+            {
+                Text = L.T($"Fiche du jeu — actions et lumières ({root.GetProperty("activeLayoutId").GetString()})",
+                    $"Game sheet — actions and lights ({root.GetProperty("activeLayoutId").GetString()})"),
+                FontWeight = FontWeights.Bold,
+                FontSize = 13,
+                Foreground = Text(0xE8, 0xE8, 0xF0),
+                Margin = new Thickness(0, 0, 0, 8)
+            });
+
+            if (root.TryGetProperty("slots", out var slots) && slots.ValueKind == System.Text.Json.JsonValueKind.Array)
+            {
+                foreach (var slot in slots.EnumerateArray())
+                {
+                    var line = DescribeSlot(slot);
+                    if (line is not null)
+                    {
+                        _sheetContent.Children.Add(line);
+                    }
+                }
+            }
+
+            if (root.TryGetProperty("externalOutputs", out var external) && external.ValueKind == System.Text.Json.JsonValueKind.Array
+                && external.GetArrayLength() > 0)
+            {
+                _sheetContent.Children.Add(new TextBlock
+                {
+                    Text = L.T("Lumières du jeu non affichées sur le panel :", "Game lights not shown on the panel:"),
+                    FontSize = 11,
+                    Foreground = Text(0x8A, 0x8A, 0x9A),
+                    Margin = new Thickness(0, 8, 0, 2)
+                });
+                var names = external.EnumerateArray()
+                    .Select(o => o.TryGetProperty("label", out var l) ? l.GetString() : null)
+                    .Where(n => !string.IsNullOrWhiteSpace(n))
+                    .Distinct()
+                    .Take(12)
+                    .ToList();
+                _sheetContent.Children.Add(new TextBlock
+                {
+                    Text = string.Join(" · ", names) + (external.GetArrayLength() > 12 ? " …" : ""),
+                    FontSize = 11,
+                    Foreground = Text(0xB8, 0xB8, 0xC6),
+                    TextWrapping = TextWrapping.Wrap
+                });
+            }
+
+            BuildLightsEditor(root);
+
+            if (_sheetContent.Children.Count > 1)
+            {
+                _gameSheet.Visibility = Visibility.Visible;
+            }
+        }
+        catch (System.Net.Http.HttpRequestException)
+        {
+            // API unreachable: the sheet just stays hidden
+        }
+        catch (Exception ex)
+        {
+            _sheetContent.Children.Add(new TextBlock
+            {
+                Text = L.T($"Fiche indisponible : {ex.Message}", $"Sheet unavailable: {ex.Message}"),
+                Foreground = Ui.Brush(Color.FromRgb(0xE8, 0x8A, 0x5A)),
+                TextWrapping = TextWrapping.Wrap
+            });
+            _gameSheet.Visibility = Visibility.Visible;
+        }
+    }
+
+    /// <summary>
+    /// Chantier 2 phase B — light-channel editor: every game output can be
+    /// reallocated to a panel button and recolored. Saved into the game override
+    /// ("outputs" section) that the runtime already applies (PanelStateOverrides).
+    /// </summary>
+    private void BuildLightsEditor(System.Text.Json.JsonElement root)
+    {
+        var outputs = new List<(string Name, string Label, IReadOnlyList<int> PackSlots, string? PackColor, string? Group, string? InputRef)>();
+        _portDetails.Clear();
+
+        void Collect(System.Text.Json.JsonElement output, int? packSlot)
+        {
+            var name = output.TryGetProperty("outputName", out var on) && !string.IsNullOrWhiteSpace(on.GetString())
+                ? on.GetString()
+                : output.TryGetProperty("name", out var nn) ? nn.GetString() : null;
+            if (string.IsNullOrWhiteSpace(name) || outputs.Any(o => o.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            {
+                return;
+            }
+
+            // multi-home lamps carry a "slots" array (READY_LAMP lights B4+B3)
+            IReadOnlyList<int> packSlots;
+            if (output.TryGetProperty("slots", out var multi) && multi.ValueKind == System.Text.Json.JsonValueKind.Array)
+            {
+                packSlots = multi.EnumerateArray()
+                    .Where(v => v.ValueKind == System.Text.Json.JsonValueKind.Number)
+                    .Select(v => v.GetInt32())
+                    .Where(s => s >= 1)
+                    .Distinct()
+                    .ToArray();
+            }
+            else
+            {
+                packSlots = packSlot is { } single ? new[] { single } : Array.Empty<int>();
+            }
+
+            var group = output.TryGetProperty("group", out var g) ? g.GetString() : null;
+            var inputRef = output.TryGetProperty("inputRef", out var ir) ? ir.GetString() : null;
+            var valueType = output.TryGetProperty("valueType", out var vt) ? vt.GetString() : null;
+            _portDetails[name!] = L.T(
+                $"LUMIÈRE {name} · groupe {group ?? "—"} · type {valueType ?? "—"} · déclencheur {(string.IsNullOrWhiteSpace(inputRef) ? "—" : inputRef)}",
+                $"LIGHT {name} · group {group ?? "—"} · type {valueType ?? "—"} · trigger {(string.IsNullOrWhiteSpace(inputRef) ? "—" : inputRef)}");
+
+            outputs.Add((name!,
+                output.TryGetProperty("label", out var l) ? l.GetString() ?? name! : name!,
+                packSlots,
+                output.TryGetProperty("color", out var c) ? c.GetString() : null,
+                group,
+                inputRef));
+        }
+
+        if (root.TryGetProperty("slots", out var slots) && slots.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            foreach (var slot in slots.EnumerateArray())
+            {
+                var number = ReadSlotNumber(slot);
+                if (!slot.TryGetProperty("outputs", out var slotOutputs) || slotOutputs.ValueKind != System.Text.Json.JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                foreach (var output in slotOutputs.EnumerateArray())
+                {
+                    Collect(output, number);
+                }
+            }
+        }
+
+        if (root.TryGetProperty("externalOutputs", out var external) && external.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            foreach (var output in external.EnumerateArray())
+            {
+                Collect(output, null);
+            }
+        }
+
+        // --- game actions (input channel): P1 buttons, multi-allocatable ---
+        var actions = new List<(string Id, string Label, List<int> Slots)>();
+        void CollectAction(System.Text.Json.JsonElement input, int? slot)
+        {
+            var id = input.TryGetProperty("mameInput", out var mi) ? mi.GetString() : null;
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                // dynpanels may carry pre-0.286 Neo-Geo types (P1_A..P1_D) while
+                // the deployed cfg uses the normalized P1_BUTTONn — align on the
+                // normalized id so cables, wiring readback and patches all match
+                var neoGeo = System.Text.RegularExpressions.Regex.Match(id!, @"^P1_([A-F])$");
+                if (neoGeo.Success)
+                {
+                    id = $"P1_BUTTON{neoGeo.Groups[1].Value[0] - 'A' + 1}";
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(id) || !System.Text.RegularExpressions.Regex.IsMatch(id!, @"^P1_BUTTON\d+$"))
+            {
+                return;
+            }
+
+            var mameTag = input.TryGetProperty("mameTag", out var mt) ? mt.GetString() : null;
+            var mameMask = input.TryGetProperty("mameMask", out var mm) ? mm.GetString() : null;
+            _portDetails[id!] = L.T(
+                $"ACTION {id} · port {mameTag ?? "—"} · masque {mameMask ?? "—"}",
+                $"ACTION {id} · port {mameTag ?? "—"} · mask {mameMask ?? "—"}");
+
+            var existingAction = actions.FirstOrDefault(a => a.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+            if (existingAction.Id is null)
+            {
+                var label = input.TryGetProperty("function", out var f) && !string.IsNullOrWhiteSpace(f.GetString())
+                    ? f.GetString()!
+                    : input.TryGetProperty("label", out var l) ? l.GetString() ?? id! : id!;
+                existingAction = (id!, label, new List<int>());
+                actions.Add(existingAction);
+            }
+
+            if (slot is { } s && !existingAction.Slots.Contains(s))
+            {
+                existingAction.Slots.Add(s);
+            }
+        }
+
+        if (root.TryGetProperty("slots", out var slotsForActions) && slotsForActions.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            foreach (var slot in slotsForActions.EnumerateArray())
+            {
+                var number = ReadSlotNumber(slot);
+                if (slot.TryGetProperty("inputs", out var slotInputs) && slotInputs.ValueKind == System.Text.Json.JsonValueKind.Array)
+                {
+                    foreach (var input in slotInputs.EnumerateArray())
+                    {
+                        CollectAction(input, number);
+                    }
+                }
+            }
+        }
+
+        if (root.TryGetProperty("controlMap", out var controlMap)
+            && controlMap.TryGetProperty("inputs", out var mapInputs) && mapInputs.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            foreach (var input in mapInputs.EnumerateArray())
+            {
+                CollectAction(input, ReadSlotNumber(input));
+            }
+        }
+
+        // default cables = the truth, in this order: wiring of the deployed cfg
+        // (e.g. seawolf Fire on B1/B2/B6/B8), else the standard template slot n
+        // for P1_BUTTONn — so no action ever floats unwired.
+        foreach (var action in actions)
+        {
+            if (_deployedWiring.TryGetValue(action.Id, out var deployed))
+            {
+                action.Slots.Clear();
+                action.Slots.AddRange(deployed.Where(s => s >= 1 && s <= SelectedLayoutButtons));
+                continue;
+            }
+
+            if (action.Slots.Count > 0)
+            {
+                continue;
+            }
+
+            var match = System.Text.RegularExpressions.Regex.Match(action.Id, @"^P1_BUTTON(\d+)$");
+            if (match.Success && int.TryParse(match.Groups[1].Value, out var number)
+                && number >= 1 && number <= SelectedLayoutButtons)
+            {
+                action.Slots.Add(number);
+            }
+        }
+
+        // --- joystick / peripherals channel (informative): analog axes per button,
+        // directions and analog channels routed to their LARGE device node with one
+        // anchor per way/axis — the curator's granularity ---
+        var axisPorts = new List<(string Id, string Label, IReadOnlyList<int> Slots, string? DeviceKey, string? Anchor)>();
+        var deviceNodes = new List<PanelPatchBay.DeviceNode>();
+
+        void CollectAxis(string? id, string? label, int? slot, string? deviceKey = null, string? anchor = null)
+        {
+            if (string.IsNullOrWhiteSpace(id) || axisPorts.Any(a => a.Id.Equals(id, StringComparison.OrdinalIgnoreCase)))
+            {
+                return;
+            }
+
+            axisPorts.Add((id!, string.IsNullOrWhiteSpace(label) ? id! : label!,
+                slot is { } s ? new[] { s } : Array.Empty<int>(), deviceKey, anchor));
+        }
+
+        if (root.TryGetProperty("slots", out var slotsForAxes) && slotsForAxes.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            foreach (var slot in slotsForAxes.EnumerateArray())
+            {
+                if (!slot.TryGetProperty("axes", out var slotAxes) || slotAxes.ValueKind != System.Text.Json.JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                var number = ReadSlotNumber(slot);
+                foreach (var axis in slotAxes.EnumerateArray())
+                {
+                    var label = axis.TryGetProperty("label", out var al) ? al.GetString() : null;
+                    var id = axis.TryGetProperty("id", out var ai) && !string.IsNullOrWhiteSpace(ai.GetString()) ? ai.GetString() : label;
+                    CollectAxis(id, label, number);
+                }
+            }
+        }
+
+        // slotless analog channels: each becomes a device node (paddle, spinner,
+        // trackball, wheel… recognized from the label)
+        if (root.TryGetProperty("externalAxes", out var externalAxes) && externalAxes.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            foreach (var axis in externalAxes.EnumerateArray())
+            {
+                var label = axis.TryGetProperty("label", out var al) ? al.GetString() : null;
+                var id = axis.TryGetProperty("id", out var ai) && !string.IsNullOrWhiteSpace(ai.GetString()) ? ai.GetString() : label;
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    continue;
+                }
+
+                var deviceKey = "analog:" + id;
+                var anchors = AnchorsForAnalog(label ?? id!);
+                deviceNodes.Add(new PanelPatchBay.DeviceNode(deviceKey, label ?? id!, "analog", anchors));
+                CollectAxis(id, label, null, deviceKey, anchors[0]);
+            }
+        }
+
+        // player-1 directions: grouped per physical device (type/label from the
+        // dynpanel device list), the node exposes the joystick's real ways
+        var directionsByDevice = new Dictionary<string, (string Label, string Way, List<(string Id, string Label, string Direction)> Entries)>(StringComparer.OrdinalIgnoreCase);
+        if (root.TryGetProperty("controlMap", out var mapForDirections)
+            && mapForDirections.TryGetProperty("inputs", out var directionInputs)
+            && directionInputs.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            foreach (var input in directionInputs.EnumerateArray())
+            {
+                var mame = input.TryGetProperty("mameInput", out var mi) ? mi.GetString() : null;
+                var match = mame is null
+                    ? null
+                    : System.Text.RegularExpressions.Regex.Match(mame, @"^P1_(?:JOYSTICK(?:LEFT|RIGHT)?_)?(LEFT|RIGHT|UP|DOWN)$");
+                if (match is not { Success: true })
+                {
+                    continue;
+                }
+
+                var direction = match.Groups[1].Value.ToLowerInvariant();
+                var deviceType = input.TryGetProperty("deviceType", out var dt) ? dt.GetString() ?? "" : "";
+                var deviceLabel = input.TryGetProperty("deviceLabel", out var dl) ? dl.GetString() ?? "" : "";
+                var way = input.TryGetProperty("joystickWay", out var jw) ? jw.GetString() ?? "" : "";
+                if (string.IsNullOrWhiteSpace(way))
+                {
+                    way = deviceType; // "joy8way", "joy2wayhorizontal"… carry the ways too
+                }
+
+                var key = "joy:" + (string.IsNullOrWhiteSpace(deviceLabel) ? deviceType : deviceLabel);
+                var label = input.TryGetProperty("function", out var f) && !string.IsNullOrWhiteSpace(f.GetString())
+                    ? f.GetString()!
+                    : L.T(direction switch { "up" => "Haut", "down" => "Bas", "left" => "Gauche", _ => "Droite" },
+                        char.ToUpperInvariant(direction[0]) + direction[1..]);
+
+                if (!directionsByDevice.TryGetValue(key, out var device))
+                {
+                    var displayLabel = string.IsNullOrWhiteSpace(deviceLabel) || deviceLabel.StartsWith("joy", StringComparison.OrdinalIgnoreCase)
+                        ? L.T("Joystick", "Joystick")
+                        : deviceLabel;
+                    device = (displayLabel, way, new List<(string, string, string)>());
+                    directionsByDevice[key] = device;
+                }
+
+                if (!string.IsNullOrWhiteSpace(way))
+                {
+                    directionsByDevice[key] = (device.Label, way, device.Entries);
+                }
+
+                device.Entries.Add((mame!, label, direction));
+            }
+        }
+
+        foreach (var (key, device) in directionsByDevice)
+        {
+            var anchors = JoystickAnchors(device.Way, device.Entries.Select(e => e.Direction));
+            var displayWay = anchors.Count is 8 or 4 or 2 ? L.T($" {anchors.Count} voies", $" {anchors.Count}-way") : "";
+            deviceNodes.Add(new PanelPatchBay.DeviceNode(key, device.Label + displayWay, "joystick", anchors));
+            foreach (var (id, label, direction) in device.Entries)
+            {
+                CollectAxis(id, label, null, key, direction);
+            }
+        }
+
+        if ((outputs.Count == 0 && actions.Count == 0 && axisPorts.Count == 0) || _currentGame is not { } game)
+        {
+            return;
+        }
+
+        var lightPatches = _store.LoadGameOutputPatches(game.OverrideSystem, game.Rom);
+        var actionPatches = _store.LoadGameInputPatches(game.OverrideSystem, game.Rom);
+
+        _sheetContent.Children.Add(new TextBlock
+        {
+            Text = L.T("Câblage du panel — actions et lumières :", "Panel wiring — actions and lights:"),
+            FontWeight = FontWeights.Bold,
+            FontSize = 12,
+            Foreground = Text(0xE8, 0xE8, 0xF0),
+            Margin = new Thickness(0, 10, 0, 2)
+        });
+        _sheetContent.Children.Add(new TextBlock
+        {
+            Text = L.T("Tire un câble d'une prise vers un bouton (il s'aimante) · SUPPRIMER une liaison : redépose l'action sur le "
+                    + "bouton déjà branché, ou lâche le câble dans le vide pour revenir au réglage d'origine · une ACTION (cyan) "
+                    + "peut être branchée sur plusieurs boutons · une LUMIÈRE peut éclairer plusieurs boutons d'origine ; la "
+                    + "déplacer la ramène à un seul · une DIRECTION de périphérique (bleu) peut aussi être câblée sur des "
+                    + "boutons — le stick continue de fonctionner, les boutons s'ajoutent · pointillé = réglage actuel, plein = "
+                    + "ta modification · la prise violette d'un groupe câble toute la famille · clic sur une puce, un bouton ou "
+                    + "un périphérique = focus · le point coloré ouvre la palette.",
+                "Drag a cable from a port to a button (it snaps) · REMOVE a link: drop the action again on the wired button, or "
+                    + "drop the cable in the void to return to the original setting · an ACTION (cyan) can be wired to several "
+                    + "buttons · a LIGHT may light several buttons by default; moving it re-homes it to one · a device "
+                    + "DIRECTION (blue) can also be wired to buttons — the stick keeps working, buttons are added · dashed = "
+                    + "current setting, solid = your change · a group's purple port wires the whole family · click a chip, a "
+                    + "button or a device to focus · the color dot opens the palette."),
+            FontSize = 10.5,
+            Foreground = Text(0x8A, 0x8A, 0x9A),
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 6)
+        });
+
+        var ports = actions
+            .Select(a => new PanelPatchBay.Port(a.Id, PanelPatchBay.KindAction, a.Label, null, null, a.Slots))
+            .Concat(axisPorts.Select(a => new PanelPatchBay.Port(a.Id, PanelPatchBay.KindAxis, a.Label, null, null, a.Slots, a.DeviceKey, a.Anchor)))
+            .Concat(outputs.Select(o => new PanelPatchBay.Port(o.Name, PanelPatchBay.KindLight, o.Label, o.Group, o.PackColor, o.PackSlots, InputRef: o.InputRef)))
+            .ToList();
+        // the bay paints buttons with the game's resolved colors (mslug has no
+        // lamp: its buttons still show Red/Yellow/Green)
+        var slotColors = _panel.Slots.ToDictionary(s => s, s => _edited.TryGetValue(s, out var over) ? over : BaselineColor(s));
+
+        // START/SELECT colors from the game's system inputs (start / coin-select)
+        var targetColors = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (root.TryGetProperty("controlMap", out var mapForTargets)
+            && mapForTargets.TryGetProperty("inputs", out var targetInputs)
+            && targetInputs.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            foreach (var input in targetInputs.EnumerateArray())
+            {
+                var id = input.TryGetProperty("id", out var ti) ? ti.GetString() : null;
+                var color = input.TryGetProperty("color", out var tc) ? tc.GetString() : null;
+                if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(color))
+                {
+                    continue;
+                }
+
+                if (id!.Equals("start", StringComparison.OrdinalIgnoreCase) && !targetColors.ContainsKey("START"))
+                {
+                    targetColors["START"] = color!;
+                }
+                else if ((id.Equals("coin", StringComparison.OrdinalIgnoreCase) || id.Equals("select", StringComparison.OrdinalIgnoreCase))
+                         && !targetColors.ContainsKey("SELECT"))
+                {
+                    targetColors["SELECT"] = color!;
+                }
+            }
+        }
+
+        _patchBay.Load(ports, lightPatches, actionPatches, SelectedLayoutButtons, deviceNodes, slotColors, targetColors);
+
+        _sheetContent.Children.Add(_patchBayHost);
+        _inspector.Visibility = Visibility.Collapsed;
+        _sheetContent.Children.Add(_inspector);
+
+        var save = new Button
+        {
+            Content = L.T("Enregistrer le câblage", "Save the wiring"),
+            Margin = new Thickness(0, 8, 0, 0),
+            HorizontalAlignment = HorizontalAlignment.Left,
+            FontWeight = FontWeights.Bold,
+            Style = (Style)Application.Current.FindResource("AccentButton")
+        };
+        save.Click += (_, _) => SaveWiring();
+        _sheetContent.Children.Add(save);
+    }
+
+    private void SaveWiring()
+    {
+        if (_currentGame is not { } game)
+        {
+            return;
+        }
+
+        var lights = _patchBay.GetLightPatches();
+        var actions = _patchBay.GetActionPatches();
+        _store.SaveGameOutputPatches(game.OverrideSystem, game.Rom, lights);
+        var path = _store.SaveGameInputPatches(game.OverrideSystem, game.Rom, actions);
+
+        _status.Text = lights.Count == 0 && actions.Count == 0
+            ? L.T("Câblage remis aux réglages du pack.", "Wiring restored to pack settings.")
+            : L.T($"Câblage enregistré ({System.IO.Path.GetFileName(path)}). Lumières : appliquées à la prochaine sélection du jeu."
+                    + (actions.Count > 0 ? " Actions : cliquez « Mettre à jour ce jeu » (Contrôles) pour les pousser dans MAME." : ""),
+                $"Wiring saved ({System.IO.Path.GetFileName(path)}). Lights: applied at the next game selection."
+                    + (actions.Count > 0 ? " Actions: click \"Update this game\" (Controls) to push them into MAME." : ""));
+    }
+
+    /// <summary>One line per used button: "B3  ✱ Cadet Mission (lumière lamp2) · ● Abort (action)…"</summary>
+    /// <summary>
+    /// Wiring of the game's DEPLOYED MAME cfg in physical buttons — what really
+    /// fires today (e.g. seawolf: Fire on B1/B2/B6/B8). The bay shows it as the
+    /// default cables, ahead of the dynpanel template.
+    /// </summary>
+    private static async Task<IReadOnlyDictionary<string, IReadOnlyList<int>>> LoadCurrentWiringAsync(string baseUrl, string rom)
+    {
+        var result = new Dictionary<string, IReadOnlyList<int>>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            var (ok, body) = await ApiExposeClient.GetAsync(baseUrl, $"/api/v1/panels/controls/mamecfg/current?rom={Uri.EscapeDataString(rom)}");
+            if (!ok)
+            {
+                return result;
+            }
+
+            using var doc = System.Text.Json.JsonDocument.Parse(body);
+            if (!doc.RootElement.TryGetProperty("wiring", out var wiring) || wiring.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return result;
+            }
+
+            foreach (var entry in wiring.EnumerateObject())
+            {
+                if (entry.Value.ValueKind != System.Text.Json.JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                var slots = entry.Value.EnumerateArray()
+                    .Where(v => v.ValueKind == System.Text.Json.JsonValueKind.Number)
+                    .Select(v => v.GetInt32())
+                    .Where(s => s >= 1)
+                    .ToArray();
+                if (slots.Length > 0)
+                {
+                    result[entry.Name] = slots;
+                }
+            }
+        }
+        catch
+        {
+            // endpoint absent (older API): template defaults apply
+        }
+
+        return result;
+    }
+
+    /// <summary>Anchor roles of a slotless analog channel, from its label — the
+    /// curator's peripheral families (spinner/dial/trackball/paddle/wheel/pedal…).</summary>
+    private static IReadOnlyList<string> AnchorsForAnalog(string label)
+    {
+        var lower = label.ToLowerInvariant();
+        if (lower.Contains("trackball") || lower.Contains("roller"))
+        {
+            return new[] { "x", "y" };
+        }
+
+        if (lower.Contains("spinner") || lower.Contains("dial") || lower.Contains("paddle")
+            || lower.Contains("wheel") || lower.Contains("turntable") || lower.Contains("handlebar")
+            || lower.Contains("volant"))
+        {
+            return new[] { "ccw", "cw" };
+        }
+
+        if (lower.Contains("pedal") || lower.Contains("pédale") || lower.Contains("throttle"))
+        {
+            return new[] { "press" };
+        }
+
+        if (lower.Contains("gun") || lower.Contains("crosshair"))
+        {
+            return new[] { "x", "y" };
+        }
+
+        return new[] { "x" };
+    }
+
+    /// <summary>Joystick anchors from the dynpanel ways ("8", "4", "2"…), falling
+    /// back to the directions the game actually declares.</summary>
+    private static IReadOnlyList<string> JoystickAnchors(string way, IEnumerable<string> declaredDirections)
+    {
+        if (way.Contains('8'))
+        {
+            return new[] { "up", "up-right", "right", "down-right", "down", "down-left", "left", "up-left" };
+        }
+
+        if (way.Contains('4'))
+        {
+            return new[] { "up", "right", "down", "left" };
+        }
+
+        var declared = declaredDirections.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        if (way.Contains('2') || declared.Length == 2)
+        {
+            return declared.Length == 2 ? declared : new[] { "left", "right" };
+        }
+
+        return declared.Length > 0 ? declared : new[] { "up", "right", "down", "left" };
+    }
+
+    /// <summary>Reads the "slot" property, tolerating null values (system inputs
+    /// like START/COIN carry "slot": null in the projection).</summary>
+    private static int? ReadSlotNumber(System.Text.Json.JsonElement element)
+        => element.TryGetProperty("slot", out var s)
+           && s.ValueKind == System.Text.Json.JsonValueKind.Number
+           && s.TryGetInt32(out var n)
+            ? n
+            : null;
+
+    private TextBlock? DescribeSlot(System.Text.Json.JsonElement slot)
+    {
+        var number = ReadSlotNumber(slot) ?? -1;
+        if (number <= 0)
+        {
+            return null;
+        }
+
+        var block = new TextBlock { FontSize = 12, Margin = new Thickness(0, 1, 0, 1), TextWrapping = TextWrapping.Wrap };
+        block.Inlines.Add(new System.Windows.Documents.Run($"B{number}  ") { FontWeight = FontWeights.Bold, Foreground = Text(0xE8, 0xE8, 0xF0) });
+        var parts = 0;
+
+        void Append(string glyph, string? color, string label, string kind)
+        {
+            if (parts++ > 0)
+            {
+                block.Inlines.Add(new System.Windows.Documents.Run("  ·  ") { Foreground = Text(0x5A, 0x5A, 0x6A) });
+            }
+
+            block.Inlines.Add(new System.Windows.Documents.Run(glyph + " ") { Foreground = new SolidColorBrush(PanelColors.Resolve(color ?? "GRAY")) });
+            block.Inlines.Add(new System.Windows.Documents.Run(label) { Foreground = Text(0xB8, 0xB8, 0xC6) });
+            block.Inlines.Add(new System.Windows.Documents.Run($" ({kind})") { Foreground = Text(0x8A, 0x8A, 0x9A), FontSize = 10.5 });
+        }
+
+        if (slot.TryGetProperty("inputs", out var inputs) && inputs.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            foreach (var input in inputs.EnumerateArray())
+            {
+                var label = input.TryGetProperty("function", out var f) && !string.IsNullOrWhiteSpace(f.GetString())
+                    ? f.GetString()!
+                    : input.TryGetProperty("label", out var l) ? l.GetString() ?? "?" : "?";
+                var color = input.TryGetProperty("color", out var c) ? c.GetString() : null;
+                Append("●", color, label, L.T("action", "action"));
+            }
+        }
+
+        if (slot.TryGetProperty("outputs", out var outputs) && outputs.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            foreach (var output in outputs.EnumerateArray())
+            {
+                var label = output.TryGetProperty("label", out var l) ? l.GetString() ?? "?" : "?";
+                var color = output.TryGetProperty("color", out var c) ? c.GetString() : null;
+                var name = output.TryGetProperty("outputName", out var on) ? on.GetString() : null;
+                Append("✱", color, label, L.T($"lumière {name}", $"light {name}"));
+            }
+        }
+
+        if (slot.TryGetProperty("axes", out var axes) && axes.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            foreach (var axis in axes.EnumerateArray())
+            {
+                var label = axis.TryGetProperty("label", out var l) ? l.GetString() ?? "?" : "?";
+                var color = axis.TryGetProperty("color", out var c) ? c.GetString() : null;
+                Append("◆", color, label, L.T("axe", "axis"));
+            }
+        }
+
+        return parts > 0 ? block : null;
     }
 
     // ----- resolution: pack -> system patch -> game patch -----
@@ -570,7 +1514,7 @@ public sealed class GamesView : UserControl, IDisposable
     private ContextMenu BuildPalette()
     {
         var menu = new ContextMenu();
-        var reset = new MenuItem { Header = L.T("Couleur d'origine (retirer l'override)", "Original color (remove override)") };
+        var reset = new MenuItem { Header = L.T("Couleur d'origine (retirer ma configuration)", "Original color (remove my configuration)") };
         reset.Click += (_, _) => ApplyColor(null);
         menu.Items.Add(reset);
         menu.Items.Add(new Separator());
@@ -609,8 +1553,8 @@ public sealed class GamesView : UserControl, IDisposable
         }
 
         Repaint();
-        _status.Text = L.T("Modification non enregistrée — cliquez « Enregistrer l'override ».",
-            "Unsaved change — click \"Save the override\".");
+        _status.Text = L.T("Modification non enregistrée — cliquez « Enregistrer ma configuration ».",
+            "Unsaved change — click \"Save my configuration\".");
         if (_sender is { IsAlive: true })
         {
             SendLivePreview();
@@ -626,9 +1570,9 @@ public sealed class GamesView : UserControl, IDisposable
 
         var path = _store.SaveGame(game.OverrideSystem, game.Rom, _edited);
         _status.Text = _edited.Count == 0
-            ? L.T("Plus aucune personnalisation : le patch a été retiré.", "No customization left: the patch was removed.")
-            : L.T($"Override enregistré ({System.IO.Path.GetFileName(path)}). LedManager l'applique dès la prochaine sélection de jeu.",
-                $"Override saved ({System.IO.Path.GetFileName(path)}). LedManager applies it from the next game selection.");
+            ? L.T("Plus aucune personnalisation : votre configuration a été retirée.", "No customization left: your configuration was removed.")
+            : L.T("Configuration enregistrée. LedManager l'applique dès la prochaine sélection de jeu.",
+                "Configuration saved. LedManager applies it from the next game selection.");
     }
 
     private void OnResetToPack(object sender, RoutedEventArgs e)
@@ -639,7 +1583,7 @@ public sealed class GamesView : UserControl, IDisposable
         }
 
         var confirm = MessageBox.Show(
-            L.T($"Supprimer l'override du jeu {game.Rom} ?", $"Delete the {game.Rom} game override?"),
+            L.T($"Supprimer ma configuration du jeu {game.Rom} ?", $"Delete my {game.Rom} configuration?"),
             "LedManager Setup", MessageBoxButton.YesNo, MessageBoxImage.Question);
         if (confirm != MessageBoxResult.Yes)
         {
@@ -653,7 +1597,7 @@ public sealed class GamesView : UserControl, IDisposable
         }
 
         ReloadOverride();
-        _status.Text = L.T("Override supprimé.", "Override deleted.");
+        _status.Text = L.T("Configuration supprimée.", "Configuration deleted.");
     }
 
     // ----- live preview on the real panel -----
@@ -746,11 +1690,16 @@ public sealed class GamesView : UserControl, IDisposable
             Margin = new Thickness(0, 0, 8, 0),
             FontWeight = primary ? FontWeights.Bold : FontWeights.Normal
         };
+        if (primary)
+        {
+            button.Style = (Style)Application.Current.FindResource("AccentButton");
+        }
+
         button.Click += onClick;
         return button;
     }
 
-    private static SolidColorBrush Text(byte r, byte g, byte b) => new(Color.FromRgb(r, g, b));
+    private static SolidColorBrush Text(byte r, byte g, byte b) => Ui.Text(r, g, b);
 
     public void Dispose()
     {

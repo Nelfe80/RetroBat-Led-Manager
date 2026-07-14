@@ -43,13 +43,13 @@ public sealed class ControlsDeployCard : UserControl
             Text = L.T("Contrôles", "Controls"),
             FontWeight = FontWeights.Bold,
             FontSize = 13,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xE8, 0xE8, 0xF0))
+            Foreground = Ui.Brush(Color.FromRgb(0xE8, 0xE8, 0xF0))
         };
 
         _label = new TextBlock
         {
             FontSize = 12,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xB8, 0xB8, 0xC6)),
+            Foreground = Ui.Brush(Color.FromRgb(0xB8, 0xB8, 0xC6)),
             TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(0, 4, 0, 8)
         };
@@ -74,7 +74,7 @@ public sealed class ControlsDeployCard : UserControl
             Margin = new Thickness(0, 8, 0, 0),
             FontSize = 12,
             FontWeight = FontWeights.Bold,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xB8, 0xB8, 0xC6)),
+            Foreground = Ui.Brush(Color.FromRgb(0xB8, 0xB8, 0xC6)),
             TextWrapping = TextWrapping.Wrap
         };
 
@@ -87,8 +87,8 @@ public sealed class ControlsDeployCard : UserControl
             FontSize = 11,
             MaxHeight = 140,
             Margin = new Thickness(0, 6, 0, 0),
-            Background = new SolidColorBrush(Color.FromRgb(0x16, 0x16, 0x20)),
-            Foreground = new SolidColorBrush(Color.FromRgb(0xB8, 0xB8, 0xC6)),
+            Background = Ui.Brush(Color.FromRgb(0x16, 0x16, 0x20)),
+            Foreground = Ui.Brush(Color.FromRgb(0xB8, 0xB8, 0xC6)),
             BorderThickness = new Thickness(0),
             Padding = new Thickness(8),
             Visibility = Visibility.Collapsed
@@ -104,7 +104,7 @@ public sealed class ControlsDeployCard : UserControl
 
         Content = new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x1D, 0x1D, 0x2A)),
+            Background = Ui.Brush(Color.FromRgb(0x1D, 0x1D, 0x2A)),
             CornerRadius = new CornerRadius(10),
             Padding = new Thickness(14),
             Margin = new Thickness(0, 14, 0, 0),

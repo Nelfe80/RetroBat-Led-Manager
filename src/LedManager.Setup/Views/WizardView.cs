@@ -77,7 +77,7 @@ public sealed class WizardView : UserControl, IDisposable
         _body = new TextBlock { Margin = new Thickness(0, 12, 0, 0), FontSize = 13, Foreground = Text(0xB8, 0xB8, 0xC6), TextWrapping = TextWrapping.Wrap, LineHeight = 20 };
         _status = new TextBlock { Margin = new Thickness(0, 12, 0, 0), FontSize = 12, Foreground = Text(0x8A, 0x8A, 0x9A), TextWrapping = TextWrapping.Wrap };
         _choices = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0), Visibility = Visibility.Collapsed };
-        _primary = new Button { Content = L.T("Commencer", "Start"), Padding = new Thickness(18, 8, 18, 8), Margin = new Thickness(0, 20, 8, 0), MinWidth = 130 };
+        _primary = new Button { Content = L.T("Commencer", "Start"), Padding = new Thickness(18, 8, 18, 8), Margin = new Thickness(0, 20, 8, 0), MinWidth = 130, Style = (Style)Application.Current.FindResource("AccentButton") };
         _secondary = new Button { Padding = new Thickness(18, 8, 18, 8), Margin = new Thickness(0, 20, 8, 0), MinWidth = 130, Visibility = Visibility.Collapsed };
         _back = new Button { Content = L.T("Précédent", "Back"), Padding = new Thickness(18, 8, 18, 8), Margin = new Thickness(0, 20, 0, 0), MinWidth = 100, IsEnabled = false };
         _primary.Click += (_, _) => OnPrimary();
@@ -89,7 +89,7 @@ public sealed class WizardView : UserControl, IDisposable
             Text = L.T($"Pico configuré : {hardware.PicoLabel}", $"Configured Pico: {hardware.PicoLabel}"),
             FontSize = 12,
             FontWeight = FontWeights.Bold,
-            Foreground = new SolidColorBrush(Color.FromRgb(0x8A, 0x2B, 0xE2)),
+            Foreground = Ui.Brush(Color.FromRgb(0x8A, 0x2B, 0xE2)),
             Margin = new Thickness(0, 0, 0, 8)
         };
 
@@ -105,7 +105,7 @@ public sealed class WizardView : UserControl, IDisposable
         buttons.Children.Add(_back);
         rightStack.Children.Add(buttons);
 
-        var panelBorder = new Border { Background = new SolidColorBrush(Color.FromRgb(0x1D, 0x1D, 0x2A)), CornerRadius = new CornerRadius(12), Padding = new Thickness(24), Child = _panel };
+        var panelBorder = new Border { Background = Ui.Viewport, CornerRadius = new CornerRadius(12), Padding = new Thickness(24), Child = _panel };
 
         var grid = new Grid { Margin = new Thickness(20) };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.4, GridUnitType.Star) });
@@ -701,7 +701,7 @@ public sealed class WizardView : UserControl, IDisposable
         _sender = null;
     }
 
-    private static SolidColorBrush Text(byte r, byte g, byte b) => new(Color.FromRgb(r, g, b));
+    private static SolidColorBrush Text(byte r, byte g, byte b) => Ui.Text(r, g, b);
 
     public void Dispose()
     {

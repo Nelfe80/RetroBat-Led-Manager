@@ -78,3 +78,7 @@ overrides/**
 !overrides/
 !overrides/README.txt
 
+
+LedManager.ini.bak
+# licences a verifier avant publication
+resources/controllers_inputs_roms_testing/

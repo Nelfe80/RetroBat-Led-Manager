@@ -35,16 +35,40 @@ public sealed class MonitorView : UserControl, IDisposable
         _interpreter.MatrixChanged += _panel.SetMatrix;
         _interpreter.Flashed += _panel.Flash;
 
-        _statusDot = new Ellipse { Width = 12, Height = 12, Fill = new SolidColorBrush(Color.FromRgb(0xD0, 0x40, 0x40)), VerticalAlignment = VerticalAlignment.Center };
-        _statusText = new TextBlock { Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Foreground = new SolidColorBrush(Color.FromRgb(0x8A, 0x8A, 0x9A)), Text = L.T("En attente de LedManager…", "Waiting for LedManager…") };
-        _log = new ListBox { Height = 120, Background = new SolidColorBrush(Color.FromRgb(0x10, 0x10, 0x18)), Foreground = new SolidColorBrush(Color.FromRgb(0x8A, 0x8A, 0x9A)), FontFamily = new FontFamily("Consolas"), FontSize = 11, BorderThickness = new Thickness(0), Margin = new Thickness(0, 12, 0, 0) };
+        _statusDot = new Ellipse { Width = 12, Height = 12, Fill = Ui.Brush(Color.FromRgb(0xD0, 0x40, 0x40)), VerticalAlignment = VerticalAlignment.Center };
+        _statusText = new TextBlock { Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Foreground = Ui.Brush(Color.FromRgb(0x8A, 0x8A, 0x9A)), Text = L.T("En attente de LedManager…", "Waiting for LedManager…") };
+        // themed log card: white in the light theme, dark card in the dark one
+        _log = new ListBox { Height = 104, Background = Brushes.Transparent, Foreground = Ui.Text(0xB8, 0xB8, 0xC6), FontFamily = new FontFamily("Consolas"), FontSize = 11, BorderThickness = new Thickness(0) };
 
         var header = new DockPanel { Margin = new Thickness(0, 0, 0, 12) };
         DockPanel.SetDock(_statusDot, Dock.Left);
         header.Children.Add(_statusDot);
         header.Children.Add(_statusText);
 
-        var panelBorder = new Border { Background = new SolidColorBrush(Color.FromRgb(0x1D, 0x1D, 0x2A)), CornerRadius = new CornerRadius(12), Padding = new Thickness(24), Child = _panel };
+        var panelBorder = new Border { Background = Ui.Viewport, CornerRadius = new CornerRadius(12), Padding = new Thickness(24), Child = _panel };
+
+        // console card under the panel: caption + rounded dark plate, so it reads
+        // as a hardware feed viewer instead of a bare black block
+        var logStack = new StackPanel();
+        logStack.Children.Add(new TextBlock
+        {
+            Text = L.T("FLUX MATÉRIEL", "HARDWARE FEED"),
+            FontSize = 9.5,
+            FontWeight = FontWeights.Bold,
+            Foreground = new SolidColorBrush(Color.FromRgb(0x6A, 0x6A, 0x7E)),
+            Margin = new Thickness(2, 0, 0, 5)
+        });
+        logStack.Children.Add(_log);
+        var logCard = new Border
+        {
+            Background = Ui.Brush(Color.FromRgb(0x1D, 0x1D, 0x2A)),
+            BorderBrush = Ui.Brush(Color.FromRgb(0x3A, 0x3A, 0x52)),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(10),
+            Padding = new Thickness(12, 9, 12, 9),
+            Margin = new Thickness(0, 12, 0, 0),
+            Child = logStack
+        };
 
         var grid = new Grid { Margin = new Thickness(20) };
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -52,10 +76,10 @@ public sealed class MonitorView : UserControl, IDisposable
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         Grid.SetRow(header, 0);
         Grid.SetRow(panelBorder, 1);
-        Grid.SetRow(_log, 2);
+        Grid.SetRow(logCard, 2);
         grid.Children.Add(header);
         grid.Children.Add(panelBorder);
-        grid.Children.Add(_log);
+        grid.Children.Add(logCard);
         Content = grid;
 
         _drainTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(50) };
@@ -103,7 +127,11 @@ public sealed class MonitorView : UserControl, IDisposable
             _interpreter.Apply(evt.Command);
             if (logged < 25)
             {
-                _log.Items.Insert(0, $"{DateTime.Now:HH:mm:ss.fff}  [{evt.Sender}] {evt.Command}");
+                _log.Items.Insert(0, new TextBlock
+                {
+                    Text = $"{DateTime.Now:HH:mm:ss.fff}  [{evt.Sender}] {evt.Command}",
+                    Foreground = Ui.Text(0xB8, 0xB8, 0xC6)
+                });
                 logged++;
             }
         }

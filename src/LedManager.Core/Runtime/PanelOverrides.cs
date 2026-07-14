@@ -120,15 +120,33 @@ public static class PanelStateOverrides
                                 && slotElement.TryGetInt32(out var slotValue)
                         ? slotValue
                         : null;
+                    var targets = ReadTargets(entry.Value);
 
-                    for (var i = 0; i < outputs.Count; i++)
+                    var clones = new List<PanelOutput>();
+                    var count = outputs.Count; // clones must not be re-matched
+                    for (var i = 0; i < count; i++)
                     {
-                        if (OutputMatches(outputs[i], entry.Name))
+                        if (!OutputMatches(outputs[i], entry.Name))
+                        {
+                            continue;
+                        }
+
+                        if (targets.Count > 0)
+                        {
+                            // re-home the lamp on system LEDs (START/SELECT); extra
+                            // targets clone the output so one lamp can light both
+                            outputs[i] = With(outputs[i], color: color, retarget: targets[0]);
+                            clones.AddRange(targets.Skip(1).Select(extra => With(outputs[i], retarget: extra)));
+                        }
+                        else
                         {
                             outputs[i] = With(outputs[i], color: color, slot: slot);
-                            touched++;
                         }
+
+                        touched++;
                     }
+
+                    outputs.AddRange(clones);
                 }
             }
 
@@ -156,19 +174,45 @@ public static class PanelStateOverrides
         }
     }
 
-    private static PanelOutput With(PanelOutput output, string? color = null, int? slot = null)
+    private static PanelOutput With(PanelOutput output, string? color = null, int? slot = null, string? retarget = null)
     {
         return new PanelOutput
         {
             Player = output.Player,
-            Slot = slot ?? output.Slot,
-            Target = output.Target,
+            Slot = retarget is not null ? null : slot ?? output.Slot,
+            Target = retarget ?? output.Target,
             Color = color ?? output.Color,
             Id = output.Id,
             Name = output.Name,
             Function = output.Function,
             OutputName = output.OutputName
         };
+    }
+
+    /// <summary>Optional "target": "START" or "targets": ["START","SELECT"] on an
+    /// output patch — the lamp re-homes to the system LEDs.</summary>
+    private static List<string> ReadTargets(JsonElement element)
+    {
+        var targets = new List<string>();
+        if (element.ValueKind != JsonValueKind.Object)
+        {
+            return targets;
+        }
+
+        if (element.TryGetProperty("target", out var single) && single.ValueKind == JsonValueKind.String
+            && !string.IsNullOrWhiteSpace(single.GetString()))
+        {
+            targets.Add(single.GetString()!.Trim().ToUpperInvariant());
+        }
+
+        if (element.TryGetProperty("targets", out var many) && many.ValueKind == JsonValueKind.Array)
+        {
+            targets.AddRange(many.EnumerateArray()
+                .Where(t => t.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(t.GetString()))
+                .Select(t => t.GetString()!.Trim().ToUpperInvariant()));
+        }
+
+        return targets.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
     }
 
     private static bool OutputMatches(PanelOutput output, string name)
