@@ -34,7 +34,8 @@ public sealed class PanelPatchBay : UserControl
         IReadOnlyList<int> PackSlots,
         string? DeviceKey = null,
         string? Anchor = null,
-        string? InputRef = null);
+        string? InputRef = null,
+        IReadOnlyList<string>? PackTargets = null);
 
     /// <summary>Physical peripheral drawn as a LARGE node in the footer, with one
     /// anchor socket per axis/way (joy 2/4/8, spinner, trackball, pedal…).</summary>
@@ -226,7 +227,9 @@ public sealed class PanelPatchBay : UserControl
             var packSlot = port.PackSlots.Count == 1 ? port.PackSlots[0] : (int?)null;
             int? slot = _lightOverrides.TryGetValue(port.Id, out var s) && s != packSlot ? s : null;
             var color = _colorOverrides.TryGetValue(port.Id, out var c) && !c.Equals(port.PackColor, StringComparison.OrdinalIgnoreCase) ? c : null;
+            var packTargets = (port.PackTargets ?? Array.Empty<string>()).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
             var targets = _lightTargetOverrides.TryGetValue(port.Id, out var t) && t.Count > 0
+                          && !t.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).SequenceEqual(packTargets, StringComparer.OrdinalIgnoreCase)
                 ? t.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray()
                 : Array.Empty<string>();
             if (slot is not null || color is not null || targets.Length > 0)
@@ -284,10 +287,24 @@ public sealed class PanelPatchBay : UserControl
             : port.PackSlots;
     }
 
+    /// <summary>System LEDs the lamp lights: user override first, else the
+    /// dynpanel defaults (llander lamp0 → START + SELECT).</summary>
     private IReadOnlyCollection<string> EffectiveTargets(Port port)
-        => port.Kind == KindLight && _lightTargetOverrides.TryGetValue(port.Id, out var targets)
-            ? targets
-            : Array.Empty<string>();
+    {
+        if (port.Kind != KindLight)
+        {
+            return Array.Empty<string>();
+        }
+
+        if (_lightTargetOverrides.TryGetValue(port.Id, out var targets))
+        {
+            return targets;
+        }
+
+        return _lightOverrides.ContainsKey(port.Id)
+            ? Array.Empty<string>() // re-homed on a button: pack targets let go
+            : port.PackTargets ?? Array.Empty<string>();
+    }
 
     private bool IsOverridden(Port port)
         => port.Kind is KindAction or KindAxis
@@ -522,12 +539,13 @@ public sealed class PanelPatchBay : UserControl
                     }
                 }
 
-                // user re-homed the lamp on system LEDs: solid cables to them
+                // lamp homed on system LEDs: dashed = dynpanel default, solid = user
+                var targetOverridden = _lightTargetOverrides.ContainsKey(port.Id);
                 foreach (var homedTarget in EffectiveTargets(port))
                 {
                     if (_targetCenters.TryGetValue(homedTarget, out var targetCenter))
                     {
-                        DrawCable(start, new Point(targetCenter.X, targetCenter.Y + 11), CableColor(port), solid: true,
+                        DrawCable(start, new Point(targetCenter.X, targetCenter.Y + 11), CableColor(port), solid: targetOverridden,
                             focused: related && HasSelection, dimmed: HasSelection && !related);
                     }
                 }

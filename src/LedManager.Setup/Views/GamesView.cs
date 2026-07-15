@@ -45,6 +45,7 @@ public sealed class GamesView : UserControl, IDisposable
     private readonly Border _gameSheet;
     private readonly PanelPatchBay _patchBay = new();
     private readonly Dictionary<string, string> _portDetails = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _targetColorCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly TextBlock _inspector = new()
     {
         FontSize = 11,
@@ -63,6 +64,15 @@ public sealed class GamesView : UserControl, IDisposable
     {
         "mame", "arcade", "fbneo", "neogeo", "neogeocd", "hbmame"
     };
+
+    /// <summary>Emulators that really emit lamp outputs: the light channel only
+    /// shows for them (FBNeo has none — its games keep colors and actions only).</summary>
+    private static readonly HashSet<string> OutputCapableSystems = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "mame", "arcade", "hbmame"
+    };
+
+    private bool SelectedSystemHasOutputs => SelectedSystem is not { } s || OutputCapableSystems.Contains(s);
 
     private SystemPanelCatalog _catalog = null!;
     private IReadOnlyList<string> _dynpanelRoms = Array.Empty<string>();
@@ -730,6 +740,7 @@ public sealed class GamesView : UserControl, IDisposable
     /// <summary>Loads a game under the SELECTED layout (defaults to the real panel's).</summary>
     private void LoadGame(string rom)
     {
+        _targetColorCache.Clear();
         var game = _games.Load(rom, SelectedLayoutId);
         if (game == null && SelectedSystem is { } consoleSystem && !ArcadeFamily.Contains(consoleSystem))
         {
@@ -746,12 +757,21 @@ public sealed class GamesView : UserControl, IDisposable
         _panel.Build(_layoutDefinition, SelectedLayoutButtons, hasStart: true, hasSelect: true);
         ReloadOverride();
 
-        // Arcade games deploy their MAME cfg; anything else falls back to the
+        // Arcade games deploy their MAME cfg — except under FBNeo, whose target is
+        // the per-game RetroArch remap; anything else falls back to the
         // system-level RetroArch remap.
         if (game.OverrideSystem.Equals("arcade", StringComparison.OrdinalIgnoreCase))
         {
-            _controlsCard.ShowMameGame(game.Rom);
-            _ = LoadGameSheetAsync(SelectedSystem ?? game.System, rom);
+            if (SelectedSystem is { } selected && selected.Equals("fbneo", StringComparison.OrdinalIgnoreCase))
+            {
+                _controlsCard.ShowFbneoGame(game.Rom);
+                _ = LoadGameSheetAsync("mame", rom); // shared dynpanel scope
+            }
+            else
+            {
+                _controlsCard.ShowMameGame(game.Rom);
+                _ = LoadGameSheetAsync(SelectedSystem ?? game.System, rom);
+            }
         }
         else
         {
@@ -778,7 +798,10 @@ public sealed class GamesView : UserControl, IDisposable
             return;
         }
 
-        _deployedWiring = await LoadCurrentWiringAsync(baseUrl, rom);
+        // the deployed-cfg readback only makes sense for MAME-side systems
+        _deployedWiring = SelectedSystemHasOutputs
+            ? await LoadCurrentWiringAsync(baseUrl, rom)
+            : new Dictionary<string, IReadOnlyList<int>>();
 
         try
         {
@@ -807,7 +830,8 @@ public sealed class GamesView : UserControl, IDisposable
                 }
             }
 
-            if (root.TryGetProperty("externalOutputs", out var external) && external.ValueKind == System.Text.Json.JsonValueKind.Array
+            if (SelectedSystemHasOutputs
+                && root.TryGetProperty("externalOutputs", out var external) && external.ValueKind == System.Text.Json.JsonValueKind.Array
                 && external.GetArrayLength() > 0)
             {
                 _sheetContent.Children.Add(new TextBlock
@@ -906,28 +930,33 @@ public sealed class GamesView : UserControl, IDisposable
                 inputRef));
         }
 
-        if (root.TryGetProperty("slots", out var slots) && slots.ValueKind == System.Text.Json.JsonValueKind.Array)
+        // the light channel only exists on emulators with real lamp outputs
+        // (FBNeo has none: colors and actions still show, lamps don't)
+        if (SelectedSystemHasOutputs)
         {
-            foreach (var slot in slots.EnumerateArray())
+            if (root.TryGetProperty("slots", out var slots) && slots.ValueKind == System.Text.Json.JsonValueKind.Array)
             {
-                var number = ReadSlotNumber(slot);
-                if (!slot.TryGetProperty("outputs", out var slotOutputs) || slotOutputs.ValueKind != System.Text.Json.JsonValueKind.Array)
+                foreach (var slot in slots.EnumerateArray())
                 {
-                    continue;
-                }
+                    var number = ReadSlotNumber(slot);
+                    if (!slot.TryGetProperty("outputs", out var slotOutputs) || slotOutputs.ValueKind != System.Text.Json.JsonValueKind.Array)
+                    {
+                        continue;
+                    }
 
-                foreach (var output in slotOutputs.EnumerateArray())
-                {
-                    Collect(output, number);
+                    foreach (var output in slotOutputs.EnumerateArray())
+                    {
+                        Collect(output, number);
+                    }
                 }
             }
-        }
 
-        if (root.TryGetProperty("externalOutputs", out var external) && external.ValueKind == System.Text.Json.JsonValueKind.Array)
-        {
-            foreach (var output in external.EnumerateArray())
+            if (root.TryGetProperty("externalOutputs", out var external) && external.ValueKind == System.Text.Json.JsonValueKind.Array)
             {
-                Collect(output, null);
+                foreach (var output in external.EnumerateArray())
+                {
+                    Collect(output, null);
+                }
             }
         }
 
@@ -1150,6 +1179,49 @@ public sealed class GamesView : UserControl, IDisposable
         var lightPatches = _store.LoadGameOutputPatches(game.OverrideSystem, game.Rom);
         var actionPatches = _store.LoadGameInputPatches(game.OverrideSystem, game.Rom);
 
+        // START/SELECT colors + the lamps the system inputs drive (llander:
+        // start/select → lamp0, coin → lamp1) from the game's system inputs
+        var targetColors = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var lampTargets = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        if (root.TryGetProperty("controlMap", out var mapForTargets)
+            && mapForTargets.TryGetProperty("inputs", out var targetInputs)
+            && targetInputs.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            foreach (var input in targetInputs.EnumerateArray())
+            {
+                var id = input.TryGetProperty("id", out var ti) ? ti.GetString() : null;
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    continue;
+                }
+
+                var isStart = id!.Equals("start", StringComparison.OrdinalIgnoreCase);
+                var isSelect = id.Equals("coin", StringComparison.OrdinalIgnoreCase) || id.Equals("select", StringComparison.OrdinalIgnoreCase);
+                if (!isStart && !isSelect)
+                {
+                    continue;
+                }
+
+                var targetName = isStart ? "START" : "SELECT";
+                var color = input.TryGetProperty("color", out var tc) ? tc.GetString() : null;
+                if (!string.IsNullOrWhiteSpace(color) && !targetColors.ContainsKey(targetName))
+                {
+                    targetColors[targetName] = color!;
+                }
+
+                var outputRef = input.TryGetProperty("outputRef", out var or) ? or.GetString() : null;
+                if (!string.IsNullOrWhiteSpace(outputRef))
+                {
+                    if (!lampTargets.TryGetValue(outputRef!, out var set))
+                    {
+                        lampTargets[outputRef!] = set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    }
+
+                    set.Add(targetName);
+                }
+            }
+        }
+
         _sheetContent.Children.Add(new TextBlock
         {
             Text = L.T("Câblage du panel — actions et lumières :", "Panel wiring — actions and lights:"),
@@ -1182,38 +1254,56 @@ public sealed class GamesView : UserControl, IDisposable
         var ports = actions
             .Select(a => new PanelPatchBay.Port(a.Id, PanelPatchBay.KindAction, a.Label, null, null, a.Slots))
             .Concat(axisPorts.Select(a => new PanelPatchBay.Port(a.Id, PanelPatchBay.KindAxis, a.Label, null, null, a.Slots, a.DeviceKey, a.Anchor)))
-            .Concat(outputs.Select(o => new PanelPatchBay.Port(o.Name, PanelPatchBay.KindLight, o.Label, o.Group, o.PackColor, o.PackSlots, InputRef: o.InputRef)))
+            .Concat(outputs.Select(o =>
+            {
+                // slotless lamp driven by a system input → homed on that LED by
+                // default; slotted lamp → the link shows as a trigger cable
+                var driven = lampTargets.TryGetValue(o.Name, out var t) ? t : null;
+                var packTargets = driven is not null && o.PackSlots.Count == 0 ? driven.ToArray() : null;
+                var inputRef = o.InputRef;
+                if (driven is not null && packTargets is null)
+                {
+                    inputRef = string.Join(" ", driven.Select(x => x.Equals("START", StringComparison.OrdinalIgnoreCase) ? "SYS START" : "SYS SELECT"))
+                               + (string.IsNullOrWhiteSpace(inputRef) ? "" : " " + inputRef);
+                }
+
+                return new PanelPatchBay.Port(o.Name, PanelPatchBay.KindLight, o.Label, o.Group, o.PackColor, o.PackSlots,
+                    InputRef: inputRef, PackTargets: packTargets);
+            }))
             .ToList();
         // the bay paints buttons with the game's resolved colors (mslug has no
         // lamp: its buttons still show Red/Yellow/Green)
         var slotColors = _panel.Slots.ToDictionary(s => s, s => _edited.TryGetValue(s, out var over) ? over : BaselineColor(s));
 
-        // START/SELECT colors from the game's system inputs (start / coin-select)
-        var targetColors = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        if (root.TryGetProperty("controlMap", out var mapForTargets)
-            && mapForTargets.TryGetProperty("inputs", out var targetInputs)
-            && targetInputs.ValueKind == System.Text.Json.JsonValueKind.Array)
+        // reflect the system LED colors on the big panel too: homed lamp first
+        // (its saved color override wins), else the system-input color
+        _targetColorCache.Clear();
+        foreach (var (name, color) in targetColors)
         {
-            foreach (var input in targetInputs.EnumerateArray())
-            {
-                var id = input.TryGetProperty("id", out var ti) ? ti.GetString() : null;
-                var color = input.TryGetProperty("color", out var tc) ? tc.GetString() : null;
-                if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(color))
-                {
-                    continue;
-                }
+            _targetColorCache[name] = color;
+        }
 
-                if (id!.Equals("start", StringComparison.OrdinalIgnoreCase) && !targetColors.ContainsKey("START"))
+        foreach (var (lamp, homes) in lampTargets)
+        {
+            var port = outputs.FirstOrDefault(o => o.Name.Equals(lamp, StringComparison.OrdinalIgnoreCase));
+            if (port.Name is null || port.PackSlots.Count > 0)
+            {
+                continue;
+            }
+
+            var lampColor = lightPatches.TryGetValue(lamp, out var patch) && !string.IsNullOrWhiteSpace(patch.Color)
+                ? patch.Color!
+                : port.PackColor;
+            if (!string.IsNullOrWhiteSpace(lampColor))
+            {
+                foreach (var home in homes)
                 {
-                    targetColors["START"] = color!;
-                }
-                else if ((id.Equals("coin", StringComparison.OrdinalIgnoreCase) || id.Equals("select", StringComparison.OrdinalIgnoreCase))
-                         && !targetColors.ContainsKey("SELECT"))
-                {
-                    targetColors["SELECT"] = color!;
+                    _targetColorCache[home] = lampColor!;
                 }
             }
         }
+
+        Repaint();
 
         _patchBay.Load(ports, lightPatches, actionPatches, SelectedLayoutButtons, deviceNodes, slotColors, targetColors);
 
@@ -1474,8 +1564,10 @@ public sealed class GamesView : UserControl, IDisposable
             _panel.SetSlot(slot, PanelColors.Resolve(effective));
         }
 
-        _panel.SetTarget("START", PanelColors.Resolve("GRAY"));
-        _panel.SetTarget("SELECT", PanelColors.Resolve("GRAY"));
+        // START/SELECT wear the game's system-input colors, or the lamp homed on
+        // them (llander lamp0) — cached when the game sheet loads
+        _panel.SetTarget("START", PanelColors.Resolve(_targetColorCache.TryGetValue("START", out var startColor) ? startColor : "GRAY"));
+        _panel.SetTarget("SELECT", PanelColors.Resolve(_targetColorCache.TryGetValue("SELECT", out var selectColor) ? selectColor : "GRAY"));
 
         // origin summary: which patch level drives each customized slot
         var parts = new List<string>();

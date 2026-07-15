@@ -33,6 +33,7 @@ public sealed class SystemsView : UserControl, IDisposable
     private readonly ComboBox _systems;
     private readonly ComboBox _layouts;
     private readonly Button _liveTest;
+    private readonly Button _diagTest;
     private readonly TextBlock _status;
     private readonly TextBlock _summary;
     private readonly ContextMenu _palette;
@@ -89,6 +90,11 @@ public sealed class SystemsView : UserControl, IDisposable
         buttons.Children.Add(Action(L.T("Revenir aux couleurs du pack", "Back to pack colors"), OnResetToPack));
         _liveTest = Action(L.T("Tester sur le panneau réel", "Test on the real panel"), OnLiveTest);
         buttons.Children.Add(_liveTest);
+        _diagTest = Action(L.T("Tester mon système", "Test my system"), OnDiagTest);
+        _diagTest.ToolTip = L.T(
+            "Lance la rom de diagnostic des contrôles du système (appuyez sur chaque bouton pour vérifier le câblage).",
+            "Launches the system's controller diagnostic rom (press every button to verify the wiring).");
+        buttons.Children.Add(_diagTest);
 
         var intro = new TextBlock
         {
@@ -148,6 +154,123 @@ public sealed class SystemsView : UserControl, IDisposable
 
     private string? SelectedSystem => _systems.SelectedItem as string;
 
+    /// <summary>File extensions that are documentation, not launchable roms.</summary>
+    private static readonly HashSet<string> DiagDocExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".txt", ".md", ".jpg", ".jpeg", ".png", ".pdf", ".mp3", ".mod", ".sfo"
+    };
+
+    /// <summary>
+    /// « Tester mon système » : launches the controller diagnostic rom curated for
+    /// the system (resources\controllers_inputs_roms_testing\système) through
+    /// RetroBat's own emulatorLauncher — nothing is copied into roms\, nothing in
+    /// RetroBat is modified. See the README in that folder for origins/licences.
+    /// </summary>
+    private void OnDiagTest(object sender, RoutedEventArgs e)
+    {
+        if (SelectedSystem is not { } system)
+        {
+            return;
+        }
+
+        var dir = System.IO.Path.Combine(_pluginRoot, "resources", "controllers_inputs_roms_testing", system);
+        var rom = System.IO.Directory.Exists(dir)
+            ? System.IO.Directory.EnumerateFiles(dir, "*", System.IO.SearchOption.AllDirectories)
+                .Where(f => !DiagDocExtensions.Contains(System.IO.Path.GetExtension(f)))
+                .OrderByDescending(f => System.IO.Path.GetFileName(f).Equals("EBOOT.PBP", StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault()
+            : null;
+        if (rom is null)
+        {
+            _status.Text = L.T($"Pas de rom de diagnostic pour « {system} » dans resources\\controllers_inputs_roms_testing.",
+                $"No diagnostic rom for \"{system}\" in resources\\controllers_inputs_roms_testing.");
+            return;
+        }
+
+        var launcher = System.IO.Path.GetFullPath(System.IO.Path.Combine(_pluginRoot, "..", "..", "emulationstation", "emulatorLauncher.exe"));
+        if (!System.IO.File.Exists(launcher))
+        {
+            _status.Text = L.T("emulatorLauncher.exe introuvable (emulationstation\\).", "emulatorLauncher.exe not found (emulationstation\\).");
+            return;
+        }
+
+        // light the panel with the system template (the direct launch bypasses ES,
+        // so LedManager never receives a "game selected" event): push a preview
+        // through APIExpose — best effort, the running LedManager applies it
+        _ = PushPanelPreviewAsync();
+
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = launcher,
+                Arguments = $"-system {system} -rom \"{rom}\"{ReadLastControllerArgs()}",
+                WorkingDirectory = System.IO.Path.GetDirectoryName(launcher)!,
+                UseShellExecute = false
+            });
+            _status.Text = L.T($"Diagnostic lancé : {System.IO.Path.GetFileName(rom)} — appuyez sur chaque bouton du panel pour vérifier le câblage.",
+                $"Diagnostic launched: {System.IO.Path.GetFileName(rom)} — press every panel button to verify the wiring.");
+        }
+        catch (Exception ex)
+        {
+            _status.Text = L.T($"Impossible de lancer le diagnostic : {ex.Message}", $"Could not launch the diagnostic: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// A direct emulatorLauncher call lacks the %CONTROLLERSCONFIG% arguments ES
+    /// normally injects (-p1index/-p1guid/…) — without them no pad gets configured.
+    /// Replays the controller arguments of the LAST normal launch, read from
+    /// emulatorlauncher.log (read-only).
+    /// </summary>
+    private string ReadLastControllerArgs()
+    {
+        try
+        {
+            var log = System.IO.Path.GetFullPath(System.IO.Path.Combine(_pluginRoot, "..", "..", "emulationstation", "emulatorlauncher.log"));
+            if (!System.IO.File.Exists(log))
+            {
+                return "";
+            }
+
+            var line = System.IO.File.ReadLines(log)
+                .LastOrDefault(l => l.Contains("[Startup]") && l.Contains("-p1index"));
+            if (line is null)
+            {
+                return "";
+            }
+
+            var start = line.IndexOf("-p1index", StringComparison.Ordinal);
+            var end = line.IndexOf(" -system", start, StringComparison.Ordinal);
+            var args = (end > start ? line[start..end] : line[start..]).Trim();
+            return args.Length > 0 ? " " + args : "";
+        }
+        catch
+        {
+            return ""; // diagnostic still launches, pads may need ES once
+        }
+    }
+
+    /// <summary>Sends the current template colors to the REAL panel through the
+    /// running LedManager (POST /panels/preview — same pipeline as game events).</summary>
+    private async Task PushPanelPreviewAsync()
+    {
+        try
+        {
+            var slots = string.Join(",", Enumerable.Range(1, 8)
+                .Select(slot => $"{{\"Slot\":{slot},\"Player\":1,\"Color\":\"{(_edited.TryGetValue(slot, out var over) ? over : PackColor(slot)).ToUpperInvariant()}\"}}"));
+            var payload = "{\"stream\":\"panel\",\"type\":\"panel.state\",\"Source\":\"ledmanager-setup.diagnostic\","
+                + "\"system\":\"ledmanager-setup\",\"rom\":\"diagnostic\","
+                + "\"ActivePanel\":{\"Id\":\"ledmanager-setup-diagnostic\",\"Slots\":[" + slots + "]},"
+                + "\"ActiveLayout\":{\"Id\":\"Diagnostic\"}}";
+            await ApiExposeClient.PostJsonAsync(ApiExposeClient.ResolveBaseUrl(_pluginRoot), "/api/v1/panels/preview", payload);
+        }
+        catch
+        {
+            // LedManager absent: the launch itself still proceeds
+        }
+    }
+
     private void OnSystemChanged()
     {
         if (SelectedSystem is null)
@@ -187,6 +310,45 @@ public sealed class SystemsView : UserControl, IDisposable
         _currentLayout = _currentLayouts[_layouts.SelectedIndex];
         _panel.Build(_layoutDefinition, _currentLayout.PanelButtons, hasStart: true, hasSelect: true);
         Repaint();
+        ShowTemplateNote();
+    }
+
+    /// <summary>
+    /// Data-driven hint from the system template (setup_note_fr/en): core options
+    /// the panel depends on (e.g. NES turbo buttons need the core's Turbo option).
+    /// The specifics live in the DATA, never hardcoded here.
+    /// </summary>
+    private void ShowTemplateNote()
+    {
+        try
+        {
+            if (SelectedSystem is not { } system)
+            {
+                return;
+            }
+
+            var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(_pluginRoot, "..", "APIExpose", "resources", "dynpanels", "systems", system + ".json"));
+            if (!System.IO.File.Exists(path))
+            {
+                return;
+            }
+
+            using var doc = System.Text.Json.JsonDocument.Parse(System.IO.File.ReadAllText(path));
+            if (!doc.RootElement.TryGetProperty("system_template", out var template))
+            {
+                return;
+            }
+
+            var key = L.French ? "setup_note_fr" : "setup_note_en";
+            if (template.TryGetProperty(key, out var note) && !string.IsNullOrWhiteSpace(note.GetString()))
+            {
+                _status.Text = "ℹ " + note.GetString();
+            }
+        }
+        catch
+        {
+            // a note is a nicety, never an error
+        }
     }
 
     // ----- resolution: pack -> system patch -----

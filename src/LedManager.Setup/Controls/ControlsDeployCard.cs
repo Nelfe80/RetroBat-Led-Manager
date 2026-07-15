@@ -18,13 +18,14 @@ namespace LedManager.Setup.Controls;
 /// </summary>
 public sealed class ControlsDeployCard : UserControl
 {
-    private enum Scope { None, System, MameGame }
+    private enum Scope { None, System, MameGame, FbneoGame }
 
     private readonly string _baseUrl;
     private readonly string _mamePackDir;
     private readonly TextBlock _label;
     private readonly Button _deployOne;
     private readonly Button _deployAll;
+    private readonly Button _repair;
     private readonly ProgressBar _progress;
     private readonly TextBlock _status;
     private readonly TextBox _details;
@@ -58,10 +59,15 @@ public sealed class ControlsDeployCard : UserControl
         _deployOne.Click += (_, _) => _ = DeployAsync(single: true);
         _deployAll = MakeButton();
         _deployAll.Click += (_, _) => _ = DeployAsync(single: false);
+        _repair = MakeButton();
+        _repair.Content = L.T("Réparer ce jeu", "Repair this game");
+        _repair.Visibility = Visibility.Collapsed;
+        _repair.Click += (_, _) => _ = RepairAsync();
 
         var buttons = new StackPanel { Orientation = Orientation.Horizontal };
         buttons.Children.Add(_deployOne);
         buttons.Children.Add(_deployAll);
+        buttons.Children.Add(_repair);
 
         _progress = new ProgressBar
         {
@@ -143,7 +149,90 @@ public sealed class ControlsDeployCard : UserControl
         _deployAll.Content = L.T("Tous les jeux", "All games");
         _deployOne.IsEnabled = inPack;
         _deployAll.IsEnabled = true;
+        _repair.Visibility = Visibility.Visible;
+        _repair.IsEnabled = true;
         ResetReport();
+    }
+
+    /// <summary>Card follows an FBNeo game. Deployment is PAUSED: the FBNeo core
+    /// lays its default buttons out per game (declared at load time only), and
+    /// without a reliable per-game source our generated remaps could mismatch.
+    /// Users are invited to remap manually in RetroArch for now.</summary>
+    public void ShowFbneoGame(string rom)
+    {
+        _scope = Scope.FbneoGame;
+        _target = rom;
+        _label.Text = L.T(
+            $"⚠ FBNeo : la mise à jour automatique des contrôles est en pause pour « {rom} ». "
+            + "La disposition par défaut du core varie selon le jeu ; en attendant, faites le remap manuellement "
+            + "dans RetroArch : Menu rapide → Contrôles → régler les boutons → « Enregistrer le remap de jeu ». "
+            + "Votre fichier ne sera jamais écrasé par LedManager.",
+            $"⚠ FBNeo: automatic controls update is paused for \"{rom}\". "
+            + "The core's default layout varies per game; for now, remap manually "
+            + "in RetroArch: Quick Menu → Controls → set your buttons → \"Save Game Remap File\". "
+            + "Your file will never be overwritten by LedManager.");
+        _deployOne.Content = L.T("Mettre à jour ce jeu", "Update this game");
+        _deployAll.Content = L.T("Tous les jeux FBNeo", "All FBNeo games");
+        _deployOne.IsEnabled = false;
+        _deployAll.IsEnabled = false;
+        _repair.Visibility = Visibility.Collapsed;
+        ResetReport();
+    }
+
+    /// <summary>
+    /// Repair: APIExpose boots the game headless in the installed MAME, reads the
+    /// REAL port signatures and realigns the deployed cfg (lost ports restored,
+    /// user sequences kept). Takes a few seconds.
+    /// </summary>
+    private async Task RepairAsync()
+    {
+        if (_target is null)
+        {
+            return;
+        }
+
+        _repair.IsEnabled = false;
+        _deployOne.IsEnabled = false;
+        _deployAll.IsEnabled = false;
+        _status.Text = L.T("Diagnostic MAME en cours (quelques secondes)…", "MAME diagnostic running (a few seconds)…");
+        _progress.Visibility = Visibility.Visible;
+        _progress.IsIndeterminate = true;
+        try
+        {
+            var (ok, body) = await ApiExposeClient.PostAsync(_baseUrl, $"/api/v1/panels/controls/mamecfg/repair?rom={_target}");
+            if (!ok)
+            {
+                var (headline, _) = DescribeReport(ok, body);
+                _status.Text = headline;
+                return;
+            }
+
+            using var doc = JsonDocument.Parse(body);
+            var root = doc.RootElement;
+            var status = root.TryGetProperty("status", out var st) ? st.GetString() : "";
+            int Count(string name) => root.TryGetProperty(name, out var v) && v.TryGetInt32(out var n) ? n : 0;
+            _status.Text = status switch
+            {
+                "repaired" => L.T($"Réparé : {Count("restored")} port(s) réaligné(s), {Count("removed")} retiré(s), {Count("realigned")} déjà bon(s).",
+                    $"Repaired: {Count("restored")} port(s) realigned, {Count("removed")} removed, {Count("realigned")} already fine."),
+                "up-to-date" => L.T("Rien à réparer : le câblage colle déjà à votre version de MAME.",
+                    "Nothing to repair: the wiring already matches your MAME version."),
+                _ => L.T("La réparation a échoué.", "The repair failed.")
+            };
+            if (root.TryGetProperty("details", out var details) && details.ValueKind == JsonValueKind.Array)
+            {
+                _details.Text = string.Join(Environment.NewLine, details.EnumerateArray().Select(d => d.GetString()));
+                _details.Visibility = string.IsNullOrWhiteSpace(_details.Text) ? Visibility.Collapsed : Visibility.Visible;
+            }
+        }
+        finally
+        {
+            _progress.Visibility = Visibility.Collapsed;
+            _progress.IsIndeterminate = false;
+            _repair.IsEnabled = true;
+            _deployOne.IsEnabled = true;
+            _deployAll.IsEnabled = true;
+        }
     }
 
     public void ShowNone(string hint)
@@ -155,6 +244,7 @@ public sealed class ControlsDeployCard : UserControl
         _deployAll.Content = L.T("Tout mettre à jour", "Update all");
         _deployOne.IsEnabled = false;
         _deployAll.IsEnabled = false;
+        _repair.Visibility = Visibility.Collapsed;
         ResetReport();
     }
 
@@ -192,9 +282,12 @@ public sealed class ControlsDeployCard : UserControl
             }
             else
             {
-                var path = _scope == Scope.System
-                    ? "/api/v1/panels/controls/remaps/deploy" + (single ? $"?system={_target}" : "")
-                    : $"/api/v1/panels/controls/mamecfg/deploy?rom={_target}";
+                var path = _scope switch
+                {
+                    Scope.System => "/api/v1/panels/controls/remaps/deploy" + (single ? $"?system={_target}" : ""),
+                    Scope.FbneoGame => "/api/v1/panels/controls/fbneormp/deploy" + (single ? $"?rom={_target}" : ""),
+                    _ => $"/api/v1/panels/controls/mamecfg/deploy?rom={_target}"
+                };
                 var (ok, body) = await ApiExposeClient.PostAsync(_baseUrl, path);
                 var (headline, details) = DescribeReport(ok, body);
                 _status.Text = headline;

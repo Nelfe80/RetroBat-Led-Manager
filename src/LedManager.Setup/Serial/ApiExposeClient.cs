@@ -45,6 +45,22 @@ public static class ApiExposeClient
         }
     }
 
+    /// <summary>POST with a JSON body; returns (success, response body or error message).</summary>
+    public static async Task<(bool Ok, string Body)> PostJsonAsync(string baseUrl, string path, string json)
+    {
+        try
+        {
+            using var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            using var response = await Http.PostAsync(baseUrl + path, content).ConfigureAwait(false);
+            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            return (response.IsSuccessStatusCode, body);
+        }
+        catch (Exception ex)
+        {
+            return (false, ex.Message);
+        }
+    }
+
     /// <summary>GET; returns (success, response body or error message).</summary>
     public static async Task<(bool Ok, string Body)> GetAsync(string baseUrl, string path)
     {
