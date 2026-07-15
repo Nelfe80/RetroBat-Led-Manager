@@ -201,7 +201,7 @@ public sealed class SystemsView : UserControl, IDisposable
 
         try
         {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
                 FileName = launcher,
                 Arguments = $"-system {system} -rom \"{rom}\"{ReadLastControllerArgs()}",
@@ -210,10 +210,45 @@ public sealed class SystemsView : UserControl, IDisposable
             });
             _status.Text = L.T($"Diagnostic lancé : {System.IO.Path.GetFileName(rom)} — appuyez sur chaque bouton du panel pour vérifier le câblage.",
                 $"Diagnostic launched: {System.IO.Path.GetFileName(rom)} — press every panel button to verify the wiring.");
+
+            // a launcher that dies within seconds means the emulator refused the
+            // rom (core not installed, bios missing…): surface its last error
+            // instead of failing silently
+            _ = WatchDiagLaunchAsync(process, launcher);
         }
         catch (Exception ex)
         {
             _status.Text = L.T($"Impossible de lancer le diagnostic : {ex.Message}", $"Could not launch the diagnostic: {ex.Message}");
+        }
+    }
+
+    private async Task WatchDiagLaunchAsync(System.Diagnostics.Process? process, string launcher)
+    {
+        if (process is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(8));
+            if (!process.HasExited)
+            {
+                return; // emulator running: all good
+            }
+
+            var log = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(launcher)!, "emulatorlauncher.log");
+            var error = System.IO.File.Exists(log)
+                ? System.IO.File.ReadLines(log).LastOrDefault(l => l.Contains("[ERROR]") || l.Contains("[EXCEPTION]"))
+                : null;
+            var detail = error is null ? "" : " — " + error[(error.IndexOf(']', error.IndexOf(']') + 1) + 1)..].Trim();
+            await Dispatcher.InvokeAsync(() => _status.Text = L.T(
+                $"Le diagnostic s'est arrêté aussitôt{detail}. Core/émulateur du système probablement absent.",
+                $"The diagnostic exited immediately{detail}. The system's core/emulator is probably missing."));
+        }
+        catch
+        {
+            // watchdog only
         }
     }
 
