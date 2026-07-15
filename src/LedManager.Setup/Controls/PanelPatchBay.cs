@@ -84,6 +84,7 @@ public sealed class PanelPatchBay : UserControl
     private readonly Dictionary<string, HashSet<int>> _actionOverrides = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, int> _lightOverrides = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, HashSet<string>> _lightTargetOverrides = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _lightDetached = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _colorOverrides = new(StringComparer.OrdinalIgnoreCase);
     private int _buttonCount = 8;
     private IReadOnlyDictionary<int, string> _slotColors = new Dictionary<int, string>();
@@ -175,6 +176,7 @@ public sealed class PanelPatchBay : UserControl
         _buttonCount = Math.Clamp(buttonCount, 1, 8);
         _actionOverrides.Clear();
         _lightOverrides.Clear();
+        _lightDetached.Clear();
         _colorOverrides.Clear();
         _selectedSlot = null;
         _selectedPort = null;
@@ -197,6 +199,10 @@ public sealed class PanelPatchBay : UserControl
             if (patch.Targets.Count > 0)
             {
                 _lightTargetOverrides[name] = patch.Targets.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            }
+            else if (patch.Slot == 0)
+            {
+                _lightDetached.Add(name); // saved as detached (dead LED)
             }
             else if (patch.Slot is { } slot && slot >= 1 && slot <= _buttonCount)
             {
@@ -232,7 +238,11 @@ public sealed class PanelPatchBay : UserControl
                           && !t.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).SequenceEqual(packTargets, StringComparer.OrdinalIgnoreCase)
                 ? t.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray()
                 : Array.Empty<string>();
-            if (slot is not null || color is not null || targets.Length > 0)
+            if (_lightDetached.Contains(port.Id))
+            {
+                patches[port.Id] = (0, color, Array.Empty<string>()); // 0 = détachée
+            }
+            else if (slot is not null || color is not null || targets.Length > 0)
             {
                 patches[port.Id] = (slot, color, targets);
             }
@@ -275,8 +285,14 @@ public sealed class PanelPatchBay : UserControl
             return _actionOverrides.TryGetValue(port.Id, out var axisSlots) ? axisSlots : port.PackSlots;
         }
 
-        // a light homed on system targets has no button home; otherwise it keeps
-        // ALL its pack homes (READY_LAMP lights B4+B3) until re-homed to one
+        // a detached lamp lights nothing; one homed on system targets has no
+        // button home; otherwise it keeps ALL its pack homes (READY_LAMP lights
+        // B4+B3) until re-homed to one
+        if (_lightDetached.Contains(port.Id))
+        {
+            return Array.Empty<int>();
+        }
+
         if (_lightTargetOverrides.TryGetValue(port.Id, out var targets) && targets.Count > 0)
         {
             return Array.Empty<int>();
@@ -309,7 +325,8 @@ public sealed class PanelPatchBay : UserControl
     private bool IsOverridden(Port port)
         => port.Kind is KindAction or KindAxis
             ? _actionOverrides.ContainsKey(port.Id)
-            : _lightOverrides.ContainsKey(port.Id) || _colorOverrides.ContainsKey(port.Id) || _lightTargetOverrides.ContainsKey(port.Id);
+            : _lightOverrides.ContainsKey(port.Id) || _colorOverrides.ContainsKey(port.Id)
+              || _lightTargetOverrides.ContainsKey(port.Id) || _lightDetached.Contains(port.Id);
 
     /// <summary>Dot color of a chip: the real channel color (lamps keep their LED color).</summary>
     private Color DotColor(Port port)
@@ -1384,13 +1401,27 @@ public sealed class PanelPatchBay : UserControl
 
         if (slot is { } lightTarget)
         {
-            _lightOverrides[port.Id] = lightTarget;
+            // dropping a lamp on its OWN current home detaches it (dead LED);
+            // any other button re-homes it
+            var current = EffectiveSlots(port);
+            if (current.Count == 1 && current.Contains(lightTarget) && !_lightDetached.Contains(port.Id))
+            {
+                _lightDetached.Add(port.Id);
+                _lightOverrides.Remove(port.Id);
+            }
+            else
+            {
+                _lightDetached.Remove(port.Id);
+                _lightOverrides[port.Id] = lightTarget;
+            }
+
             _lightTargetOverrides.Remove(port.Id); // button home replaces the system home
         }
         else
         {
             _lightOverrides.Remove(port.Id);
             _lightTargetOverrides.Remove(port.Id);
+            _lightDetached.Remove(port.Id);
         }
     }
 

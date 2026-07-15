@@ -1234,8 +1234,9 @@ public sealed class GamesView : UserControl, IDisposable
         {
             Text = L.T("Tire un câble d'une prise vers un bouton (il s'aimante) · SUPPRIMER une liaison : redépose l'action sur le "
                     + "bouton déjà branché, ou lâche le câble dans le vide pour revenir au réglage d'origine · une ACTION (cyan) "
-                    + "peut être branchée sur plusieurs boutons · une LUMIÈRE peut éclairer plusieurs boutons d'origine ; la "
-                    + "déplacer la ramène à un seul · une DIRECTION de périphérique (bleu) peut aussi être câblée sur des "
+                    + "peut être branchée sur plusieurs boutons — y compris pour retirer un câble PAR DÉFAUT (redépose sur le "
+                    + "bouton pointillé) · une LUMIÈRE peut éclairer plusieurs boutons d'origine ; la déplacer la ramène à un "
+                    + "seul, et la redéposer sur son propre bouton la DÉTACHE (LED morte) · une DIRECTION de périphérique (bleu) peut aussi être câblée sur des "
                     + "boutons — le stick continue de fonctionner, les boutons s'ajoutent · pointillé = réglage actuel, plein = "
                     + "ta modification · la prise violette d'un groupe câble toute la famille · clic sur une puce, un bouton ou "
                     + "un périphérique = focus · le point coloré ouvre la palette.",
@@ -1562,6 +1563,10 @@ public sealed class GamesView : UserControl, IDisposable
         {
             var effective = _edited.TryGetValue(slot, out var over) ? over : BaselineColor(slot);
             _panel.SetSlot(slot, PanelColors.Resolve(effective));
+            // historical function name centered on the dome (long lamp ids are
+            // auto-hidden by the visual)
+            _panel.SetSlotFunction(slot,
+                _currentGame?.BySlot.TryGetValue(slot, out var pack) == true ? pack.Label : "");
         }
 
         // START/SELECT wear the game's system-input colors, or the lamp homed on

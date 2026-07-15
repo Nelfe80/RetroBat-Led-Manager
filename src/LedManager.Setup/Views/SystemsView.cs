@@ -389,6 +389,8 @@ public sealed class SystemsView : UserControl, IDisposable
         {
             var effective = _edited.TryGetValue(slot, out var over) ? over : PackColor(slot);
             _panel.SetSlot(slot, PanelColors.Resolve(effective));
+            _panel.SetSlotFunction(slot,
+                _currentLayout?.BySlot.TryGetValue(slot, out var pack) == true ? pack.Label : "");
         }
 
         if (_currentLayout is { } layout)

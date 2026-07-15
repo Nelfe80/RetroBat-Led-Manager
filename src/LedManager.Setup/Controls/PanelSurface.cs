@@ -106,6 +106,15 @@ public sealed class PanelSurface : UserControl
         }
     }
 
+    /// <summary>Historical function name centered on a button (A, B, ✕…).</summary>
+    public void SetSlotFunction(int slot, string? function)
+    {
+        if (_slots.TryGetValue(slot, out var visual))
+        {
+            visual.SetCenterLabel(function);
+        }
+    }
+
     public void SetTarget(string target, Color color)
     {
         if (_targets.TryGetValue(target, out var visual))

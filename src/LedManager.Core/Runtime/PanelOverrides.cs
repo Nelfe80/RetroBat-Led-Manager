@@ -138,6 +138,11 @@ public static class PanelStateOverrides
                             outputs[i] = With(outputs[i], color: color, retarget: targets[0]);
                             clones.AddRange(targets.Skip(1).Select(extra => With(outputs[i], retarget: extra)));
                         }
+                        else if (slot == 0)
+                        {
+                            // "slot": 0 = lamp detached by the user: lights nothing
+                            outputs[i] = Detached(outputs[i]);
+                        }
                         else
                         {
                             outputs[i] = With(outputs[i], color: color, slot: slot);
@@ -182,6 +187,22 @@ public static class PanelStateOverrides
             Slot = retarget is not null ? null : slot ?? output.Slot,
             Target = retarget ?? output.Target,
             Color = color ?? output.Color,
+            Id = output.Id,
+            Name = output.Name,
+            Function = output.Function,
+            OutputName = output.OutputName
+        };
+    }
+
+    /// <summary>A detached lamp keeps its identity but no longer drives any LED.</summary>
+    private static PanelOutput Detached(PanelOutput output)
+    {
+        return new PanelOutput
+        {
+            Player = output.Player,
+            Slot = null,
+            Target = null,
+            Color = output.Color,
             Id = output.Id,
             Name = output.Name,
             Function = output.Function,

@@ -112,10 +112,17 @@ public sealed class SystemPanelCatalog
                 if (entry.Value.TryGetProperty("physical", out var physical) &&
                     physical.TryGetInt32(out var slot) && slot is >= 1 and <= 8)
                 {
-                    var label = entry.Value.TryGetProperty("controller", out var ctrl) && ctrl.ValueKind == JsonValueKind.String
-                        ? ctrl.GetString() ?? ""
+                    // historical button name shown centered on the panel button:
+                    // the game FUNCTION (A, B, L, R…), not the ES accessory name
+                    var function = entry.Value.TryGetProperty("function", out var fnEl) && fnEl.ValueKind == JsonValueKind.String
+                        ? fnEl.GetString() ?? ""
                         : "";
-                    bySlot[slot] = (color, label);
+                    if (function.Equals("None", StringComparison.OrdinalIgnoreCase))
+                    {
+                        function = "";
+                    }
+
+                    bySlot[slot] = (color, function);
                 }
             }
         }
