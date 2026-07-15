@@ -103,6 +103,8 @@ public sealed class PanelPatchBay : UserControl
     private string? _dragGroup;
     private Point _dragPosition;
     private int? _hoverSlot;
+    private int? _lastPulsedSlot;
+    private bool _animateFocusOnce;
     private int? _selectedSlot;
     private string? _selectedPort;
     private string? _selectedDevice;
@@ -411,6 +413,7 @@ public sealed class PanelPatchBay : UserControl
         _selectedPort = null;
         _selectedDevice = null;
         _selectedTarget = null;
+        _animateFocusOnce = true; // the next Render fades the dimming in
     }
 
     /// <summary>Tells the host what the current focus touches, so it can echo it
@@ -584,6 +587,7 @@ public sealed class PanelPatchBay : UserControl
 
         _canvas.Height = footerBottom + 8;
         _canvas.Width = RightColumnX + ChipWidth + 24;
+        _animateFocusOnce = false; // the fade only accompanies the click that armed it
     }
 
     /// <summary>One chip section (header + chips); returns the next free Y.</summary>
@@ -845,6 +849,65 @@ public sealed class PanelPatchBay : UserControl
         _canvas.Children.Add(label);
     }
 
+    /// <summary>Focus fade: when a selection click just happened, dimmed elements
+    /// settle to their opacity in a short fade instead of snapping.</summary>
+    private void ApplyFocusFade(UIElement element, double target)
+    {
+        if (!_animateFocusOnce || target >= 1)
+        {
+            return;
+        }
+
+        element.BeginAnimation(UIElement.OpacityProperty,
+            new System.Windows.Media.Animation.DoubleAnimation(1.0, target, TimeSpan.FromMilliseconds(150))
+            {
+                FillBehavior = System.Windows.Media.Animation.FillBehavior.Stop
+            });
+    }
+
+    /// <summary>Connection spark: a bright dot runs along the freshly plugged cable.</summary>
+    private void PlayConnectionSpark(Point from, Point to, Color color)
+    {
+        var mid = (from.X + to.X) / 2;
+        var path = new PathGeometry(new[]
+        {
+            new PathFigure(from, new PathSegment[]
+            {
+                new BezierSegment(new Point(mid, from.Y), new Point(mid, to.Y), to, isStroked: true)
+            }, closed: false)
+        });
+
+        var spark = new Ellipse
+        {
+            Width = 9,
+            Height = 9,
+            IsHitTestVisible = false,
+            Fill = new RadialGradientBrush
+            {
+                GradientStops =
+                {
+                    new GradientStop(Colors.White, 0),
+                    new GradientStop(color, 0.5),
+                    new GradientStop(Color.FromArgb(0, color.R, color.G, color.B), 1)
+                }
+            }
+        };
+        var transform = new MatrixTransform();
+        spark.RenderTransform = transform;
+        Canvas.SetLeft(spark, -4.5);
+        Canvas.SetTop(spark, -4.5);
+        _canvas.Children.Add(spark);
+
+        var travel = new System.Windows.Media.Animation.MatrixAnimationUsingPath
+        {
+            PathGeometry = path,
+            Duration = TimeSpan.FromMilliseconds(320),
+            DoesRotateWithTangent = false
+        };
+        travel.Completed += (_, _) => _canvas.Children.Remove(spark);
+        transform.BeginAnimation(MatrixTransform.MatrixProperty, travel);
+    }
+
     /// <summary>Multiple cables landing on one button fan out around its rim, on
     /// the side the cable comes from (actions arrive left, lamps arrive right).</summary>
     private Point FanEndpoint(int slot, Point center, bool fromRight)
@@ -873,6 +936,7 @@ public sealed class PanelPatchBay : UserControl
             Cursor = Cursors.Hand,
             ToolTip = port.Id
         };
+        ApplyFocusFade(chip, HasSelection && !related ? 0.35 : 1);
 
         // clicking the chip body focuses this channel's ramifications;
         // double-click opens the inspector
@@ -1142,6 +1206,25 @@ public sealed class PanelPatchBay : UserControl
                 };
                 Canvas.SetLeft(button, center.X - radius);
                 Canvas.SetTop(button, center.Y - radius);
+                ApplyFocusFade(button, dimButton ? 0.45 : 1);
+
+                // magnet pulse: one breath when the dragged cable snaps this button
+                if (isHover && _lastPulsedSlot != slot)
+                {
+                    _lastPulsedSlot = slot;
+                    var scale = new ScaleTransform(1, 1, radius, radius);
+                    button.RenderTransform = scale;
+                    var pulse = new System.Windows.Media.Animation.DoubleAnimation(0.9, 1.0, TimeSpan.FromMilliseconds(180))
+                    {
+                        EasingFunction = new System.Windows.Media.Animation.BackEase { Amplitude = 0.6, EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+                    };
+                    scale.BeginAnimation(ScaleTransform.ScaleXProperty, pulse);
+                    scale.BeginAnimation(ScaleTransform.ScaleYProperty, pulse);
+                }
+                else if (!isHover && _lastPulsedSlot == slot)
+                {
+                    _lastPulsedSlot = null;
+                }
                 button.MouseLeftButtonDown += (_, e) =>
                 {
                     if (_dragPort is null && _dragGroup is null)
@@ -1293,6 +1376,7 @@ public sealed class PanelPatchBay : UserControl
         _dragPort = null;
         _dragGroup = null;
         _hoverSlot = null;
+        _lastPulsedSlot = null;
         _canvas.ReleaseMouseCapture();
 
         // brief connection flash: the dropped channel keeps the spotlight
@@ -1313,6 +1397,22 @@ public sealed class PanelPatchBay : UserControl
         }
 
         Render();
+
+        // connection spark: a bright dot runs along the freshly plugged cable
+        if (droppedPort is not null && _portPoints.TryGetValue(droppedPort, out var sparkFrom))
+        {
+            var port = _ports.First(p => p.Id.Equals(droppedPort, StringComparison.OrdinalIgnoreCase));
+            Point? sparkTo = target is { } droppedSlot && _buttonCenters.TryGetValue(droppedSlot, out var buttonCenter)
+                ? buttonCenter
+                : systemTarget is { } droppedTarget && _targetCenters.TryGetValue(droppedTarget, out var targetCenter)
+                    ? targetCenter
+                    : null;
+            if (sparkTo is { } destination)
+            {
+                PlayConnectionSpark(sparkFrom, destination, CableColor(port));
+            }
+        }
+
         Changed?.Invoke();
     }
 
@@ -1442,30 +1542,98 @@ public sealed class PanelPatchBay : UserControl
         return best;
     }
 
+    private System.Windows.Controls.Primitives.Popup? _palettePopup;
+
+    /// <summary>
+    /// Floating swatch palette anchored at the lamp's color dot: a dark card with
+    /// one round swatch per firmware color, the active one ringed in accent, and
+    /// a dashed swatch to return to the pack color. Pure presentation — the
+    /// override logic is unchanged.
+    /// </summary>
     private void OpenPalette(Port port, FrameworkElement anchor)
     {
-        var menu = new ContextMenu { PlacementTarget = anchor };
-        var reset = new MenuItem { Header = L.T($"Couleur d'origine ({port.PackColor ?? "?"})", $"Original color ({port.PackColor ?? "?"})") };
-        reset.Click += (_, _) => { _colorOverrides.Remove(port.Id); Render(); Changed?.Invoke(); };
-        menu.Items.Add(reset);
-        menu.Items.Add(new Separator());
-        foreach (var color in Palette)
+        _palettePopup?.SetCurrentValue(System.Windows.Controls.Primitives.Popup.IsOpenProperty, false);
+
+        var active = _colorOverrides.TryGetValue(port.Id, out var current) ? current : port.PackColor ?? "";
+        var grid = new WrapPanel { Width = 5 * 30, Margin = new Thickness(8) };
+
+        void Close()
         {
-            var item = new MenuItem
+            if (_palettePopup is { } popup)
             {
-                Header = color,
-                Icon = new Border
-                {
-                    Width = 14,
-                    Height = 14,
-                    CornerRadius = new CornerRadius(7),
-                    Background = new SolidColorBrush(PanelColors.Resolve(color))
-                }
-            };
-            item.Click += (_, _) => { _colorOverrides[port.Id] = color; Render(); Changed?.Invoke(); };
-            menu.Items.Add(item);
+                popup.IsOpen = false;
+            }
         }
 
-        menu.IsOpen = true;
+        FrameworkElement Swatch(Brush fill, string tooltip, bool isActive, Action onPick, bool dashed = false)
+        {
+            var dot = new Ellipse
+            {
+                Width = 20,
+                Height = 20,
+                Fill = fill,
+                Stroke = new SolidColorBrush(isActive ? AccentColor : Color.FromRgb(0x3A, 0x3A, 0x52)),
+                StrokeThickness = isActive ? 2.5 : 1,
+                StrokeDashArray = dashed ? new DoubleCollection { 2, 2 } : null
+            };
+            var host = new Border
+            {
+                Width = 26,
+                Height = 26,
+                Margin = new Thickness(2),
+                Background = Brushes.Transparent,
+                Cursor = Cursors.Hand,
+                ToolTip = tooltip,
+                Child = dot
+            };
+            host.MouseEnter += (_, _) => dot.StrokeThickness = 2.5;
+            host.MouseLeave += (_, _) => dot.StrokeThickness = isActive ? 2.5 : 1;
+            host.MouseLeftButtonDown += (_, e) =>
+            {
+                e.Handled = true;
+                Close();
+                onPick();
+                Render();
+                Changed?.Invoke();
+            };
+            return host;
+        }
+
+        grid.Children.Add(Swatch(
+            new SolidColorBrush(PanelColors.Resolve(port.PackColor ?? "GRAY")) { Opacity = 0.55 },
+            L.T($"Couleur d'origine ({port.PackColor ?? "?"})", $"Original color ({port.PackColor ?? "?"})"),
+            isActive: !_colorOverrides.ContainsKey(port.Id),
+            onPick: () => _colorOverrides.Remove(port.Id),
+            dashed: true));
+        foreach (var color in Palette)
+        {
+            var name = color;
+            grid.Children.Add(Swatch(
+                new SolidColorBrush(PanelColors.Resolve(name)),
+                name,
+                isActive: name.Equals(active, StringComparison.OrdinalIgnoreCase),
+                onPick: () => _colorOverrides[port.Id] = name));
+        }
+
+        var card = new Border
+        {
+            Background = new SolidColorBrush(Color.FromRgb(0x1B, 0x1B, 0x28)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(0x3A, 0x3A, 0x52)),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(10),
+            Child = grid
+        };
+
+        _palettePopup = new System.Windows.Controls.Primitives.Popup
+        {
+            PlacementTarget = anchor,
+            Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom,
+            VerticalOffset = 4,
+            StaysOpen = false,
+            AllowsTransparency = true,
+            PopupAnimation = System.Windows.Controls.Primitives.PopupAnimation.Fade,
+            Child = card,
+            IsOpen = true
+        };
     }
 }
