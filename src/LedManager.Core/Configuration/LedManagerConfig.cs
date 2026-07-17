@@ -87,7 +87,8 @@ public sealed class LedManagerConfig
                 IngamePath = ini.Get("APIExpose", "IngamePath", "/ws/ingame"),
                 ArcadePath = ini.Get("APIExpose", "ArcadePath", "/ws/arcade"),
                 HiscorePath = ini.Get("APIExpose", "HiscorePath", "/ws/hiscore"),
-                DefaultPlayer = ini.GetInt("APIExpose", "DefaultPlayer", 1)
+                DefaultPlayer = ini.GetInt("APIExpose", "DefaultPlayer", 1),
+                CoalescePanelStates = ini.GetBool("APIExpose", "CoalescePanelStates", true)
             },
             Effects = new EffectsConfig
             {
@@ -147,6 +148,11 @@ public sealed class ApiExposeConfig
     public string ArcadePath { get; init; } = "/ws/arcade";
     public string HiscorePath { get; init; } = "/ws/hiscore";
     public int DefaultPlayer { get; init; } = 1;
+
+    /// <summary>During fast ES navigation only the latest panel.state matters:
+    /// process the most recent one instead of replaying the whole backlog.
+    /// false restores the historical strictly sequential handling.</summary>
+    public bool CoalescePanelStates { get; init; } = true;
 
     public Uri BuildUri(string path)
     {

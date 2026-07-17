@@ -167,7 +167,110 @@ internal sealed class LedManagerApp
 
         var tasks = streams.Select(s => ListenWebSocketAsync(s.Key, _config.ApiExpose.BuildUri(s.Value), cts.Token))
             .Concat(new[] { MonitorEmulationStationLifecycleAsync(cts, cts.Token) });
+        if (_config.ApiExpose.CoalescePanelStates)
+        {
+            tasks = tasks.Concat(new[] { DrainPanelMailboxAsync(cts.Token) });
+        }
+
         await Task.WhenAll(tasks);
+    }
+
+    private readonly Channel<string> _panelMailbox = Channel.CreateUnbounded<string>(
+        new UnboundedChannelOptions { SingleReader = true, SingleWriter = true });
+
+    /// <summary>
+    /// panel.state pushes are snapshots of the current ES selection: when
+    /// navigation outruns processing, replaying the backlog one by one kept the
+    /// physical panel seconds behind the frontend. Drain everything received and
+    /// fully process (PanelState build, dynpanel/overrides reads, dispatch) only
+    /// the most recent snapshot; non-snapshot messages keep their order.
+    /// </summary>
+    private async Task DrainPanelMailboxAsync(CancellationToken cancellationToken)
+    {
+        var batch = new List<string>();
+        try
+        {
+            while (await _panelMailbox.Reader.WaitToReadAsync(cancellationToken))
+            {
+                batch.Clear();
+                while (_panelMailbox.Reader.TryRead(out var pending))
+                {
+                    batch.Add(pending);
+                }
+
+                var lastSnapshot = -1;
+                for (var i = batch.Count - 1; i >= 0; i--)
+                {
+                    if (!IsPanelStateJson(batch[i]))
+                    {
+                        continue;
+                    }
+
+                    lastSnapshot = i;
+                    break;
+                }
+
+                var skipped = 0;
+                for (var i = 0; i < batch.Count; i++)
+                {
+                    if (i < lastSnapshot && IsPanelStateJson(batch[i]))
+                    {
+                        skipped++;
+                        continue;
+                    }
+
+                    try
+                    {
+                        await HandleJsonAsync(batch[i], "panel");
+                    }
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"[panel] processing failed: {ex.Message}");
+                    }
+                }
+
+                if (skipped > 0)
+                {
+                    Console.WriteLine($"[panel] coalesced {skipped} stale state(s)");
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    /// <summary>Cheap probe mirroring LedEvent.IsPanelState for raw /ws/panel
+    /// text: full PanelState construction is only paid by surviving messages.</summary>
+    private static bool IsPanelStateJson(string json)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            var type = LedEvent.ReadString(root, "type") ?? LedEvent.ReadString(root, "Type") ?? "";
+            if (type.Equals("panel.state", StringComparison.OrdinalIgnoreCase) ||
+                type.Equals("panel.current.changed", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return (root.TryGetProperty("ActivePanel", out var panel) && panel.ValueKind == JsonValueKind.Object)
+                   || (root.TryGetProperty("activePanel", out panel) && panel.ValueKind == JsonValueKind.Object);
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 
     private async Task MonitorEmulationStationLifecycleAsync(CancellationTokenSource cts, CancellationToken token)
@@ -268,7 +371,18 @@ internal sealed class LedManagerApp
 
                     if (result.MessageType == WebSocketMessageType.Text)
                     {
-                        await HandleJsonAsync(Encoding.UTF8.GetString(ms.ToArray()), stream);
+                        var json = Encoding.UTF8.GetString(ms.ToArray());
+                        if (_config.ApiExpose.CoalescePanelStates &&
+                            stream.Equals("panel", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // never block the socket drain on processing: the
+                            // mailbox worker coalesces to the latest snapshot
+                            _panelMailbox.Writer.TryWrite(json);
+                        }
+                        else
+                        {
+                            await HandleJsonAsync(json, stream);
+                        }
                     }
                 }
             }
@@ -315,9 +429,9 @@ internal sealed class LedManagerApp
 
         if (evt.IsPanelState)
         {
-            var nextPanel = PanelState.FromPanelEvent(evt)
-                .EnrichFromDynpanel(_config.BaseDirectory)
-                .ApplyUserOverrides(_config.BaseDirectory);
+            // staleness is decided on the bare state: the dynpanel/overrides
+            // file reads are only paid by panels that will actually display
+            var nextPanel = PanelState.FromPanelEvent(evt);
             if (nextPanel.Sequence > 0 && nextPanel.Sequence <= _lastPanelSequence)
             {
                 if (LooksLikePanelSequenceReset(nextPanel.Sequence))
@@ -331,6 +445,10 @@ internal sealed class LedManagerApp
                     return;
                 }
             }
+
+            nextPanel = nextPanel
+                .EnrichFromDynpanel(_config.BaseDirectory)
+                .ApplyUserOverrides(_config.BaseDirectory);
 
             if (nextPanel.Sequence > 0)
             {
