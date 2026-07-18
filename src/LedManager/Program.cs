@@ -147,9 +147,12 @@ internal sealed class LedManagerApp
         }
     }
 
+    private CancellationTokenSource? _shutdownCts;
+
     private async Task RunWebSocketsAsync()
     {
         using var cts = new CancellationTokenSource();
+        _shutdownCts = cts;
         Console.CancelKeyPress += (_, e) =>
         {
             e.Cancel = true;
@@ -275,8 +278,11 @@ internal sealed class LedManagerApp
 
     private async Task MonitorEmulationStationLifecycleAsync(CancellationTokenSource cts, CancellationToken token)
     {
+        // Fallback only since APIExpose 1.3.5 pushes ui.frontend.stopped on the
+        // frontend stream (handled in the event dispatch): the poll survives for
+        // older APIs or a broken WS, at a relaxed pace.
         const string processName = "emulationstation";
-        const int checkIntervalMs = 1000;
+        const int checkIntervalMs = 5000;
         const int gracePeriodMs = 3500;
 
         bool hasSeenEmulationStation = false;
@@ -459,6 +465,15 @@ internal sealed class LedManagerApp
             Console.WriteLine($"[panel] current panel={_currentPanel.PanelId ?? "unknown"} layout={_currentPanel.LayoutId ?? "unknown"} sequence={_currentPanel.Sequence} outputs={_currentPanel.Outputs.Count}");
             await DispatchAsync(_router.RoutePanelState(_currentPanel));
             PulseFrontendStartSelectOnPanelChange();
+            return;
+        }
+
+        if (evt.IsFrontendStopped)
+        {
+            // Authoritative signal from APIExpose 1.3.5+ (ui.frontend.stopped):
+            // no need to wait for the process-poll fallback below.
+            Console.WriteLine("[lifecycle] ui.frontend.stopped received. Initiating clean shutdown.");
+            _shutdownCts?.Cancel();
             return;
         }
 
