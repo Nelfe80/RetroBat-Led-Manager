@@ -1,6 +1,6 @@
 # Licence
 
-LedManager est **offert par Nelfe à la communauté RetroBat**.
+LedManager est **développé par Nelfe pour la communauté RetroBat**.
 
 Utilisez-le librement — borne, bartop, PC de salon, panels lumineux entre amis : installez, personnalisez, partagez le plaisir. Aucune licence à acheter, rien à activer.
 
