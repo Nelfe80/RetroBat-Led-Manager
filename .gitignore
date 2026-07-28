@@ -83,3 +83,5 @@ LedManager.ini.bak
 # licences a verifier avant publication
 resources/controllers_inputs_roms_testing/
 !resources/controllers_inputs_roms_testing/README.md
+
+dist/
