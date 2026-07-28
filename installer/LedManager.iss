@@ -39,7 +39,8 @@ french.SelectDirDesc=Choisissez le dossier plugins\LedManager de VOTRE RetroBat 
 Source: "..\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; \
     Excludes: "\src\*,\docs\*,\wiki\*,\media\*,\state\*,\artifacts\*,\dist\*,\installer\*,\tests\*,\.git\*,\.github\*,\.log\*,\.cache\*,\.versioning\*,\.archive\*,\.temp\*,\.graceful_exit\*,\obj\*,\bin\*,\site\*,\.gitignore,\.gitattributes,\mkdocs.yml,\LedManager.sln,\Directory.Build.props,\build.bat,\build-LedManager.bat,\build-PicoCommandSender.bat,\build-Setup.bat,\release.ps1,\config.ini,\config.ini.bak,\tools\wiki-panels-generator\*,CAHIER*,*.log,*.pdb,*.lib,__pycache__\*,*.pyc"
 
-; Dépendance APIExpose (dossier frère) — installée seulement si absente
+; Dépendance APIExpose (dossier frère) — DÉTECTION (fournit ApiExposeInstalled) ;
+; on avertit dans [Code] si absent (installée par APIExpose-Cabinet-Setup, pas ici)
 #include "..\..\APIExpose\installer\apiexpose-bootstrap.iss"
 
 [Dirs]
@@ -52,3 +53,15 @@ Filename: "{app}\LedManagerSetup.exe"; WorkingDir: "{app}"; Description: "Ouvrir
 [UninstallRun]
 Filename: "taskkill"; Parameters: "/f /im {#AppExe}"; Flags: runhidden; RunOnceId: "StopLed"
 Filename: "{app}\uninstall-es-start-hook.bat"; WorkingDir: "{app}"; Flags: runhidden; RunOnceId: "UnhookLed"
+
+[Code]
+// APIExpose (dossier frère) est requis : on ne le bundle pas (dossier complet +
+// Data Pack, via APIExpose-Cabinet-Setup) ; on avertit s'il manque, sans bloquer.
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if (CurStep = ssInstall) and (not ApiExposeInstalled()) then
+    MsgBox('APIExpose n''est pas installé à côté (plugins\APIExpose).'#13#10#13#10
+      + 'Led Manager en a besoin pour fonctionner. Lancez d''abord'#13#10
+      + 'APIExpose-Cabinet-Setup.exe — l''installation continue quand même.',
+      mbInformation, MB_OK);
+end;
