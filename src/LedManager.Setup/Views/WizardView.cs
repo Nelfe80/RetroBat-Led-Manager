@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using LedManager.Setup.Controls;
+using LedManager.Setup.Input;
 using LedManager.Setup.Localization;
 using LedManager.Setup.Serial;
 using LedManager.Setup.VirtualPanel;
@@ -20,7 +21,7 @@ namespace LedManager.Setup.Views;
 /// </summary>
 public sealed class WizardView : UserControl, IDisposable
 {
-    private enum Step { Prepare, PanelTest, ColorTest, WiringTest, Done }
+    private enum Step { Prepare, PanelTest, ColorTest, WiringTest, CartoTest, Done }
 
     private readonly HardwareDescription _hardware;
     private readonly string _pluginRoot;
@@ -35,6 +36,7 @@ public sealed class WizardView : UserControl, IDisposable
     private readonly StackPanel _choices;
 
     private Step _step = Step.Prepare;
+    private Step _targetStep = Step.PanelTest; // where "Prepare" leads: full run, or a single test
     private PicoSenderHost? _sender;
     private PicoDetectionResult? _detection;
 
@@ -65,6 +67,16 @@ public sealed class WizardView : UserControl, IDisposable
     private int _colorChannel;
     private readonly List<string> _colorSeen = new();
 
+    // Cartography test state: light Bn, the user PRESSES the physical button, we
+    // read the RetroPad identity it emits (via SDL, the way RetroArch sees it).
+    private GamepadReader? _gamepad;
+    private List<WiringItem> _cartoItems = new();
+    private int _cartoIndex;
+    private readonly Dictionary<WiringItem, string> _cartoMap = new();
+    private System.Threading.CancellationTokenSource? _cartoCts;
+    private readonly ProgressBar _progress;
+    private IReadOnlyDictionary<string, string>? _previousCarto;
+
     public WizardView(HardwareDescription hardware, PanelLayoutDefinition layout)
     {
         _hardware = hardware;
@@ -76,6 +88,7 @@ public sealed class WizardView : UserControl, IDisposable
         _title = new TextBlock { FontSize = 18, FontWeight = FontWeights.Bold, Foreground = Text(0xE8, 0xE8, 0xF0), TextWrapping = TextWrapping.Wrap };
         _body = new TextBlock { Margin = new Thickness(0, 12, 0, 0), FontSize = 13, Foreground = Text(0xB8, 0xB8, 0xC6), TextWrapping = TextWrapping.Wrap, LineHeight = 20 };
         _status = new TextBlock { Margin = new Thickness(0, 12, 0, 0), FontSize = 12, Foreground = Text(0x8A, 0x8A, 0x9A), TextWrapping = TextWrapping.Wrap };
+        _progress = new ProgressBar { Margin = new Thickness(0, 12, 0, 0), Visibility = Visibility.Collapsed };
         _choices = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0), Visibility = Visibility.Collapsed };
         _primary = new Button { Content = L.T("Commencer", "Start"), Padding = new Thickness(18, 8, 18, 8), Margin = new Thickness(0, 20, 8, 0), MinWidth = 130, Style = (Style)Application.Current.FindResource("AccentButton") };
         _secondary = new Button { Padding = new Thickness(18, 8, 18, 8), Margin = new Thickness(0, 20, 8, 0), MinWidth = 130, Visibility = Visibility.Collapsed };
@@ -98,6 +111,7 @@ public sealed class WizardView : UserControl, IDisposable
         rightStack.Children.Add(_title);
         rightStack.Children.Add(_body);
         rightStack.Children.Add(_status);
+        rightStack.Children.Add(_progress);
         rightStack.Children.Add(_choices);
         var buttons = new StackPanel { Orientation = Orientation.Horizontal };
         buttons.Children.Add(_primary);
@@ -124,6 +138,7 @@ public sealed class WizardView : UserControl, IDisposable
         _back.IsEnabled = _step != Step.Prepare;
         _secondary.Visibility = Visibility.Collapsed;
         _choices.Visibility = Visibility.Collapsed;
+        _progress.Visibility = Visibility.Collapsed;
 
         switch (_step)
         {
@@ -141,6 +156,7 @@ public sealed class WizardView : UserControl, IDisposable
                     ? L.T("⚠ LedManager est en cours d'exécution — il sera arrêté à la détection.",
                         "⚠ LedManager is running — it will be stopped at detection.")
                     : L.T("LedManager n'est pas en cours d'exécution. ✓", "LedManager is not running. ✓");
+                BuildTargetChoices();
                 _panel.ClearAll();
                 break;
 
@@ -182,6 +198,21 @@ public sealed class WizardView : UserControl, IDisposable
                 StartWiringTest();
                 break;
 
+            case Step.CartoTest:
+                _title.Text = L.T("5. Cartographie des entrées", "5. Input cartography");
+                _body.Text = L.T(
+                    "Un bouton s'allume en VERT sur votre panneau, un par un. À chaque fois, "
+                    + "APPUYEZ sur ce bouton physique. L'assistant lit l'identité que la manette envoie "
+                    + "(vue exactement comme RetroArch la voit) et construit la cartographie des entrées.\n\n"
+                    + "C'est ce qui fait que le bon bouton déclenche la bonne action en jeu.",
+                    "One button lights up GREEN on your panel, one at a time. Each time, "
+                    + "PRESS that physical button. The assistant reads the identity the pad sends "
+                    + "(exactly as RetroArch sees it) and builds the input cartography.\n\n"
+                    + "This is what makes the right button trigger the right action in game.");
+                _primary.Content = L.T("Passer", "Skip");
+                StartCartoTest();
+                break;
+
             case Step.Done:
                 _title.Text = L.T("✓ Terminé", "✓ Done");
                 _body.Text = BuildWiringSummary();
@@ -211,6 +242,12 @@ public sealed class WizardView : UserControl, IDisposable
                 break;
 
             case Step.WiringTest:
+                _step = Step.CartoTest;
+                RenderStep();
+                break;
+
+            case Step.CartoTest:
+                StopCartoTest();
                 _step = Step.Done;
                 RenderStep();
                 break;
@@ -237,8 +274,12 @@ public sealed class WizardView : UserControl, IDisposable
             case Step.WiringTest:
                 _step = Step.ColorTest;
                 break;
-            case Step.Done:
+            case Step.CartoTest:
+                StopCartoTest();
                 _step = Step.WiringTest;
+                break;
+            case Step.Done:
+                _step = Step.CartoTest;
                 break;
         }
 
@@ -290,8 +331,48 @@ public sealed class WizardView : UserControl, IDisposable
         _sender!.Send("ALL WHITE");
         _panel.SetAll(Color.FromRgb(0xF0, 0xF0, 0xF0));
 
-        _step = Step.PanelTest;
+        // full run starts at the panel test; a single-test launch jumps straight in
+        _step = _targetStep;
         RenderStep();
+    }
+
+    /// <summary>On the prepare screen, lets the user run the FULL wizard or jump
+    /// straight to a single test (redo just the LED wiring, or just the input
+    /// cartography) — each is independently useful after a rewiring.</summary>
+    private void BuildTargetChoices()
+    {
+        _choices.Children.Clear();
+        (string Fr, string En, Step Target)[] options =
+        {
+            ("Test complet", "Full test", Step.PanelTest),
+            ("Juste le test LED", "LED test only", Step.WiringTest),
+            ("Juste la cartographie", "Cartography only", Step.CartoTest),
+        };
+
+        foreach (var (fr, en, target) in options)
+        {
+            var button = new Button
+            {
+                Content = L.T(fr, en),
+                Tag = target,
+                Padding = new Thickness(14, 6, 14, 6),
+                Margin = new Thickness(0, 0, 8, 0),
+                FontWeight = target == _targetStep ? FontWeights.Bold : FontWeights.Normal
+            };
+            if (target == _targetStep)
+            {
+                button.Style = (Style)Application.Current.FindResource("AccentButton");
+            }
+
+            button.Click += (_, _) =>
+            {
+                _targetStep = (Step)button.Tag;
+                BuildTargetChoices();
+            };
+            _choices.Children.Add(button);
+        }
+
+        _choices.Visibility = Visibility.Visible;
     }
 
     private bool SenderConfigWasSeeded()
@@ -582,6 +663,257 @@ public sealed class WizardView : UserControl, IDisposable
         LightCurrentWiringItem();
     }
 
+    // ----- Cartography test (input side): physical button → RetroPad identity -----
+
+    private void StartCartoTest()
+    {
+        _cartoMap.Clear();
+        _cartoItems = _panel.Slots.OrderBy(s => s).Select(s => new WiringItem(s, null)).ToList();
+        if (_panel.TargetNames.Contains("SELECT")) _cartoItems.Add(new WiringItem(null, "SELECT"));
+        if (_panel.TargetNames.Contains("START")) _cartoItems.Add(new WiringItem(null, "START"));
+        _cartoIndex = 0;
+
+        _gamepad ??= new GamepadReader();
+        var retroBatRoot = Path.GetFullPath(Path.Combine(_pluginRoot, "..", ".."));
+        var (ok, message) = _gamepad.Initialize(retroBatRoot);
+        if (!ok)
+        {
+            _status.Text = L.T($"Manette illisible ({message}). Ce test lit vos appuis : vérifiez qu'une manette/encodeur est branché.",
+                $"Gamepad unreadable ({message}). This test reads your presses: check a pad/encoder is plugged.");
+            return;
+        }
+
+        if (_gamepad.OpenControllers() == 0)
+        {
+            _status.Text = L.T("Aucune manette détectée. Branchez l'encodeur de ce panneau, puis revenez.",
+                "No gamepad detected. Plug this panel's encoder, then come back.");
+            return;
+        }
+
+        LightAndReadCurrentCartoItem();
+    }
+
+    private async void LightAndReadCurrentCartoItem()
+    {
+        if (_step != Step.CartoTest)
+        {
+            return;
+        }
+
+        if (_cartoIndex >= _cartoItems.Count)
+        {
+            ShowCartoReview();
+            return;
+        }
+
+        var item = _cartoItems[_cartoIndex];
+        _sender?.Send("CLEAR");
+        _sender?.Send(item.Light("GREEN"));
+        _panel.ClearAll();
+        _secondary.Content = L.T("Bouton non câblé →", "Button not wired →");
+        _secondary.Visibility = Visibility.Visible;
+        _status.Text = L.T($"Élément {_cartoIndex + 1}/{_cartoItems.Count} : APPUYEZ sur le bouton {item.Label} allumé en VERT.",
+            $"Item {_cartoIndex + 1}/{_cartoItems.Count}: PRESS the {item.Label} button lit GREEN.");
+
+        _cartoCts?.Cancel();
+        _cartoCts = new System.Threading.CancellationTokenSource();
+        var press = await (_gamepad?.WaitForPressAsync(_cartoCts.Token) ?? Task.FromResult<GamepadReader.Press?>(null));
+        if (press is null || _step != Step.CartoTest)
+        {
+            return; // cancelled by skip / navigation
+        }
+
+        _cartoMap[item] = press.Identity;
+        if (item.Slot.HasValue)
+        {
+            _panel.Flash(item.Slot.Value.ToString(), FeedbackColor, 260);
+        }
+        else if (item.Target is not null)
+        {
+            _panel.Flash(item.Target, FeedbackColor, 260);
+        }
+
+        _sender?.Send(item.Light("CYAN"));
+        _status.Text = L.T($"{item.Label} → {press.Identity}", $"{item.Label} → {press.Identity}");
+        await Task.Delay(320);
+        _cartoIndex++;
+        LightAndReadCurrentCartoItem();
+    }
+
+    /// <summary>Skips the current item (button not wired): recorded as nothing.</summary>
+    private void SkipCartoItem()
+    {
+        _cartoCts?.Cancel();
+        _cartoIndex++;
+        LightAndReadCurrentCartoItem();
+    }
+
+    private void ShowCartoReview()
+    {
+        _sender?.Send("CLEAR");
+        _panel.ClearAll();
+
+        var numbered = _cartoMap.Where(kv => kv.Key.Slot.HasValue).OrderBy(kv => kv.Key.Slot!.Value).ToList();
+        var lines = string.Join("\n", _cartoMap.OrderBy(kv => kv.Key.Slot ?? 99)
+            .Select(kv => $"   • {kv.Key.Label} → {kv.Value}"));
+
+        var warnings = new List<string>();
+        var dups = numbered.GroupBy(kv => kv.Value).Where(g => g.Count() > 1)
+            .Select(g => $"{g.Key} ({string.Join(",", g.Select(x => x.Key.Label))})");
+        if (dups.Any())
+        {
+            warnings.Add(L.T($"⚠ Identité(s) en double : {string.Join(", ", dups)} — deux boutons enverraient la même chose.",
+                $"⚠ Duplicate identity(ies): {string.Join(", ", dups)} — two buttons would send the same thing."));
+        }
+
+        foreach (var kv in _cartoMap.Where(kv => kv.Key.Target is not null))
+        {
+            var expected = kv.Key.Target!.Equals("START", StringComparison.OrdinalIgnoreCase) ? "start" : "select";
+            if (!kv.Value.Equals(expected, StringComparison.OrdinalIgnoreCase))
+            {
+                warnings.Add(L.T($"⚠ {kv.Key.Label} envoie « {kv.Value} » au lieu de « {expected} » — câblage encodeur à revoir.",
+                    $"⚠ {kv.Key.Label} sends \"{kv.Value}\" instead of \"{expected}\" — check the encoder wiring."));
+            }
+        }
+
+        _status.Text = L.T($"Cartographie mesurée :\n{lines}", $"Measured cartography:\n{lines}")
+            + (warnings.Count > 0 ? "\n\n" + string.Join("\n", warnings) : "");
+        _secondary.Content = L.T("Écrire la cartographie & régénérer", "Write the cartography & regenerate");
+        _secondary.Visibility = Visibility.Visible;
+        _primary.Content = L.T("Terminer", "Finish");
+    }
+
+    private void StopCartoTest()
+    {
+        _cartoCts?.Cancel();
+        _cartoCts = null;
+        _sender?.Send("CLEAR");
+    }
+
+    private int CurrentPlayer()
+        => HardwareDescription.ListPicos(_pluginRoot).FirstOrDefault(p => p.SenderId == _hardware.SenderId)?.Player ?? 1;
+
+    private async Task WriteCartoAndRegenerateAsync()
+    {
+        _secondary.IsEnabled = false;
+        var player = CurrentPlayer();
+
+        // only the numbered buttons form CabinetButtons; START/SELECT are validated
+        // (their identity must be start/select) but not part of the physical map
+        var map = _cartoMap.Where(kv => kv.Key.Slot.HasValue)
+            .ToDictionary(kv => kv.Key.Slot!.Value.ToString(), kv => kv.Value);
+        var json = "{" + string.Join(",", map.Select(kv => $"\"{kv.Key}\":\"{kv.Value}\"")) + "}";
+
+        var baseUrl = ApiExposeClient.ResolveBaseUrl(_pluginRoot);
+        _status.Text = L.T($"Écriture de la cartographie du joueur {player}…", $"Writing player {player}'s cartography…");
+        var (ok, body) = await ApiExposeClient.PostJsonAsync(baseUrl, $"/api/v1/panels/controls/cartography?player={player}", json);
+        if (!ok)
+        {
+            _status.Text = L.T("Échec de l'écriture : ", "Write failed: ") + body;
+            _secondary.IsEnabled = true;
+            return;
+        }
+
+        // keep the previous map for a one-click reverse
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(body);
+            if (doc.RootElement.TryGetProperty("previous", out var prev) && prev.ValueKind == System.Text.Json.JsonValueKind.Object)
+            {
+                _previousCarto = prev.EnumerateObject().ToDictionary(p => p.Name, p => p.Value.GetString() ?? "");
+            }
+        }
+        catch
+        {
+            _previousCarto = null;
+        }
+
+        await RegenerateAsync(baseUrl);
+        _secondary.Content = L.T("Annuler cette cartographie", "Undo this cartography");
+        _secondary.IsEnabled = true;
+    }
+
+    /// <summary>Regenerates all rmp then the MAME cfg pack, chunked, with a live
+    /// progress bar and the system/game currently processed.</summary>
+    private async Task RegenerateAsync(string baseUrl)
+    {
+        _progress.Visibility = Visibility.Visible;
+        _progress.IsIndeterminate = true;
+        _status.Text = L.T("Régénération des remaps RetroArch (tous les systèmes)…", "Regenerating RetroArch remaps (all systems)…");
+        await ApiExposeClient.PostAsync(baseUrl, "/api/v1/panels/controls/remaps/deploy");
+
+        // MAME cfg: chunked so the progress bar and the rom name advance
+        _progress.IsIndeterminate = false;
+        var offset = 0;
+        var packTotal = -1;
+        while (true)
+        {
+            var (ok, body) = await ApiExposeClient.PostAsync(baseUrl, $"/api/v1/panels/controls/mamecfg/deploy?offset={offset}&limit=200&replaceInputs=true");
+            if (!ok)
+            {
+                _status.Text = L.T("Régénération MAME interrompue : ", "MAME regeneration interrupted: ") + body;
+                break;
+            }
+
+            int processed;
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(body);
+                var root = doc.RootElement;
+                int Count(string n) => root.TryGetProperty(n, out var v) && v.TryGetInt32(out var x) ? x : 0;
+                processed = Count("total");
+                packTotal = Count("packTotal");
+                var last = root.TryGetProperty("changes", out var ch) && ch.ValueKind == System.Text.Json.JsonValueKind.Array && ch.GetArrayLength() > 0
+                    ? ch[ch.GetArrayLength() - 1].TryGetProperty("rom", out var r) ? r.GetString() : null
+                    : null;
+                if (packTotal > 0)
+                {
+                    _progress.Maximum = packTotal;
+                    _progress.Value = Math.Min(offset + processed, packTotal);
+                }
+
+                _status.Text = L.T($"Cfg MAME : {Math.Min(offset + processed, packTotal)}/{packTotal}" + (last is not null ? $" — {last}" : ""),
+                    $"MAME cfg: {Math.Min(offset + processed, packTotal)}/{packTotal}" + (last is not null ? $" — {last}" : ""));
+            }
+            catch
+            {
+                break;
+            }
+
+            offset += processed;
+            if (processed == 0 || (packTotal > 0 && offset >= packTotal))
+            {
+                _status.Text = L.T("Régénération terminée. La nouvelle cartographie est active.", "Regeneration done. The new cartography is active.");
+                break;
+            }
+        }
+
+        _progress.Visibility = Visibility.Collapsed;
+    }
+
+    private async Task UndoCartoAsync()
+    {
+        if (_previousCarto is null)
+        {
+            return;
+        }
+
+        _secondary.IsEnabled = false;
+        var player = CurrentPlayer();
+        var json = "{" + string.Join(",", _previousCarto.Select(kv => $"\"{kv.Key}\":\"{kv.Value}\"")) + "}";
+        var baseUrl = ApiExposeClient.ResolveBaseUrl(_pluginRoot);
+        _status.Text = L.T("Restauration de la cartographie précédente…", "Restoring the previous cartography…");
+        var (ok, _) = await ApiExposeClient.PostJsonAsync(baseUrl, $"/api/v1/panels/controls/cartography?player={player}", json);
+        if (ok)
+        {
+            await RegenerateAsync(baseUrl);
+            _previousCarto = null;
+            _secondary.Visibility = Visibility.Collapsed;
+        }
+
+        _secondary.IsEnabled = true;
+    }
+
     // ----- Done step: fix mapping (P1.b) or save config (P1.d) -----
 
     private List<KeyValuePair<WiringItem, WiringItem?>> WiringMismatches()
@@ -640,6 +972,18 @@ public sealed class WizardView : UserControl, IDisposable
 
             case Step.ColorTest:
                 await FixColorChannelsAsync();
+                break;
+
+            case Step.CartoTest when _cartoIndex < _cartoItems.Count:
+                SkipCartoItem();
+                break;
+
+            case Step.CartoTest when _previousCarto is not null:
+                await UndoCartoAsync();
+                break;
+
+            case Step.CartoTest:
+                await WriteCartoAndRegenerateAsync();
                 break;
 
             case Step.Done when _wiringMap.Count > 0 && WiringMismatches().Count > 0:
@@ -705,6 +1049,9 @@ public sealed class WizardView : UserControl, IDisposable
 
     public void Dispose()
     {
+        _cartoCts?.Cancel();
+        _gamepad?.Dispose();
+        _gamepad = null;
         StopSender();
     }
 }
