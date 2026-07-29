@@ -1,30 +1,29 @@
 # Premiers pas
 
-Installer LedManager ne demande **aucun installateur** : on télécharge, on décompresse, on active. Comptez cinq minutes.
+Installer LedManager tient en un **installateur** : on télécharge, on lance, on active. Comptez cinq minutes.
 
 ## Avant de commencer
 
 Vous aurez besoin de :
 
 - une installation **RetroBat** fonctionnelle ;
-- le plugin **[APIExpose](https://github.com/Nelfe80/RetroBat-APIExpose/releases)** installé et fonctionnel — c'est lui qui fournit les données des jeux à LedManager ;
+- le plugin **[APIExpose](https://github.com/Nelfe80/RetroBat-APIExpose/releases/latest/download/APIExpose-Cabinet-Setup.exe)** installé et fonctionnel — c'est lui qui fournit les données des jeux à LedManager ;
 - le **[runtime .NET 8 Desktop](https://dotnet.microsoft.com/download/dotnet/8.0)** ;
 - un panel LED : un Raspberry Pi Pico câblé (voir [Matériel](materiel.md)) ou une carte compatible (voir [Cartes LED externes](cartes-externes.md)).
 
 ## Installation
 
-1. Téléchargez **`LedManager-x.y.z-full.7z`** depuis la [page des releases](https://github.com/Nelfe80/RetroBat-Led-Manager/releases).
-2. Décompressez l'archive dans votre dossier `RetroBat\plugins\` — vous obtenez :
+1. Téléchargez **[`LedManager-Setup.exe`](https://github.com/Nelfe80/RetroBat-Led-Manager/releases/latest/download/LedManager-Setup.exe)** depuis la page des releases.
+2. Lancez l'installateur : il installe le plugin dans `RetroBat\plugins\` et enregistre le hook de démarrage EmulationStation — vous obtenez :
 
     ```text
     RetroBat\plugins\LedManager\
     ```
 
-3. Fermez RetroBat s'il est ouvert, puis double-cliquez sur **`install-es-start-hook.bat`**. Une fenêtre confirme l'installation du hook.
-4. Relancez RetroBat normalement : LedManager démarre désormais automatiquement avec EmulationStation.
+3. Relancez RetroBat normalement : LedManager démarre désormais automatiquement avec EmulationStation.
 
 !!! note "Que fait le hook ?"
-    Il installe simplement ce fichier côté EmulationStation, sans toucher au reste de RetroBat :
+    L'installateur enregistre simplement ce fichier côté EmulationStation, sans toucher au reste de RetroBat :
 
     ```text
     emulationstation\.emulationstation\scripts\start\LedManager-start.bat

@@ -10,11 +10,9 @@ Installation, plan de câblage Pico, firmware, configuration et cartes LED exter
 
 ## ⬇ Installation rapide
 
-1. Installez d'abord [APIExpose](https://github.com/Nelfe80/RetroBat-APIExpose/releases) (requis) et le [runtime .NET 8 Desktop](https://dotnet.microsoft.com/download/dotnet/8.0).
-2. Téléchargez `LedManager-x.y.z-full.7z` depuis les [Releases](https://github.com/Nelfe80/RetroBat-Led-Manager/releases).
-3. Décompressez dans `RetroBat\plugins\` → `RetroBat\plugins\LedManager\`.
-4. RetroBat fermé, double-cliquez `install-es-start-hook.bat`, puis relancez RetroBat.
-5. Indiquez le port COM de votre Pico dans `PicoCommandSender.ini` — le câblage et le firmware sont expliqués dans le wiki.
+1. Installez d'abord [APIExpose](https://github.com/Nelfe80/RetroBat-APIExpose/releases/latest/download/APIExpose-Cabinet-Setup.exe) (requis) et le [runtime .NET 8 Desktop](https://dotnet.microsoft.com/download/dotnet/8.0).
+2. Téléchargez et lancez **[`LedManager-Setup.exe`](https://github.com/Nelfe80/RetroBat-Led-Manager/releases/latest/download/LedManager-Setup.exe)** : il installe le plugin dans `RetroBat\plugins\LedManager\` et enregistre le hook de démarrage EmulationStation.
+3. Indiquez le port COM de votre Pico dans `PicoCommandSender.ini` (ou via **LedManagerSetup** que l'installateur propose d'ouvrir) — le câblage et le firmware sont expliqués dans le wiki.
 
 ## 📄 Licence
 
@@ -32,11 +30,9 @@ Usage personnel et non commercial libre ; utilisation commerciale sous licence �
 
 ## ⬇ Quick install
 
-1. First install [APIExpose](https://github.com/Nelfe80/RetroBat-APIExpose/releases) (required) and the [.NET 8 Desktop runtime](https://dotnet.microsoft.com/download/dotnet/8.0).
-2. Download `LedManager-x.y.z-full.7z` from the [Releases](https://github.com/Nelfe80/RetroBat-Led-Manager/releases).
-3. Extract into `RetroBat\plugins\` → `RetroBat\plugins\LedManager\`.
-4. With RetroBat closed, double-click `install-es-start-hook.bat`, then start RetroBat.
-5. Set your Pico's COM port in `PicoCommandSender.ini` — wiring and firmware are explained in the wiki.
+1. First install [APIExpose](https://github.com/Nelfe80/RetroBat-APIExpose/releases/latest/download/APIExpose-Cabinet-Setup.exe) (required) and the [.NET 8 Desktop runtime](https://dotnet.microsoft.com/download/dotnet/8.0).
+2. Download and run **[`LedManager-Setup.exe`](https://github.com/Nelfe80/RetroBat-Led-Manager/releases/latest/download/LedManager-Setup.exe)**: it installs the plugin into `RetroBat\plugins\LedManager\` and registers the EmulationStation start hook.
+3. Set your Pico's COM port in `PicoCommandSender.ini` (or via **LedManagerSetup**, which the installer offers to open) — wiring and firmware are explained in the wiki.
 
 ## 📄 Licensing
 
