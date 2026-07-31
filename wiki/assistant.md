@@ -53,6 +53,8 @@ Branchez votre Pico en USB (câble **data**, pas un câble de charge seul), puis
 
 Si rien n'est détecté, le bouton **« Installer le firmware »** apparaît : l'assistant dépose lui-même le firmware du panel sur le Pico (par la liaison série MicroPython), puis relance la détection. Pour un Pico **neuf** (jamais flashé), branchez-le en maintenant le bouton BOOTSEL : l'assistant vous guide pour déposer MicroPython une première fois (copie automatique si un fichier `.uf2` est présent dans `fw\`), puis installe le firmware du panel. Vérifiez aussi le câble USB (data, pas charge seule) — détails dans [Matériel](materiel.md#flasher-le-firmware).
 
+Avant de lancer, choisissez l'**étendue** du test : **Test complet** (tout le parcours), **Juste le test LED** (refaire seulement le câblage des LEDs, étape 4) ou **Juste la cartographie** (refaire seulement les entrées, étape 5). Pratique pour ne rejouer qu'une seule étape après un changement de panneau ou d'encodeur.
+
 ### 2. Test du panneau
 
 Vos boutons doivent être **tous allumés en blanc**. C'est la confirmation que l'alimentation et le firmware fonctionnent. Si certains restent éteints, c'est un problème de câblage ou d'alimentation (voir [Dépannage](depannage.md)).
@@ -63,7 +65,10 @@ L'assistant allume chaque canal l'un après l'autre : tout le panneau en rouge, 
 
 L'assistant en déduit l'ordre réel des fils et **corrige l'ordre des canaux dans la configuration** — sans ressouder. Le test se relance ensuite pour confirmer.
 
-### 4. Test du câblage
+!!! info "Deux câblages indépendants"
+    Chaque bouton a **deux circuits distincts** : la **LED** (ce qui s'allume) et le **contact** (ce qui est envoyé au jeu quand vous appuyez). L'étape 4 vérifie le premier, l'étape 5 le second — les deux peuvent être câblés différemment, d'où deux tests.
+
+### 4. Test du câblage des LEDs
 
 C'est l'étape maligne : un bouton s'allume en **vert** sur votre vrai panneau, un par un. À chaque fois, **cliquez sur le bouton virtuel qui correspond** au bouton allumé en vrai. Un clignotement cyan confirme votre clic, sur l'écran comme sur le panneau.
 
@@ -71,6 +76,19 @@ START et SELECT sont testés en fin de séquence.
 
 L'assistant compare ainsi votre câblage réel à la disposition attendue. Si des différences apparaissent (deux fils inversés, par exemple), le bouton **« Corriger automatiquement »** réécrit le câblage logiciel (`[GPIO:P1]` de `PicoCommandSender.ini`, avec sauvegarde `.bak`) pour que chaque bouton réponde à sa place — sans rien démonter. Le test se relance pour confirmer.
 
-### 5. Enregistrer la configuration
+### 5. Cartographie des entrées
+
+L'inverse de l'étape précédente : un bouton s'allume en **vert** sur votre vrai panneau, un par un, et cette fois **vous appuyez dessus**. L'assistant lit alors l'identité que votre manette/encodeur envoie — exactement comme RetroArch la voit (via la SDL de RetroArch et le `gamecontrollerdb.txt` de RetroBat) — et construit la **cartographie des entrées** : quel bouton physique déclenche quelle action en jeu. START et SELECT/COIN sont inclus.
+
+Un récapitulatif s'affiche, avec une alerte si deux boutons envoient la même chose, ou si START/SELECT n'émettent pas ce qu'on attend (câblage d'encodeur à revoir). Ensuite, **« Écrire la cartographie & régénérer »** :
+
+- enregistre cette cartographie **par joueur** (vos Picos et encodeurs peuvent être câblés différemment d'un joueur à l'autre) ;
+- régénère **tous** les remaps RetroArch (`.rmp`) et toutes les configs MAME (`.cfg`), avec une barre de progression indiquant le système ou le jeu en cours ;
+- reste réversible : **« Annuler cette cartographie »** rétablit l'état précédent.
+
+!!! note "MAME suit vos LEDs, comme RetroArch"
+    Les configs MAME placent désormais chaque bouton d'après la **même disposition que les LEDs et les remaps RetroArch**. Le bouton qui s'allume pour une action est donc bien celui qui la déclenche — dans RetroArch **comme** dans MAME standalone.
+
+### 6. Enregistrer la configuration
 
 Quand tout correspond, **« Enregistrer la configuration »** écrit dans `PicoCommandSender.ini` ce que l'assistant a vérifié sur votre matériel : le port COM qui a répondu, la composition du panneau (nombre de boutons, START/SELECT), et un délai d'initialisation **mesuré** sur votre Pico plutôt que la valeur prudente livrée par défaut — LedManager démarre d'autant plus vite.

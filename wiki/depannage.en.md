@@ -40,6 +40,12 @@ GOLD=YELLOW
 
 See [Configuration — the color policy](configuration.md#the-color-policy).
 
+## A button triggers the wrong action in-game
+
+The right LED lights up, but pressing does something else (two swapped buttons, say)? That's the **switch wiring**, independent of the LED wiring. Run the [assistant](assistant.md) → **Cartography only**: press each lit button, then **"Write the cartography & regenerate"**. The RetroArch remaps and MAME configs are rewritten from what your buttons actually send — and it's reversible.
+
+If the assistant shows **"Gamepad unreadable"**, check that a pad/encoder is plugged in and that EmulationStation is closed.
+
 ## Where are the logs?
 
 In the plugin's `.log\` folder. It is the first thing to attach when asking for help: it shows generated commands, Pico answers and any ignored commands.

@@ -53,6 +53,8 @@ Plug your Pico in over USB (a **data** cable, not a charge-only one), then click
 
 If nothing is detected, the **"Install the firmware"** button appears: the assistant deploys the panel firmware to the Pico itself (over the MicroPython serial link), then re-runs detection. For a **blank** Pico (never flashed), plug it in while holding BOOTSEL: the assistant guides you through dropping MicroPython once (automatic copy if a `.uf2` file sits in `fw\`), then installs the panel firmware. Also check the USB cable (data, not charge-only) — details in [Hardware](materiel.md#flashing-the-firmware).
 
+Before you start, pick the test's **scope**: **Full test** (the whole run), **LED test only** (redo just the LED wiring, step 4) or **Cartography only** (redo just the inputs, step 5). Handy to replay a single step after swapping a panel or an encoder.
+
 ### 2. Panel test
 
 Your buttons should all be **lit white**. That confirms power and firmware work. If some stay dark, it's a wiring or power issue (see [Troubleshooting](depannage.md)).
@@ -63,7 +65,10 @@ The assistant lights each channel in turn: the whole panel in red, then green, t
 
 The assistant deduces the real wire order and **fixes the channel order in the configuration** — no re-soldering. The test then re-runs to confirm.
 
-### 4. Wiring test
+!!! info "Two independent circuits"
+    Each button has **two separate circuits**: the **LED** (what lights up) and the **switch** (what is sent to the game when you press). Step 4 checks the first, step 5 the second — the two can be wired differently, hence two tests.
+
+### 4. LED wiring test
 
 This is the clever step: one button lights up **green** on your real panel, one at a time. Each time, **click the virtual button that matches** the one lit for real. A cyan blink confirms your click, both on screen and on the panel.
 
@@ -71,6 +76,19 @@ START and SELECT are tested at the end of the sequence.
 
 The assistant thus compares your real wiring to the expected arrangement. If differences show up (two swapped wires, say), the **"Fix automatically"** button rewrites the software wiring (`[GPIO:P1]` in `PicoCommandSender.ini`, with a `.bak` backup) so every button answers at its place — nothing to dismantle. The test re-runs to confirm.
 
-### 5. Save the configuration
+### 5. Input cartography
+
+The reverse of the previous step: one button lights up **green** on your real panel, one at a time, and this time **you press it**. The assistant reads the identity your pad/encoder emits — exactly as RetroArch sees it (through RetroArch's SDL and RetroBat's `gamecontrollerdb.txt`) — and builds the **input cartography**: which physical button triggers which in-game action. START and SELECT/COIN are included.
+
+A summary appears, warning you if two buttons send the same thing, or if START/SELECT don't emit what's expected (encoder wiring to review). Then **"Write the cartography & regenerate"**:
+
+- saves this cartography **per player** (your Picos and encoders may be wired differently from one player to the next);
+- regenerates **all** RetroArch remaps (`.rmp`) and MAME configs (`.cfg`), with a progress bar showing the system or game being processed;
+- stays reversible: **"Undo this cartography"** restores the previous state.
+
+!!! note "MAME follows your LEDs, like RetroArch"
+    MAME configs now place each button from the **same layout as the LEDs and the RetroArch remaps**. The button that lights up for an action is therefore the one that triggers it — in RetroArch **and** in standalone MAME.
+
+### 6. Save the configuration
 
 Once everything matches, **"Save the configuration"** writes into `PicoCommandSender.ini` what the assistant verified on your hardware: the COM port that answered, the panel composition (button count, START/SELECT), and an initialization delay **measured** on your Pico instead of the conservative shipped default — LedManager starts that much faster.

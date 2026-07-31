@@ -40,6 +40,12 @@ GOLD=YELLOW
 
 Voir [Configuration — la policy couleur](configuration.md#la-policy-couleur).
 
+## Un bouton déclenche la mauvaise action en jeu
+
+La bonne LED s'allume, mais appuyer déclenche autre chose (deux boutons inversés, par exemple) ? C'est le **câblage des contacts**, indépendant de celui des LEDs. Lancez l'[assistant](assistant.md) → **Juste la cartographie** : appuyez sur chaque bouton allumé, puis **« Écrire la cartographie & régénérer »**. Les remaps RetroArch et les configs MAME sont réécrits d'après ce que vos boutons envoient réellement — et l'opération est réversible.
+
+Si l'assistant affiche **« Manette illisible »**, vérifiez qu'une manette/encodeur est bien branché et qu'EmulationStation est fermé.
+
 ## Où sont les logs ?
 
 Dans le dossier `.log\` du plugin. C'est la première chose à joindre si vous demandez de l'aide : on y voit les commandes générées, les réponses du Pico et les éventuelles commandes ignorées.
