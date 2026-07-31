@@ -52,6 +52,7 @@ plugins:
             Assistant de configuration: Setup assistant
             Matériel: Hardware
             Panels par système: Per-system panels
+            Panels par jeu et câblage: Per-game panels and wiring
             Configuration: Configuration
             Cartes LED externes: External LED boards
             Dépannage: Troubleshooting
