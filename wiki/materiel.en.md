@@ -53,6 +53,9 @@ Its strength: it stays **functional from 2 to 8 buttons without rewiring**, beca
 !!! note "The Setup Manager during a game"
     The virtual panel deliberately runs at low priority and batches its refreshes to stay as light as possible. A slight in-game slowdown is still possible while the window is open during a game — that is normal: it is a tuning tool, close it for serious play.
 
+!!! tip "Already automated — the following sections are for advanced users"
+    Flashing the firmware, checking the Pico and describing your panel are **fully handled by the [assistant](assistant.md) in `LedManagerSetup.exe`**: it deploys the firmware, detects and tests the Pico, then writes the panel description for you. What follows is only useful for **troubleshooting** or to understand what happens under the hood — **not required** for a normal install.
+
 ## Flashing the firmware
 
 The Pico firmware ships in the plugin's `fw\` folder. To deploy it:
