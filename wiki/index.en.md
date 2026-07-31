@@ -39,4 +39,4 @@
                 → Raspberry Pi Pico → your LEDs
     ```
 
-LedManager is part of the RetroBat plugin family together with [APIExpose](https://github.com/Nelfe80/RetroBat-APIExpose) (the data engine, **required**) and [MarqueeManager](https://github.com/Nelfe80/RetroBat-Marquee-Manager) (marquee screens and DMD).
+LedManager is part of the RetroBat plugin family together with [APIExpose](https://nelfe80.github.io/RetroBat-APIExpose/en/) (the data engine, **required**) and [MarqueeManager](https://nelfe80.github.io/RetroBat-Marquee-Manager/en/) (marquee screens and DMD).

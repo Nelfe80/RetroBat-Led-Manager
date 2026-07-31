@@ -57,3 +57,7 @@ powershell -NoProfile -ExecutionPolicy RemoteSigned -File tools\reset-pico.ps1
 ```
 
 Puis relancez LedManager (ou RetroBat).
+
+## Toujours bloqué ?
+
+Ouvrez un ticket sur le [suivi des problèmes de LedManager](https://github.com/Nelfe80/RetroBat-Led-Manager/issues) en joignant les logs du dossier `.log\`.

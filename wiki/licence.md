@@ -13,4 +13,4 @@ Les scripts et firmwares embarqués visent du matériel de constructeurs tiers (
 
 ## L'écosystème
 
-LedManager fonctionne avec [APIExpose](https://github.com/Nelfe80/RetroBat-APIExpose), qui a ses propres conditions pour certains usages (assembleurs de bornes, salles) — voir sa [page licences](https://nelfe80.github.io/RetroBat-APIExpose/licences/).
+LedManager fonctionne avec [APIExpose](https://nelfe80.github.io/RetroBat-APIExpose/), qui a ses propres conditions pour certains usages (assembleurs de bornes, salles) — voir sa [page licences](https://nelfe80.github.io/RetroBat-APIExpose/licences/).
