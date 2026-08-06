@@ -16,7 +16,7 @@ AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher=NelfeTech
 AppPublisherURL=https://www.nelfetech.com
-DefaultDirName=C:\RetroBat\plugins\LedManager
+DefaultDirName={code:GetPluginInstallDir|LedManager}
 DirExistsWarning=no
 AppendDefaultDirName=no
 PrivilegesRequired=lowest
@@ -42,6 +42,7 @@ Source: "..\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createalls
 ; Dépendance APIExpose (dossier frère) — DÉTECTION (fournit ApiExposeInstalled) ;
 ; on avertit dans [Code] si absent (installée par APIExpose-Cabinet-Setup, pas ici)
 #include "..\..\APIExpose\installer\apiexpose-bootstrap.iss"
+#include "..\..\APIExpose\installer\retrobat-detect.iss"
 
 [Dirs]
 Name: "{app}\state"; Flags: uninsneveruninstall
@@ -59,9 +60,13 @@ Filename: "{app}\uninstall-es-start-hook.bat"; WorkingDir: "{app}"; Flags: runhi
 // Data Pack, via APIExpose-Cabinet-Setup) ; on avertit s'il manque, sans bloquer.
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
-  if (CurStep = ssInstall) and (not ApiExposeInstalled()) then
-    MsgBox('APIExpose n''est pas installé à côté (plugins\APIExpose).'#13#10#13#10
-      + 'Led Manager en a besoin pour fonctionner. Lancez d''abord'#13#10
-      + 'APIExpose-Cabinet-Setup.exe — l''installation continue quand même.',
-      mbInformation, MB_OK);
+  if CurStep = ssInstall then
+  begin
+    WarnIfNotRetroBat();
+    if not ApiExposeInstalled() then
+      MsgBox('APIExpose n''est pas installé à côté (plugins\APIExpose).'#13#10#13#10
+        + 'Led Manager en a besoin pour fonctionner. Lancez d''abord'#13#10
+        + 'APIExpose-Cabinet-Setup.exe — l''installation continue quand même.',
+        mbInformation, MB_OK);
+  end;
 end;
