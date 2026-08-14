@@ -139,363 +139,6 @@
     }
   },
   "actionRules": {
-    "COMBO_*": {
-      "description": "Combo chain variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "COMBO_*"
-      },
-      "then": [
-        {
-          "effect": "column_flash_scan",
-          "targets": [
-            "ALL_BUTTONS"
-          ],
-          "pattern": "left_to_right_columns",
-          "color": "YELLOW",
-          "onMs": 90,
-          "intervalMs": 55,
-          "priority": 58,
-          "throttleMs": 120
-        }
-      ]
-    },
-    "DYNAMIC_*": {
-      "description": "Dynamic resource/inventory variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "DYNAMIC_*"
-      },
-      "then": [
-        {
-          "effect": "flash_restore",
-          "targets": [
-            "RANDOM_BUTTON"
-          ],
-          "color": "GOLD",
-          "onMs": 100,
-          "priority": 48,
-          "throttleMs": 120
-        }
-      ]
-    },
-    "ENEMY_*": {
-      "description": "Enemy state variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "ENEMY_*"
-      },
-      "then": [
-        {
-          "effect": "flash_restore",
-          "targets": [
-            "RANDOM_BUTTON"
-          ],
-          "color": "RED",
-          "onMs": 100,
-          "priority": 55,
-          "throttleMs": 80
-        }
-      ]
-    },
-    "HIT_*": {
-      "description": "Hit variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "HIT_*"
-      },
-      "then": [
-        {
-          "effect": "flash_restore",
-          "targets": [
-            "RANDOM_BUTTON"
-          ],
-          "color": "RED",
-          "onMs": 100,
-          "priority": 55,
-          "throttleMs": 80
-        }
-      ]
-    },
-    "LEVEL_*": {
-      "description": "Level variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "LEVEL_*"
-      },
-      "then": [
-        {
-          "effect": "column_flash_scan",
-          "targets": [
-            "ALL_BUTTONS"
-          ],
-          "pattern": "left_to_right_columns",
-          "color": "CYAN",
-          "onMs": 90,
-          "intervalMs": 55,
-          "priority": 45,
-          "throttleMs": 2500
-        }
-      ]
-    },
-    "MOUNT_*": {
-      "description": "Mount variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "MOUNT_*"
-      },
-      "then": [
-        {
-          "effect": "column_flash_bounce",
-          "targets": [
-            "ALL_BUTTONS"
-          ],
-          "pattern": "left_to_right_columns",
-          "color": "GREEN",
-          "onMs": 90,
-          "intervalMs": 55,
-          "priority": 48,
-          "throttleMs": 300
-        }
-      ]
-    },
-    "OPPONENT_SELECTED_*": {
-      "description": "Opponent selection variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "OPPONENT_SELECTED_*"
-      },
-      "then": [
-        {
-          "effect": "flash_restore",
-          "targets": [
-            "RANDOM_COLUMN"
-          ],
-          "color": "PURPLE",
-          "onMs": 120,
-          "priority": 45
-        }
-      ]
-    },
-    "PLAYER_SELECTED_*": {
-      "description": "Player selection variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "PLAYER_SELECTED_*"
-      },
-      "then": [
-        {
-          "effect": "flash_restore",
-          "targets": [
-            "RANDOM_COLUMN"
-          ],
-          "color": "BLUE",
-          "onMs": 120,
-          "priority": 45
-        }
-      ]
-    },
-    "PLAYER_STATE_*": {
-      "description": "Player state variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "PLAYER_STATE_*"
-      },
-      "then": [
-        {
-          "effect": "flash_restore",
-          "targets": [
-            "RANDOM_BUTTON"
-          ],
-          "color": "CYAN",
-          "onMs": 100,
-          "priority": 42,
-          "throttleMs": 300
-        }
-      ]
-    },
-    "SCORE_*": {
-      "description": "Score variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "SCORE_*"
-      },
-      "then": [
-        {
-          "effect": "flash_restore",
-          "targets": [
-            "RANDOM_BUTTON"
-          ],
-          "color": "GREEN",
-          "onMs": 80,
-          "priority": 38,
-          "throttleMs": 250
-        }
-      ]
-    },
-    "TRANSFORMATION_*": {
-      "description": "Transformation variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "TRANSFORMATION_*"
-      },
-      "then": [
-        {
-          "effect": "column_flash_scan",
-          "targets": [
-            "ALL_BUTTONS"
-          ],
-          "pattern": "left_to_right_columns",
-          "colors": [
-            "YELLOW",
-            "CYAN",
-            "BLUE",
-            "GREEN"
-          ],
-          "times": 2,
-          "onMs": 95,
-          "intervalMs": 55,
-          "priority": 56,
-          "throttleMs": 250
-        }
-      ]
-    },
-    "TREASURE_*": {
-      "description": "Treasure variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "TREASURE_*"
-      },
-      "then": [
-        {
-          "effect": "sparkle",
-          "targets": [
-            "ALL_BUTTONS"
-          ],
-          "color": "GOLD",
-          "durationMs": 420,
-          "restore": true,
-          "priority": 55,
-          "throttleMs": 150
-        }
-      ]
-    },
-    "VEHICLE_SELECTED_*": {
-      "description": "Vehicle selection variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "VEHICLE_SELECTED_*"
-      },
-      "then": [
-        {
-          "effect": "flash_restore",
-          "targets": [
-            "RANDOM_COLUMN"
-          ],
-          "color": "BLUE",
-          "onMs": 120,
-          "priority": 45
-        }
-      ]
-    },
-    "WEAPON_*": {
-      "description": "Weapon variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "WEAPON_*"
-      },
-      "then": [
-        {
-          "effect": "flash_restore",
-          "targets": [
-            "RANDOM_BUTTON"
-          ],
-          "color": "ORANGE",
-          "onMs": 100,
-          "priority": 52,
-          "throttleMs": 120
-        }
-      ]
-    },
-    "BUILD_*": {
-      "description": "Build variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "BUILD_*"
-      },
-      "then": [
-        {
-          "effect": "flash_restore",
-          "targets": [
-            "RANDOM_COLUMN"
-          ],
-          "color": "ORANGE",
-          "onMs": 100,
-          "priority": 45,
-          "throttleMs": 160
-        }
-      ]
-    },
-    "ENVIRONMENT_*": {
-      "description": "Environment variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "ENVIRONMENT_*"
-      },
-      "then": [
-        {
-          "effect": "flash_restore",
-          "targets": [
-            "STRIP1"
-          ],
-          "fallbackTargets": [
-            "RANDOM_BUTTON"
-          ],
-          "color": "BLUE",
-          "onMs": 80,
-          "priority": 35,
-          "throttleMs": 700
-        }
-      ]
-    },
-    "MAP_*": {
-      "description": "Map variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "MAP_*"
-      },
-      "then": [
-        {
-          "effect": "flash_restore",
-          "targets": [
-            "RANDOM_BUTTON"
-          ],
-          "color": "CYAN",
-          "onMs": 100,
-          "priority": 35,
-          "throttleMs": 300
-        }
-      ]
-    },
-    "MODE_*": {
-      "description": "Mode variants",
-      "when": {
-        "trigger": "mem.action",
-        "action": "MODE_*"
-      },
-      "then": [
-        {
-          "effect": "flash_restore",
-          "targets": [
-            "RANDOM_COLUMN"
-          ],
-          "color": "PURPLE",
-          "onMs": 120,
-          "priority": 35,
-          "throttleMs": 300
-        }
-      ]
-    },
     "*": {
       "description": "Fallback for unmapped mem actions",
       "when": {
@@ -738,6 +381,25 @@
         }
       ]
     },
+    "BUILD_*": {
+      "description": "Build variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "BUILD_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_COLUMN"
+          ],
+          "color": "ORANGE",
+          "onMs": 100,
+          "priority": 45,
+          "throttleMs": 160
+        }
+      ]
+    },
     "CAMERA_MOVE": {
       "description": "Camera Move",
       "when": {
@@ -757,11 +419,11 @@
         }
       ]
     },
-    "CHARACTER_SELECT": {
-      "description": "Character Select",
+    "CHARACTER_SELECTED": {
+      "description": "Character selected (the desc carries the name)",
       "when": {
         "trigger": "mem.action",
-        "action": "CHARACTER_SELECT"
+        "action": "CHARACTER_SELECTED"
       },
       "then": [
         {
@@ -925,6 +587,27 @@
           "durationMs": 250,
           "restore": true,
           "priority": 40
+        }
+      ]
+    },
+    "COMBO_*": {
+      "description": "Combo chain variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "COMBO_*"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "color": "YELLOW",
+          "onMs": 90,
+          "intervalMs": 55,
+          "priority": 58,
+          "throttleMs": 120
         }
       ]
     },
@@ -1348,6 +1031,25 @@
         }
       ]
     },
+    "DYNAMIC_*": {
+      "description": "Dynamic resource/inventory variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "DYNAMIC_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "GOLD",
+          "onMs": 100,
+          "priority": 48,
+          "throttleMs": 120
+        }
+      ]
+    },
     "DYNAMIC_ALWAYS": {
       "description": "Dynamic Always",
       "when": {
@@ -1478,6 +1180,47 @@
           "durationMs": 250,
           "restore": true,
           "priority": 40
+        }
+      ]
+    },
+    "ENEMY_*": {
+      "description": "Enemy state variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "ENEMY_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "RED",
+          "onMs": 100,
+          "priority": 55,
+          "throttleMs": 80
+        }
+      ]
+    },
+    "ENVIRONMENT_*": {
+      "description": "Environment variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "ENVIRONMENT_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "STRIP1"
+          ],
+          "fallbackTargets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "BLUE",
+          "onMs": 80,
+          "priority": 35,
+          "throttleMs": 700
         }
       ]
     },
@@ -1909,6 +1652,25 @@
         }
       ]
     },
+    "HIT_*": {
+      "description": "Hit variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "HIT_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "RED",
+          "onMs": 100,
+          "priority": 55,
+          "throttleMs": 80
+        }
+      ]
+    },
     "IGNORE": {
       "description": "Ignore",
       "when": {
@@ -2185,6 +1947,27 @@
         }
       ]
     },
+    "LEVEL_*": {
+      "description": "Level variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "LEVEL_*"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "color": "CYAN",
+          "onMs": 90,
+          "intervalMs": 55,
+          "priority": 45,
+          "throttleMs": 2500
+        }
+      ]
+    },
     "LEVEL_CLEAR": {
       "description": "Level clear",
       "when": {
@@ -2368,6 +2151,25 @@
         }
       ]
     },
+    "MAP_*": {
+      "description": "Map variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "MAP_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "CYAN",
+          "onMs": 100,
+          "priority": 35,
+          "throttleMs": 300
+        }
+      ]
+    },
     "MAP_CLOSED": {
       "description": "Map Closed",
       "when": {
@@ -2425,6 +2227,25 @@
         }
       ]
     },
+    "MODE_*": {
+      "description": "Mode variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "MODE_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_COLUMN"
+          ],
+          "color": "PURPLE",
+          "onMs": 120,
+          "priority": 35,
+          "throttleMs": 300
+        }
+      ]
+    },
     "MONEY_STATE": {
       "description": "Rings/Coins",
       "when": {
@@ -2439,6 +2260,27 @@
           "color": "YELLOW",
           "priority": 20,
           "throttleMs": 500
+        }
+      ]
+    },
+    "MOUNT_*": {
+      "description": "Mount variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "MOUNT_*"
+      },
+      "then": [
+        {
+          "effect": "column_flash_bounce",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "color": "GREEN",
+          "onMs": 90,
+          "intervalMs": 55,
+          "priority": 48,
+          "throttleMs": 300
         }
       ]
     },
@@ -2633,6 +2475,24 @@
         }
       ]
     },
+    "OPPONENT_SELECTED_*": {
+      "description": "Opponent selection variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "OPPONENT_SELECTED_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_COLUMN"
+          ],
+          "color": "PURPLE",
+          "onMs": 120,
+          "priority": 45
+        }
+      ]
+    },
     "PARRY_SUCCESS": {
       "description": "Parry successful",
       "when": {
@@ -2726,6 +2586,24 @@
         }
       ]
     },
+    "PLAYER_SELECTED_*": {
+      "description": "Player selection variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "PLAYER_SELECTED_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_COLUMN"
+          ],
+          "color": "BLUE",
+          "onMs": 120,
+          "priority": 45
+        }
+      ]
+    },
     "PLAYER_STATE": {
       "description": "Player State",
       "when": {
@@ -2742,6 +2620,25 @@
           "durationMs": 250,
           "restore": true,
           "priority": 40
+        }
+      ]
+    },
+    "PLAYER_STATE_*": {
+      "description": "Player state variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "PLAYER_STATE_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "CYAN",
+          "onMs": 100,
+          "priority": 42,
+          "throttleMs": 300
         }
       ]
     },
@@ -3171,6 +3068,25 @@
           "color": "GREEN",
           "priority": 40,
           "throttleMs": 100
+        }
+      ]
+    },
+    "SCORE_*": {
+      "description": "Score variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "SCORE_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "GREEN",
+          "onMs": 80,
+          "priority": 38,
+          "throttleMs": 250
         }
       ]
     },
@@ -3796,6 +3712,33 @@
         }
       ]
     },
+    "TRANSFORMATION_*": {
+      "description": "Transformation variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "TRANSFORMATION_*"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "colors": [
+            "YELLOW",
+            "CYAN",
+            "BLUE",
+            "GREEN"
+          ],
+          "times": 2,
+          "onMs": 95,
+          "intervalMs": 55,
+          "priority": 56,
+          "throttleMs": 250
+        }
+      ]
+    },
     "TRANSFORMATION_START": {
       "description": "Transformation Start",
       "when": {
@@ -3840,6 +3783,26 @@
           "durationMs": 800,
           "restore": true,
           "priority": 55
+        }
+      ]
+    },
+    "TREASURE_*": {
+      "description": "Treasure variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "TREASURE_*"
+      },
+      "then": [
+        {
+          "effect": "sparkle",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "color": "GOLD",
+          "durationMs": 420,
+          "restore": true,
+          "priority": 55,
+          "throttleMs": 150
         }
       ]
     },
@@ -3974,6 +3937,43 @@
           "durationMs": 250,
           "restore": true,
           "priority": 40
+        }
+      ]
+    },
+    "VEHICLE_SELECTED_*": {
+      "description": "Vehicle selection variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "VEHICLE_SELECTED_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_COLUMN"
+          ],
+          "color": "BLUE",
+          "onMs": 120,
+          "priority": 45
+        }
+      ]
+    },
+    "WEAPON_*": {
+      "description": "Weapon variants",
+      "when": {
+        "trigger": "mem.action",
+        "action": "WEAPON_*"
+      },
+      "then": [
+        {
+          "effect": "flash_restore",
+          "targets": [
+            "RANDOM_BUTTON"
+          ],
+          "color": "ORANGE",
+          "onMs": 100,
+          "priority": 52,
+          "throttleMs": 120
         }
       ]
     },

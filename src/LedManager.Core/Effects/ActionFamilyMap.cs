@@ -67,6 +67,9 @@ public static class ActionFamilyMap
         ["CHEST_OPENED"] = "inventory.items",
         ["WEAPON_UPGRADE"] = "inventory.weapon",
         ["WEAPON_STATE"] = "inventory.weapon",
+        // Le desc de celle-ci porte un NOM d'arme ("Fire Water") et non une
+        // description : de quoi allumer une couleur propre a chaque arme.
+        ["WEAPON_SELECTED"] = "inventory.weapon",
         ["SCORE_STATE"] = "scoring.points",
         ["SCORE"] = "scoring.points",
         ["COIN_GAIN"] = "scoring.collectibles",
@@ -116,6 +119,8 @@ public static class ActionFamilyMap
         ["SPINNING"] = "state.player",
         ["SWIMMING"] = "state.player",
         ["ATTACKING"] = "state.player",
+        // Idem : le desc nomme le personnage joue, pour ce joueur-la.
+        ["CHARACTER_SELECTED"] = "state.player",
         ["MOUNT_START"] = "state.mount",
         ["MOUNT_STOP"] = "state.mount",
         ["MOUNT_STATE"] = "state.mount",
