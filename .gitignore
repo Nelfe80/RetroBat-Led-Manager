@@ -79,7 +79,10 @@ overrides/**
 !overrides/README.txt
 
 
-LedManager.ini.bak
+# Sauvegardes de travail : un .bak d'exe pese le poids d'un exe, et celui d'un
+# .ini expose une configuration. La regle nommait UN fichier ; les autres
+# passaient au travers.
+*.bak
 # licences a verifier avant publication
 resources/controllers_inputs_roms_testing/
 !resources/controllers_inputs_roms_testing/README.md
