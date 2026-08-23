@@ -30,7 +30,18 @@ $ex = @(
     "-x!$name\build.bat", "-x!$name\build-LedManager.bat", "-x!$name\build-PicoCommandSender.bat",
     "-x!$name\release.ps1", "-x!$name\LedManager.sln", "-x!$name\Directory.Build.props",
     "-x!$name\build-Setup.bat", "-x!$name\tools\wiki-panels-generator",
-    '-xr!CAHIER_DES_CHARGES*', '-xr!*.log', '-xr!__pycache__', '-xr!*.pyc'
+    '-xr!CAHIER_DES_CHARGES*', '-xr!*.log', '-xr!__pycache__', '-xr!*.pyc',
+    # Outillage interne : deploiement du firmware, sondes de latence,
+    # balayages de couleur, snapshots de version. Le runtime n'en lit aucun.
+    # Ils partaient dans les packs depuis toujours — le controle plus bas
+    # ne les cherchait simplement pas. fw\*.py RESTE : c'est le
+    # firmware que le joueur flashe sur son Pico, pas un outil.
+    "-x!$name\tools\*.ps1", "-x!$name\tools\*.py",
+    # Sauvegardes de travail : un .bak d'ini peut porter une config machine.
+    '-xr!*.bak',
+    # Sorties de build, si l'arbre en garde.
+    '-xr!*.pdb', "-x!$name\obj", "-x!$name\bin",
+    "-x!$name\tests", "-x!$name\dist", "-x!$name\installer"
 )
 
 Set-Location $root
@@ -41,7 +52,7 @@ Write-Host 'Construction full.7z...'
 & $sz a $full "$name\docs\pico_wiring_diagram.png" "$name\docs\pico_wiring_diagram_fr.png" -bsp0 -bso0
 
 $listing = & $sz l $full
-$leaks = $listing | Select-String '\\src\\|\.git|\\state\\|CAHIER|\.sln'
+$leaks = $listing | Select-String '\\src\\|\.git|\\state\\|CAHIER|\.sln|\\tools\\.*\.(ps1|py)$|\.bak$|\.pdb$|\\obj\\|\\bin\\|publish-tmp|\.env$'
 if ($leaks) { throw "FUITE DETECTEE dans l'archive : $($leaks[0])" }
 Write-Host 'Controle anti-fuite : OK'
 
@@ -64,7 +75,18 @@ $($hashes -join "`n")
 "@
 $notesFile = Join-Path $out 'notes.md'
 $notes | Set-Content $notesFile -Encoding utf8
-$draftFlag = if ($Publish) { @() } else { @('--draft') }
-gh release create "v$ver" --repo Nelfe80/RetroBat-Led-Manager --target main @draftFlag --title "LedManager $ver" --notes-file $notesFile $full
+# Les arguments de gh passent par un TABLEAU, jamais par un splat au milieu
+# d'une ligne de commande native : PowerShell laisse alors l'expansion de gh
+# interpreter le drapeau, et gh repond « no matches found for - ».
+$ghArgs = @(
+    'release', 'create', "v$ver",
+    '--repo', 'Nelfe80/RetroBat-Led-Manager',
+    '--target', 'main',
+    '--title', "LedManager $ver",
+    '--notes-file', $notesFile
+)
+if (-not $Publish) { $ghArgs += '--draft' }
+$ghArgs += $full
+& gh @ghArgs
 if ($LASTEXITCODE -ne 0) { throw "gh release create a echoue (exit $LASTEXITCODE)." }
 Write-Host "Release v$ver creee$(if (-not $Publish) { ' (draft, a publier sur GitHub)' })."

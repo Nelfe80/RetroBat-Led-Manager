@@ -37,7 +37,7 @@ french.SelectDirDesc=Choisissez le dossier plugins\LedManager de VOTRE RetroBat 
 
 [Files]
 Source: "..\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; \
-    Excludes: "\src\*,\docs\*,\wiki\*,\media\*,\state\*,\artifacts\*,\dist\*,\installer\*,\tests\*,\.git\*,\.github\*,\.log\*,\.cache\*,\.versioning\*,\.archive\*,\.temp\*,\.graceful_exit\*,\obj\*,\bin\*,\site\*,\.gitignore,\.gitattributes,\mkdocs.yml,\LedManager.sln,\Directory.Build.props,\build.bat,\build-LedManager.bat,\build-PicoCommandSender.bat,\build-Setup.bat,\release.ps1,\config.ini,\config.ini.bak,\tools\wiki-panels-generator\*,CAHIER*,*.log,*.pdb,*.lib,__pycache__\*,*.pyc"
+    Excludes: "\src\*,\docs\*,\wiki\*,\media\*,\state\*,\artifacts\*,\dist\*,\installer\*,\tests\*,\.git\*,\.github\*,\.log\*,\.cache\*,\.versioning\*,\.archive\*,\.temp\*,\.graceful_exit\*,\obj\*,\bin\*,\site\*,\.gitignore,\.gitattributes,\mkdocs.yml,\LedManager.sln,\Directory.Build.props,\build.bat,\build-LedManager.bat,\build-PicoCommandSender.bat,\build-Setup.bat,\release.ps1,\config.ini,\config.ini.bak,\tools\wiki-panels-generator\*,CAHIER*,*.log,*.pdb,*.lib,__pycache__\*,*.pyc,\tools\*.ps1,\tools\*.py,*.bak"
 
 ; Dépendance APIExpose (dossier frère) — DÉTECTION (fournit ApiExposeInstalled) ;
 ; on avertit dans [Code] si absent (installée par APIExpose-Cabinet-Setup, pas ici)
