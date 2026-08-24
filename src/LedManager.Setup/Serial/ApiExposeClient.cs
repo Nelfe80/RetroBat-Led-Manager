@@ -6,7 +6,7 @@ namespace LedManager.Setup.Serial;
 /// <summary>
 /// Minimal HTTP client for the APIExpose REST endpoints (deployments pushed from
 /// the "Contrôles" view). The base URL comes from LedManager.ini [APIExpose]
-/// BaseUrl — the same setting the dashboard probe uses — with ws:// normalized
+/// BaseUrl - the same setting the dashboard probe uses - with ws:// normalized
 /// to http:// since both speak to the same Kestrel listener.
 /// </summary>
 public static class ApiExposeClient

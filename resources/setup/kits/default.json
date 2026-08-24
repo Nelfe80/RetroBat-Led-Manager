@@ -42,10 +42,10 @@
       "channels_per_button": 3,
       "gpio_outputs_required": 24,
       "wire_colors": {
-        "yellow": "Canal LED verte — 1er GPIO du bouton (ex. B1 : GP0)",
-        "white": "Canal LED rouge — 2e GPIO du bouton (ex. B1 : GP1)",
-        "red": "Canal LED bleue — 3e GPIO du bouton (ex. B1 : GP2)",
-        "black": "Commun — relié au 3V3(OUT) du Pico"
+        "yellow": "Canal LED verte - 1er GPIO du bouton (ex. B1 : GP0)",
+        "white": "Canal LED rouge - 2e GPIO du bouton (ex. B1 : GP1)",
+        "red": "Canal LED bleue - 3e GPIO du bouton (ex. B1 : GP2)",
+        "black": "Commun - relié au 3V3(OUT) du Pico"
       },
       "wiring_rules": [
         "Ordre du connecteur 4 broches, de gauche à droite : Jaune / Blanc / Rouge / Noir.",
@@ -89,7 +89,7 @@
     "quantity": 1,
     "role": "Distribuer le 3V3(OUT) du Pico vers les 10 boutons",
     "notes": [
-      "Tous les boutons partagent le même commun 3V3(OUT) — jamais les GND.",
+      "Tous les boutons partagent le même commun 3V3(OUT) - jamais les GND.",
       "Prévoir un câblage propre pour éviter les faux contacts.",
       "Tester la consommation globale avec tous les boutons allumés."
     ]
@@ -198,7 +198,7 @@
       "id": "multimeter",
       "name": "Multimètre",
       "required": "optional",
-      "reason": "Utile pour vérifier la continuité en cas de doute — l'assistant valide de toute façon chaque canal par un test lumineux."
+      "reason": "Utile pour vérifier la continuité en cas de doute - l'assistant valide de toute façon chaque canal par un test lumineux."
     },
     {
       "id": "external_5v_power_supply",

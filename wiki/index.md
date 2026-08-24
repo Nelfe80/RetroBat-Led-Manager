@@ -15,10 +15,10 @@
 
 <div class="grid cards" markdown>
 
-- **[Premiers pas](premiers-pas.md)** — installer LedManager en 5 minutes.
-- **[Matériel](materiel.md)** — câbler votre Raspberry Pi Pico et flasher le firmware.
-- **[Configuration](configuration.md)** — décrire votre panel dans les fichiers `.ini`.
-- **[Dépannage](depannage.md)** — les solutions aux problèmes courants.
+- **[Premiers pas](premiers-pas.md)** - installer LedManager en 5 minutes.
+- **[Matériel](materiel.md)** - câbler votre Raspberry Pi Pico et flasher le firmware.
+- **[Configuration](configuration.md)** - décrire votre panel dans les fichiers `.ini`.
+- **[Dépannage](depannage.md)** - les solutions aux problèmes courants.
 
 </div>
 
@@ -29,7 +29,7 @@
 
 ![Le jeu s'exprime, votre borne s'illumine](assets/flow-game-to-leds.svg)
 
-??? note "Sous le capot — le pipeline complet"
+??? note "Sous le capot - le pipeline complet"
 
     ```text
     APIExpose (événements des jeux)

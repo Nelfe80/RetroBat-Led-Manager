@@ -5,7 +5,7 @@ using System.Text;
 namespace LedManager.Setup.Serial;
 
 /// <summary>
-/// Installs the panel firmware (fw\*.py) on the Pico over the MicroPython raw REPL —
+/// Installs the panel firmware (fw\*.py) on the Pico over the MicroPython raw REPL -
 /// the C# port of tools\deploy-pico-fw.ps1, so the user needs no PowerShell and no
 /// technical knowledge: detection failed → one button. Safe-boot first (main.py
 /// renamed + reset) so a crashing/old firmware never blocks the upload, then each

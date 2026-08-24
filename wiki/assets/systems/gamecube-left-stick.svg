@@ -5,7 +5,7 @@
     <stop offset="1" stop-color="#000000" stop-opacity="0.35"/>
   </radialGradient></defs>
   <rect x="6" y="6" width="512" height="318" rx="16" fill="#1d1d2a" stroke="#3a3a48" stroke-width="2"/>
-  <text x="262" y="36" text-anchor="middle" fill="#8a8a9a" font-size="15" font-weight="bold" letter-spacing="1">GAMECUBE — LEFT STICK</text>
+  <text x="262" y="36" text-anchor="middle" fill="#8a8a9a" font-size="15" font-weight="bold" letter-spacing="1">GAMECUBE - LEFT STICK</text>
   <circle cx="62" cy="84" r="17" fill="#9a9aa4"/>
   <circle cx="62" cy="84" r="17" fill="url(#dome)"/>
   <circle cx="62" cy="84" r="17" fill="none" stroke="#3a3a48" stroke-width="3"/>

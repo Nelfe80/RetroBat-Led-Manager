@@ -33,7 +33,7 @@ $ex = @(
     '-xr!CAHIER_DES_CHARGES*', '-xr!*.log', '-xr!__pycache__', '-xr!*.pyc',
     # Outillage interne : deploiement du firmware, sondes de latence,
     # balayages de couleur, snapshots de version. Le runtime n'en lit aucun.
-    # Ils partaient dans les packs depuis toujours — le controle plus bas
+    # Ils partaient dans les packs depuis toujours - le controle plus bas
     # ne les cherchait simplement pas. fw\*.py RESTE : c'est le
     # firmware que le joueur flashe sur son Pico, pas un outil.
     "-x!$name\tools\*.ps1", "-x!$name\tools\*.py",

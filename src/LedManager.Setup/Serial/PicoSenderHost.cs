@@ -6,7 +6,7 @@ namespace LedManager.Setup.Serial;
 /// <summary>
 /// Runs PicoCommandSender.exe as the wizard's LED driver: it already reads
 /// PicoCommandSender.ini, initializes the Pico GPIO profile and translates generic
-/// commands (SLOT/SET/ALL…) — so the wizard reuses the exact runtime pipeline
+/// commands (SLOT/SET/ALL…) - so the wizard reuses the exact runtime pipeline
 /// instead of re-implementing the firmware protocol. LedManager must be stopped
 /// first (both cannot share the COM port).
 /// </summary>
@@ -25,7 +25,7 @@ public sealed class PicoSenderHost : IDisposable
 
     /// <summary>
     /// Real firmware init time, measured between the sender's "[init]" and the
-    /// firmware's own READY announcement — the honest value for PostInitDelayMs,
+    /// firmware's own READY announcement - the honest value for PostInitDelayMs,
     /// which ships as a very conservative guess. Null until both were observed.
     /// </summary>
     public int? MeasuredFirmwareInitMs
@@ -34,7 +34,7 @@ public sealed class PicoSenderHost : IDisposable
             : null;
 
     /// <summary>
-    /// Completes when the sender prints "READY sender=…" — i.e. the firmware GPIO
+    /// Completes when the sender prints "READY sender=…" - i.e. the firmware GPIO
     /// profile is initialized and commands will actually light LEDs. Replaces a
     /// blind delay (the ini StartupDelayMs can be many seconds). Always await with
     /// a safety timeout in case the sender never reports ready.

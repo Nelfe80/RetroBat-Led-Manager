@@ -101,10 +101,10 @@ public sealed class MonitorView : UserControl, IDisposable
     {
         _statusDot.Fill = new SolidColorBrush(connected ? Color.FromRgb(0x30, 0xE8, 0x50) : Color.FromRgb(0xD0, 0x40, 0x40));
         _statusText.Text = connected
-            ? L.T("Connecté à LedManager — le panel reflète en direct ce que le matériel reçoit.",
-                "Connected to LedManager — the panel mirrors live what the hardware receives.")
-            : L.T("En attente de LedManager — lancez RetroBat ou LedManager.exe…",
-                "Waiting for LedManager — start RetroBat or LedManager.exe…");
+            ? L.T("Connecté à LedManager - le panel reflète en direct ce que le matériel reçoit.",
+                "Connected to LedManager - the panel mirrors live what the hardware receives.")
+            : L.T("En attente de LedManager - lancez RetroBat ou LedManager.exe…",
+                "Waiting for LedManager - start RetroBat or LedManager.exe…");
         if (!connected)
         {
             _panel.ClearAll();

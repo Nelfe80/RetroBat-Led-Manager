@@ -12,15 +12,15 @@ namespace LedManager.Setup.Controls;
 /// Nodal patch bay for a game's panel, laid out like the real cabinet:
 /// game ACTIONS (cyan) on the left, the PANEL in the center (SELECT/START and the
 /// LED buttons painted with their game colors), the LAMP families on the right
-/// (ports facing the panel), and the physical PERIPHERALS in a footer — one LARGE
+/// (ports facing the panel), and the physical PERIPHERALS in a footer - one LARGE
 /// node per device with one anchor socket per way/axis (joy 2/4/8, spinner,
 /// trackball, paddle, pedal…).
 ///
-/// Gestures: drag a port to a button (it snaps and enlarges) — an action can be
+/// Gestures: drag a port to a button (it snaps and enlarges) - an action can be
 /// wired to SEVERAL buttons (drop again on a wired button to unplug just that
 /// one); a light re-homes to a single button, void = back to defaults. Clicking a
 /// chip, a button or a device focuses its ramifications; clicking the void clears.
-/// Lamp cables are neutral — the LED color lives on the button and the chip dot.
+/// Lamp cables are neutral - the LED color lives on the button and the chip dot.
 /// Dashed = current setting, solid = user override.
 /// </summary>
 public sealed class PanelPatchBay : UserControl
@@ -45,7 +45,7 @@ public sealed class PanelPatchBay : UserControl
     public const string KindLight = "light";
 
     /// <summary>Joystick / analog channel. Channels with a real MAME id (P1_LEFT,
-    /// P1_UP…) are wirable to buttons like the curator allows — the stick keeps
+    /// P1_UP…) are wirable to buttons like the curator allows - the stick keeps
     /// working, the buttons are OR-added at deploy. Label-only analog channels
     /// (Paddle…) stay informative.</summary>
     public const string KindAxis = "axis";
@@ -682,7 +682,7 @@ public sealed class PanelPatchBay : UserControl
     };
 
     /// <summary>
-    /// Footer: one block per peripheral — its channel chips on the left, its LARGE
+    /// Footer: one block per peripheral - its channel chips on the left, its LARGE
     /// node on the right with one anchor socket per way/axis (the curator's
     /// granularity). Clicking the node focuses its ramifications.
     /// Returns the bottom Y consumed.
@@ -1437,7 +1437,7 @@ public sealed class PanelPatchBay : UserControl
     /// <summary>
     /// Action dropped on a button toggles that button in its set (multi-wiring);
     /// a direction/axis does the same but may empty its set (back to the device
-    /// anchor); a light moves its single home — a button, or one/both system LEDs
+    /// anchor); a light moves its single home - a button, or one/both system LEDs
     /// (drop on START/SELECT toggles them, llander's lamp0 can light both).
     /// Void = back to defaults.
     /// </summary>
@@ -1547,7 +1547,7 @@ public sealed class PanelPatchBay : UserControl
     /// <summary>
     /// Floating swatch palette anchored at the lamp's color dot: a dark card with
     /// one round swatch per firmware color, the active one ringed in accent, and
-    /// a dashed swatch to return to the pack color. Pure presentation — the
+    /// a dashed swatch to return to the pack color. Pure presentation - the
     /// override logic is unchanged.
     /// </summary>
     private void OpenPalette(Port port, FrameworkElement anchor)

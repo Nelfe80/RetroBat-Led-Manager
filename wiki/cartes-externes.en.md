@@ -1,6 +1,6 @@
 # External LED boards
 
-LedManager is not married to the Raspberry Pi Pico. Its principle: **it decides what to display, never how** — GPIOs, USB channels, vendor SDKs and network APIs all live in each board's *sender*.
+LedManager is not married to the Raspberry Pi Pico. Its principle: **it decides what to display, never how** - GPIOs, USB channels, vendor SDKs and network APIs all live in each board's *sender*.
 
 ```text
 APIExpose
@@ -12,7 +12,7 @@ APIExpose
 
 ## Two integration methods
 
-=== "Method A — Direct templates"
+=== "Method A - Direct templates"
 
     If your LED program already accepts simple text commands, only edit `[CommandTemplates]` in `LedManager.ini`:
 
@@ -25,7 +25,7 @@ APIExpose
 
     Rare, but very clean when the target program already speaks a close dialect.
 
-=== "Method B — Adapter sender (recommended)"
+=== "Method B - Adapter sender (recommended)"
 
     For USB/SDK/API boards, write a small executable that reads commands on its standard input and translates them for the hardware:
 
@@ -40,7 +40,7 @@ APIExpose
     The sender receives `SLOT 1 RED`, looks up its mapping (`RGB:1,2,3`) and applies the values to the board.
 
 !!! tip "Your sender can be any program"
-    `Executable=` and `Arguments=` are free-form: a compiled exe, a Python script (`Executable=python.exe`), Node, or even PowerShell if you insist. The only rule: read commands line by line on standard input. Prefer a compiled executable though — antivirus software closely watches long-running PowerShell scripts ("ClickFix" heuristics), which is precisely why the official Pico sender uses native serial access.
+    `Executable=` and `Arguments=` are free-form: a compiled exe, a Python script (`Executable=python.exe`), Node, or even PowerShell if you insist. The only rule: read commands line by line on standard input. Prefer a compiled executable though - antivirus software closely watches long-running PowerShell scripts ("ClickFix" heuristics), which is precisely why the official Pico sender uses native serial access.
 
 ## Realistic target boards
 
@@ -87,7 +87,7 @@ START=LED:25
 MATRIX1=MATRIX:16x16:60-315
 ```
 
-Design rule: **if a logic depends on the hardware, it belongs in the sender**. The color table (`RED=255,0,0`…) lives in the board's sender, never in `LedManager.ini` — every board interprets intensities its own way.
+Design rule: **if a logic depends on the hardware, it belongs in the sender**. The color table (`RED=255,0,0`…) lives in the board's sender, never in `LedManager.ini` - every board interprets intensities its own way.
 
 ## Integration checklist
 

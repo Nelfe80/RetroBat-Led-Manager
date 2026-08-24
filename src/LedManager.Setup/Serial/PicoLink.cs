@@ -5,7 +5,7 @@ namespace LedManager.Setup.Serial;
 /// <summary>
 /// Direct serial link to the Pico for the setup wizard. Used only while LedManager
 /// is stopped (both cannot hold the same COM port). System.IO.Ports is a compiled
-/// managed API — unlike the runtime's old PowerShell bridge it does not trip
+/// managed API - unlike the runtime's old PowerShell bridge it does not trip
 /// antivirus ClickFix heuristics.
 /// </summary>
 public sealed class PicoLink : IDisposable

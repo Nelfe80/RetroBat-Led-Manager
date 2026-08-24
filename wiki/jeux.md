@@ -1,7 +1,7 @@
 # Panels par jeu et câblage
 
 L'onglet **Mes jeux** de LedManager Setup personnalise le panel d'un jeu précis : ses
-couleurs, et pour l'arcade son **câblage** complet — quelles actions du jeu tombent sur
+couleurs, et pour l'arcade son **câblage** complet - quelles actions du jeu tombent sur
 quels boutons, quelles lampes s'allument où.
 
 ![Vue Mes jeux](assets/setup/setup-games.png)
@@ -14,7 +14,7 @@ quels boutons, quelles lampes s'allument où.
 3. Tapez dans la recherche (nom du jeu ou de la rom) puis choisissez dans la liste.
 
 Le panel s'affiche avec les couleurs finales (pack + votre configuration système + votre
-configuration jeu). Cliquez un bouton pour changer sa couleur — l'enregistrement crée un
+configuration jeu). Cliquez un bouton pour changer sa couleur - l'enregistrement crée un
 patch léger dans `overrides\`, le Data Pack n'est jamais modifié.
 
 ## La baie de câblage (arcade)
@@ -23,7 +23,7 @@ Sous le panel, la **baie de câblage** montre le jeu comme une borne :
 
 - à gauche, les **actions du jeu** (cyan) ;
 - au centre, le **panel** : SELECT/START et les boutons, aux couleurs du jeu ;
-- à droite, les **lampes** natives (MAME), groupées par famille — les familles non
+- à droite, les **lampes** natives (MAME), groupées par famille - les familles non
   câblées sont repliées, cliquez l'en-tête pour les ouvrir ;
 - en bas, les **périphériques** (joystick à voies, volant, pédale…) avec une prise par
   axe.
@@ -42,7 +42,7 @@ Gestes essentiels :
 « Enregistrer le câblage » sauvegarde votre configuration ; « Mettre à jour ce jeu »
 (carte **Contrôles**) la pousse dans l'émulateur. Le bouton **Réparer ce jeu** réaligne
 une configuration MAME abîmée par un changement de version, en interrogeant votre MAME
-installé — vos réglages sont conservés.
+installé - vos réglages sont conservés.
 
 ## Tester mon système
 

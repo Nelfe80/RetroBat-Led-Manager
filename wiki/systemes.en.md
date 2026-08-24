@@ -1,7 +1,7 @@
 # Per-system panels
 
 Every RetroBat system has its color configuration, taken from a real period controller or arcade
-stick (Score Master, Fighting Stick, NEOGEO sticks…) — see the [original research on the RetroBat
+stick (Score Master, Fighting Stick, NEOGEO sticks…) - see the [original research on the RetroBat
 forum](https://retrobat.forumgaming.fr/t2953-led-panel-manager-panels-arcades-couleurs-des-boutons-led-lip).
 This is what your LED buttons show when you select a game of that system. When a system offers
 several historical panels, each variant is illustrated; pick it in the system's EmulationStation
@@ -93,7 +93,7 @@ function** (Circle, Triangle, A, B, C…); dimmed buttons are not used by that p
 
 ### HKT-7300
 
-![dreamcast — HKT-7300](assets/systems/dreamcast-hkt-7300.svg)
+![dreamcast - HKT-7300](assets/systems/dreamcast-hkt-7300.svg)
 
 ## fbneo
 
@@ -111,15 +111,15 @@ Same example panel as MAME: FinalBurn Neo games use their per-game curated confi
 
 ### Fighting Stick Cube
 
-![gamecube — Fighting Stick Cube](assets/systems/gamecube-fighting-stick-cube.svg)
+![gamecube - Fighting Stick Cube](assets/systems/gamecube-fighting-stick-cube.svg)
 
 ### Left Stick
 
-![gamecube — Left Stick](assets/systems/gamecube-left-stick.svg)
+![gamecube - Left Stick](assets/systems/gamecube-left-stick.svg)
 
 ### Yellow Stick
 
-![gamecube — Yellow Stick](assets/systems/gamecube-yellow-stick.svg)
+![gamecube - Yellow Stick](assets/systems/gamecube-yellow-stick.svg)
 
 ## gamegear
 
@@ -147,11 +147,11 @@ Same example panel as MAME: FinalBurn Neo games use their per-game curated confi
 
 ### Jaguar Controller
 
-![jaguar — Jaguar Controller](assets/systems/jaguar-jaguar-controller.svg)
+![jaguar - Jaguar Controller](assets/systems/jaguar-jaguar-controller.svg)
 
 ### Jaguar Pro Controller
 
-![jaguar — Jaguar Pro Controller](assets/systems/jaguar-jaguar-pro-controller.svg)
+![jaguar - Jaguar Pro Controller](assets/systems/jaguar-jaguar-pro-controller.svg)
 
 ## lynx
 
@@ -173,7 +173,7 @@ Example panel Street Fighter style (LP/MP/HP top, LK/MK/HK bottom, white = light
 
 ### Arcade Power Stick II
 
-![megadrive — Arcade Power Stick II](assets/systems/megadrive-arcade-power-stick-ii.svg)
+![megadrive - Arcade Power Stick II](assets/systems/megadrive-arcade-power-stick-ii.svg)
 
 ## megaduck
 
@@ -193,15 +193,15 @@ Example panel Street Fighter style (LP/MP/HP top, LK/MK/HK bottom, white = light
 
 ### Arcade-Shark 6B
 
-![n64 — Arcade-Shark 6B](assets/systems/n64-arcade-shark-6b.svg)
+![n64 - Arcade-Shark 6B](assets/systems/n64-arcade-shark-6b.svg)
 
 ### Arcade-Shark 8B
 
-![n64 — Arcade-Shark 8B](assets/systems/n64-arcade-shark-8b.svg)
+![n64 - Arcade-Shark 8B](assets/systems/n64-arcade-shark-8b.svg)
 
 ### Arcade-Shark Yellow Mode
 
-![n64 — Arcade-Shark Yellow Mode](assets/systems/n64-arcade-shark-yellow-mode.svg)
+![n64 - Arcade-Shark Yellow Mode](assets/systems/n64-arcade-shark-yellow-mode.svg)
 
 ## naomi
 
@@ -221,23 +221,23 @@ Example panel Street Fighter style (LP/MP/HP top, LK/MK/HK bottom, white = light
 
 ### NEOGEO MINI
 
-![neogeo — NEOGEO MINI](assets/systems/neogeo-neogeo-mini.svg)
+![neogeo - NEOGEO MINI](assets/systems/neogeo-neogeo-mini.svg)
 
 ### NEOGEO VARIATION
 
-![neogeo — NEOGEO VARIATION](assets/systems/neogeo-neogeo-variation.svg)
+![neogeo - NEOGEO VARIATION](assets/systems/neogeo-neogeo-variation.svg)
 
 ### NEOGEO MVS TYPE 1
 
-![neogeo — NEOGEO MVS TYPE 1](assets/systems/neogeo-neogeo-mvs-type-1.svg)
+![neogeo - NEOGEO MVS TYPE 1](assets/systems/neogeo-neogeo-mvs-type-1.svg)
 
 ### NEOGEO MVS TYPE 1 - VARIATION
 
-![neogeo — NEOGEO MVS TYPE 1 - VARIATION](assets/systems/neogeo-neogeo-mvs-type-1-variation.svg)
+![neogeo - NEOGEO MVS TYPE 1 - VARIATION](assets/systems/neogeo-neogeo-mvs-type-1-variation.svg)
 
 ### NEOGEO MVS TYPE 2
 
-![neogeo — NEOGEO MVS TYPE 2](assets/systems/neogeo-neogeo-mvs-type-2.svg)
+![neogeo - NEOGEO MVS TYPE 2](assets/systems/neogeo-neogeo-mvs-type-2.svg)
 
 ## neogeocd
 
@@ -301,11 +301,11 @@ Example panel Street Fighter style (LP/MP/HP top, LK/MK/HK bottom, white = light
 
 ### Virtual Stick 6B
 
-![saturn — Virtual Stick 6B](assets/systems/saturn-virtual-stick-6b.svg)
+![saturn - Virtual Stick 6B](assets/systems/saturn-virtual-stick-6b.svg)
 
 ### Virtual Stick 8B
 
-![saturn — Virtual Stick 8B](assets/systems/saturn-virtual-stick-8b.svg)
+![saturn - Virtual Stick 8B](assets/systems/saturn-virtual-stick-8b.svg)
 
 ## scummvm
 
@@ -333,15 +333,15 @@ Example panel Street Fighter style (LP/MP/HP top, LK/MK/HK bottom, white = light
 
 ### Score Master
 
-![snes — Score Master](assets/systems/snes-score-master.svg)
+![snes - Score Master](assets/systems/snes-score-master.svg)
 
 ### Super Advantage
 
-![snes — Super Advantage](assets/systems/snes-super-advantage.svg)
+![snes - Super Advantage](assets/systems/snes-super-advantage.svg)
 
 ### Super Advantage - 8B
 
-![snes — Super Advantage - 8B](assets/systems/snes-super-advantage-8b.svg)
+![snes - Super Advantage - 8B](assets/systems/snes-super-advantage-8b.svg)
 
 ## spectravideo
 

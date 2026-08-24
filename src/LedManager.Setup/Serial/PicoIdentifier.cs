@@ -6,7 +6,7 @@ namespace LedManager.Setup.Serial;
 /// Physically identifies a Pico: blinks every button of its panel white a few times
 /// so the user knows which cabinet/panel answers to the selected sender. Goes through
 /// PicoCommandSender (the honest runtime pipeline), so the firmware GPIO profile is
-/// initialized first — the blink can take a few seconds on conservative configs.
+/// initialized first - the blink can take a few seconds on conservative configs.
 /// </summary>
 public static class PicoIdentifier
 {
@@ -14,8 +14,8 @@ public static class PicoIdentifier
     {
         if (LedManagerProcess.IsRunning())
         {
-            return L.T("LedManager occupe le port série — impossible de faire clignoter ce Pico maintenant.",
-                "LedManager holds the serial port — cannot blink this Pico right now.");
+            return L.T("LedManager occupe le port série - impossible de faire clignoter ce Pico maintenant.",
+                "LedManager holds the serial port - cannot blink this Pico right now.");
         }
 
         using var sender = PicoSenderHost.Start(pluginRoot, senderId);

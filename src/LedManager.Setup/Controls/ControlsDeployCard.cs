@@ -125,8 +125,8 @@ public sealed class ControlsDeployCard : UserControl
     {
         _scope = Scope.System;
         _target = systemId;
-        _label.Text = L.T($"Configuration manette RetroArch du système « {systemId} » — suit le gabarit choisi et la cartographie de votre panel.",
-            $"RetroArch controller configuration of system \"{systemId}\" — follows the chosen template and your panel's cartography.");
+        _label.Text = L.T($"Configuration manette RetroArch du système « {systemId} » - suit le gabarit choisi et la cartographie de votre panel.",
+            $"RetroArch controller configuration of system \"{systemId}\" - follows the chosen template and your panel's cartography.");
         _deployOne.Content = L.T("Mettre à jour ce système", "Update this system");
         _deployAll.Content = L.T("Tous les systèmes", "All systems");
         _deployOne.IsEnabled = true;
@@ -141,8 +141,8 @@ public sealed class ControlsDeployCard : UserControl
         _target = rom;
         var inPack = File.Exists(Path.Combine(_mamePackDir, rom + ".cfg"));
         _label.Text = inPack
-            ? L.T($"Configuration des boutons MAME du jeu « {rom} » — vos réglages personnels sont conservés. MAME doit être fermé.",
-                $"MAME button configuration of game \"{rom}\" — your personal settings are preserved. MAME must be closed.")
+            ? L.T($"Configuration des boutons MAME du jeu « {rom} » - vos réglages personnels sont conservés. MAME doit être fermé.",
+                $"MAME button configuration of game \"{rom}\" - your personal settings are preserved. MAME must be closed.")
             : L.T($"Le jeu « {rom} » n'a pas de configuration dans le pack.",
                 $"Game \"{rom}\" has no configuration in the pack.");
         _deployOne.Content = L.T("Mettre à jour ce jeu", "Update this game");
@@ -365,7 +365,7 @@ public sealed class ControlsDeployCard : UserControl
             var lastChanged = changedLines.Count > 0 ? changedLines[^1].Split(' ')[0] : null;
             _status.Text = L.T($"Mise à jour des jeux… {Math.Min(offset, Math.Max(packTotal, offset))}/{packTotal}",
                     $"Updating games… {Math.Min(offset, Math.Max(packTotal, offset))}/{packTotal}")
-                + (lastChanged is null ? "" : L.T($" — dernier modifié : {lastChanged}", $" — last changed: {lastChanged}"));
+                + (lastChanged is null ? "" : L.T($" - dernier modifié : {lastChanged}", $" - last changed: {lastChanged}"));
 
             if (changedLines.Count > 0)
             {

@@ -1,4 +1,4 @@
-mame-repair — reparation des cfg MAME
+mame-repair - reparation des cfg MAME
 ======================================
 
 Le bouton « Reparer ce jeu » de LedManager Setup (carte Controles) utilise ces

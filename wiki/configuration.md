@@ -8,9 +8,9 @@ Deux fichiers `.ini` pilotent tout, chacun avec un rôle précis :
 | `PicoCommandSender.ini` | L'adaptateur matériel | *Comment* votre carte comprend les ordres |
 
 !!! tip "Des outils graphiques arrivent"
-    Un outil de configuration visuel est prévu. En attendant, cette page couvre les réglages qu'un utilisateur modifie réellement — le reste peut rester tel quel.
+    Un outil de configuration visuel est prévu. En attendant, cette page couvre les réglages qu'un utilisateur modifie réellement - le reste peut rester tel quel.
 
-## LedManager.ini — l'orchestrateur
+## LedManager.ini - l'orchestrateur
 
 ### Déclarer vos senders
 
@@ -30,7 +30,7 @@ Arguments=daemon --ini "PicoCommandSender.ini" --sender P1
 StartupDelayMs=18000
 ```
 
-Le réglage à connaître : **`StartupDelayMs`** laisse au Pico le temps de s'initialiser au démarrage. Si vos LED s'allument trop tard, ne le réduisez pas trop — un Pico pas prêt ignore les commandes.
+Le réglage à connaître : **`StartupDelayMs`** laisse au Pico le temps de s'initialiser au démarrage. Si vos LED s'allument trop tard, ne le réduisez pas trop - un Pico pas prêt ignore les commandes.
 
 ### Router les joueurs et les cibles
 
@@ -46,7 +46,7 @@ STRIP1=GLOBAL
 
 Les effets « cabinet » (matrice de score, bandeaux) partent vers le sender `GLOBAL`, les panels joueurs vers `P1`/`P2`.
 
-## PicoCommandSender.ini — votre matériel
+## PicoCommandSender.ini - votre matériel
 
 ### Le port série
 
@@ -60,7 +60,7 @@ BaudRate=115200
 
 ### Votre panel
 
-Les sections `[Hardware:P1]` et `[GPIO:P1]` décrivent boutons et branchements — voir [Matériel](materiel.md#decrire-votre-panel).
+Les sections `[Hardware:P1]` et `[GPIO:P1]` décrivent boutons et branchements - voir [Matériel](materiel.md#decrire-votre-panel).
 
 ### La policy couleur
 
@@ -91,7 +91,7 @@ Variables disponibles : `{slot}`, `{target}`, `{color}`, `{durationMs}`, `{value
 
 ## Personnaliser un jeu ou un système : les overrides
 
-Envie de couleurs Rainbow Road pour Super Mario Kart ? Créez un **patch épars** — seul ce que vous changez y figure, le reste continue de venir d'APIExpose et de ses mises à jour :
+Envie de couleurs Rainbow Road pour Super Mario Kart ? Créez un **patch épars** - seul ce que vous changez y figure, le reste continue de venir d'APIExpose et de ses mises à jour :
 
 ```text
 overrides\systems\snes.json          → tous les jeux SNES
@@ -121,25 +121,25 @@ Quelques comportements utiles à connaître (aucun réglage requis) :
 ## Les effets ingame : `default.mem.effects.json`
 
 Les réactions aux **moments de jeu** (vie perdue, boss touché, pièce ramassée…)
-sont décrites dans `default.mem.effects.json`, à la racine du plugin — un
+sont décrites dans `default.mem.effects.json`, à la racine du plugin - un
 catalogue éditable, sans toucher au code :
 
 - **Règles par famille** (`genericRules`) : une règle par famille de moments
-  (`resources.lives`, `scoring.collectibles`, `combat.enemies`…) — elle
+  (`resources.lives`, `scoring.collectibles`, `combat.enemies`…) - elle
   s'applique à **tous les jeux**, sans mapping par jeu.
 - **Effets** : `flash_restore`, `sweep`, `pulse`, `sparkle`, `health_feedback`,
   `matrix_score`… avec cibles (`ALL_BUTTONS`, `STRIP1`, `RANDOM_COLUMN`,
   `MATRIX1`), couleurs, durées et anti-spam (`throttleMs`).
 - **Couleur du jeu** : quand l'événement porte sa propre couleur (les deltas de
   score arcade : l'avion orange de 1944…), elle **prime** sur la couleur de la
-  règle — l'effet prend la teinte de la cible détruite.
+  règle - l'effet prend la teinte de la cible détruite.
 - **Par joueur** : les événements qui portent un index joueur sont routés vers
   le panel du bon joueur (`playerField`), sinon vers `GLOBAL`.
 - **Couches** (`effectLayers`) : les effets ingame vivent au-dessus du panel du
-  jeu et sous les alertes — chaque source a sa priorité, rien ne s'écrase.
+  jeu et sous les alertes - chaque source a sa priorité, rien ne s'écrase.
 
 !!! example "Exemple : flash doré sur chaque trésor"
     Dans `genericRules`, la famille `inventory.items` déclenche `sparkle`
     doré sur `ALL_BUTTONS` + `STRIP1` avec restauration automatique : ramassez
-    une clé dans Zelda ou une émeraude dans Sonic, la borne scintille — deux
+    une clé dans Zelda ou une émeraude dans Sonic, la borne scintille - deux
     jeux, zéro configuration.

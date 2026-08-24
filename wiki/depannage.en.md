@@ -4,10 +4,10 @@
 
 Check in order:
 
-1. **The COM port** — in `PicoCommandSender.ini`, section `[Serial]`, the `Port=` value must match the port Windows assigned (Device Manager → COM ports).
-2. **APIExpose is running** — LedManager has nothing to display without it. Check that the APIExpose plugin is installed and started.
-3. **The firmware answers** — connect to the Pico over serial (115200 bauds) and send `VERSION`. Expected answer: `VERSION DYNAMIC_PANEL_ADDR <date>`. Otherwise, reflash with `tools\deploy-pico-fw.ps1`.
-4. **The startup delay** — `StartupDelayMs` in `LedManager.ini` gives the Pico time to initialize. If it is too short, the first commands are sent into the void.
+1. **The COM port** - in `PicoCommandSender.ini`, section `[Serial]`, the `Port=` value must match the port Windows assigned (Device Manager → COM ports).
+2. **APIExpose is running** - LedManager has nothing to display without it. Check that the APIExpose plugin is installed and started.
+3. **The firmware answers** - connect to the Pico over serial (115200 bauds) and send `VERSION`. Expected answer: `VERSION DYNAMIC_PANEL_ADDR <date>`. Otherwise, reflash with `tools\deploy-pico-fw.ps1`.
+4. **The startup delay** - `StartupDelayMs` in `LedManager.ini` gives the Pico time to initialize. If it is too short, the first commands are sent into the void.
 
 !!! tip "Testing without hardware"
     Set `DryRun=true` in the `[CommandSender:P1]` section of `LedManager.ini`: commands are logged instead of sent, letting you validate the whole logic chain without a Pico plugged in.
@@ -20,7 +20,7 @@ When Windows puts the COM port in timeout, the serial bridge **reopens it automa
 
 An old process sometimes keeps `COM3` open. Two solutions:
 
-- double-click **`stop.bat`** — it closes LedManager, its senders and the serial bridge;
+- double-click **`stop.bat`** - it closes LedManager, its senders and the serial bridge;
 - on the next start, `LedManager.exe` automatically closes older instances found under the same plugin folder.
 
 For debugging sessions where this automatic cleanup gets in the way:
@@ -38,11 +38,11 @@ Not every LED renders every color faithfully. Declare a substitute in `PicoComma
 GOLD=YELLOW
 ```
 
-See [Configuration — the color policy](configuration.md#the-color-policy).
+See [Configuration - the color policy](configuration.md#the-color-policy).
 
 ## A button triggers the wrong action in-game
 
-The right LED lights up, but pressing does something else (two swapped buttons, say)? That's the **switch wiring**, independent of the LED wiring. Run the [assistant](assistant.md) → **Cartography only**: press each lit button, then **"Write the cartography & regenerate"**. The RetroArch remaps and MAME configs are rewritten from what your buttons actually send — and it's reversible.
+The right LED lights up, but pressing does something else (two swapped buttons, say)? That's the **switch wiring**, independent of the LED wiring. Run the [assistant](assistant.md) → **Cartography only**: press each lit button, then **"Write the cartography & regenerate"**. The RetroArch remaps and MAME configs are rewritten from what your buttons actually send - and it's reversible.
 
 If the assistant shows **"Gamepad unreadable"**, check that a pad/encoder is plugged in and that EmulationStation is closed.
 

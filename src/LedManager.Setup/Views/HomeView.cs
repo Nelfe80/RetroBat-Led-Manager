@@ -136,7 +136,7 @@ public sealed class HomeView : UserControl
         var running = LedManagerProcess.IsRunning();
         SetState(_manager, running, null,
             running
-                ? L.T("En cours d'exécution — vos LEDs suivent RetroBat.", "Running — your LEDs follow RetroBat.")
+                ? L.T("En cours d'exécution - vos LEDs suivent RetroBat.", "Running - your LEDs follow RetroBat.")
                 : L.T("Arrêté. Il démarre normalement avec RetroBat.", "Stopped. It normally starts with RetroBat."));
 
         _manager.Actions.Children.Clear();
@@ -178,8 +178,8 @@ public sealed class HomeView : UserControl
         if (LedManagerProcess.IsRunning())
         {
             SetState(_pico, true, null,
-                L.T($"Port {_hardware.SerialPort} · {_hardware.BaudRate} bauds — occupé par LedManager (normal en fonctionnement).",
-                    $"Port {_hardware.SerialPort} · {_hardware.BaudRate} baud — held by LedManager (normal while running)."));
+                L.T($"Port {_hardware.SerialPort} · {_hardware.BaudRate} bauds - occupé par LedManager (normal en fonctionnement).",
+                    $"Port {_hardware.SerialPort} · {_hardware.BaudRate} baud - held by LedManager (normal while running)."));
             return;
         }
 
@@ -208,13 +208,13 @@ public sealed class HomeView : UserControl
             baseUrl = LedManager.Core.Ini.IniDocument.Load(ini).Get("APIExpose", "BaseUrl", baseUrl);
         }
 
-        _api.Text.Text = baseUrl + " — " + L.T("test en cours…", "testing…");
+        _api.Text.Text = baseUrl + " - " + L.T("test en cours…", "testing…");
         var alive = await ApiExposeProbe.IsAliveAsync(baseUrl);
         var mirror = await ApiExposeProbe.IsMirrorAliveAsync(_hardware.MirrorPort);
         SetState(_api, alive, null,
             (alive
-                ? baseUrl + L.T(" — connecté.", " — connected.")
-                : baseUrl + L.T(" — injoignable (RetroBat/APIExpose arrêté ?).", " — unreachable (RetroBat/APIExpose not running?)."))
+                ? baseUrl + L.T(" - connecté.", " - connected.")
+                : baseUrl + L.T(" - injoignable (RetroBat/APIExpose arrêté ?).", " - unreachable (RetroBat/APIExpose not running?)."))
             + " " + (mirror
                 ? L.T($"Miroir panel virtuel actif (port {_hardware.MirrorPort}).", $"Virtual panel mirror active (port {_hardware.MirrorPort}).")
                 : L.T("Miroir panel virtuel inactif.", "Virtual panel mirror inactive.")));
@@ -256,8 +256,8 @@ public sealed class HomeView : UserControl
             systems + games == 0
                 ? L.T("Aucune configuration personnelle : tout vient du pack. Personnalisez dans « Mes jeux ».",
                     "No override: everything comes from the pack. Customize in the \"My games\" tab.")
-                : L.T($"{systems} système(s) et {games} jeu(x) personnalisés — gérés dans « Mes jeux ».",
-                    $"{systems} customized system(s) and {games} game(s) — managed in \"My games\"."));
+                : L.T($"{systems} système(s) et {games} jeu(x) personnalisés - gérés dans « Mes jeux ».",
+                    $"{systems} customized system(s) and {games} game(s) - managed in \"My games\"."));
     }
 
     /// <summary>true = green, false = red, null = neutral gray.</summary>

@@ -15,10 +15,10 @@
 
 <div class="grid cards" markdown>
 
-- **[Getting started](premiers-pas.md)** — install LedManager in 5 minutes.
-- **[Hardware](materiel.md)** — wire your Raspberry Pi Pico and flash the firmware.
-- **[Configuration](configuration.md)** — describe your panel in the `.ini` files.
-- **[Troubleshooting](depannage.md)** — solutions to common issues.
+- **[Getting started](premiers-pas.md)** - install LedManager in 5 minutes.
+- **[Hardware](materiel.md)** - wire your Raspberry Pi Pico and flash the firmware.
+- **[Configuration](configuration.md)** - describe your panel in the `.ini` files.
+- **[Troubleshooting](depannage.md)** - solutions to common issues.
 
 </div>
 
@@ -29,7 +29,7 @@
 
 ![The game speaks, your cabinet lights up](assets/flow-game-to-leds.svg)
 
-??? note "Under the hood — the full pipeline"
+??? note "Under the hood - the full pipeline"
 
     ```text
     APIExpose (game events)

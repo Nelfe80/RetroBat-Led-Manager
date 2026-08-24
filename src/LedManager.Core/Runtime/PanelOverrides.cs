@@ -211,7 +211,7 @@ public static class PanelStateOverrides
     }
 
     /// <summary>Optional "target": "START" or "targets": ["START","SELECT"] on an
-    /// output patch — the lamp re-homes to the system LEDs.</summary>
+    /// output patch - the lamp re-homes to the system LEDs.</summary>
     private static List<string> ReadTargets(JsonElement element)
     {
         var targets = new List<string>();

@@ -1,4 +1,4 @@
-# Dynamic Panel Driver Pico — GPIO, WS2812B, boutons, joysticks, bandeaux et matrices
+# Dynamic Panel Driver Pico - GPIO, WS2812B, boutons, joysticks, bandeaux et matrices
 
 Ce firmware MicroPython pour Raspberry Pi Pico permet de piloter un panel arcade lumineux sans figer le câblage dans `main.py`.
 

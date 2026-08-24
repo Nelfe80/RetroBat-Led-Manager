@@ -66,7 +66,7 @@ public sealed class GamesView : UserControl, IDisposable
     };
 
     /// <summary>Emulators that really emit lamp outputs: the light channel only
-    /// shows for them (FBNeo has none — its games keep colors and actions only).</summary>
+    /// shows for them (FBNeo has none - its games keep colors and actions only).</summary>
     private static readonly HashSet<string> OutputCapableSystems = new(StringComparer.OrdinalIgnoreCase)
     {
         "mame", "arcade", "hbmame"
@@ -335,7 +335,7 @@ public sealed class GamesView : UserControl, IDisposable
 
     /// <summary>
     /// rom → display name for a system. Primary source: the APIExpose gateway
-    /// (GET /api/v1/gamelists/{system}/games — the names EmulationStation shows).
+    /// (GET /api/v1/gamelists/{system}/games - the names EmulationStation shows).
     /// Fallbacks when the API is down: the user's roms\système\gamelist.xml read
     /// locally, then the pack's arcade_lt.json. All parsed off the UI thread and
     /// restricted to the roms that have a dynpanel; rom search works immediately,
@@ -491,7 +491,7 @@ public sealed class GamesView : UserControl, IDisposable
 
     private string LayoutIdForHardware => $"{_hardware.ButtonCount}-Button";
 
-    /// <summary>Layout the user is editing — defaults to the real panel's one, but
+    /// <summary>Layout the user is editing - defaults to the real panel's one, but
     /// the 2/4/6/8-button templates (and system specials) stay reachable.</summary>
     private string SelectedLayoutId
         => _layoutPicker?.SelectedItem is ComboBoxItem { Tag: string key } ? key : LayoutIdForHardware;
@@ -515,7 +515,7 @@ public sealed class GamesView : UserControl, IDisposable
             {
                 Tag = $"{count}-Button",
                 Content = count == _hardware.ButtonCount
-                    ? L.T($"{count} boutons — mon panel", $"{count} buttons — my panel")
+                    ? L.T($"{count} boutons - mon panel", $"{count} buttons - my panel")
                     : L.T($"{count} boutons", $"{count} buttons")
             });
         }
@@ -642,7 +642,7 @@ public sealed class GamesView : UserControl, IDisposable
     /// <summary>
     /// A console game has no per-game dynpanel: its editing baseline is the SYSTEM
     /// template (like SystemsView), and the game override is saved under the rom
-    /// SLUG — the key the runtime receives from APIExpose (NormalizeSlug) and uses
+    /// SLUG - the key the runtime receives from APIExpose (NormalizeSlug) and uses
     /// to look up overrides\games\système\rom.json.
     /// </summary>
     private GamePanelCatalog.GamePanel? SynthesizeConsoleGame(string system, string rom)
@@ -757,7 +757,7 @@ public sealed class GamesView : UserControl, IDisposable
         _panel.Build(_layoutDefinition, SelectedLayoutButtons, hasStart: true, hasSelect: true);
         ReloadOverride();
 
-        // Arcade games deploy their MAME cfg — except under FBNeo, whose target is
+        // Arcade games deploy their MAME cfg - except under FBNeo, whose target is
         // the per-game RetroArch remap; anything else falls back to the
         // system-level RetroArch remap.
         if (game.OverrideSystem.Equals("arcade", StringComparison.OrdinalIgnoreCase))
@@ -781,7 +781,7 @@ public sealed class GamesView : UserControl, IDisposable
     }
 
     /// <summary>
-    /// Chantier 2 phase A — read-only game sheet: for each panel button, its TWO
+    /// Chantier 2 phase A - read-only game sheet: for each panel button, its TWO
     /// channels (input: game action / axis; light: game output driving the LED),
     /// plus the game lights not displayed anywhere. Data comes from the APIExpose
     /// definition projection; the sheet simply hides when the API is unreachable.
@@ -810,8 +810,8 @@ public sealed class GamesView : UserControl, IDisposable
 
             _sheetContent.Children.Add(new TextBlock
             {
-                Text = L.T($"Fiche du jeu — actions et lumières ({root.GetProperty("activeLayoutId").GetString()})",
-                    $"Game sheet — actions and lights ({root.GetProperty("activeLayoutId").GetString()})"),
+                Text = L.T($"Fiche du jeu - actions et lumières ({root.GetProperty("activeLayoutId").GetString()})",
+                    $"Game sheet - actions and lights ({root.GetProperty("activeLayoutId").GetString()})"),
                 FontWeight = FontWeights.Bold,
                 FontSize = 13,
                 Foreground = Text(0xE8, 0xE8, 0xF0),
@@ -880,7 +880,7 @@ public sealed class GamesView : UserControl, IDisposable
     }
 
     /// <summary>
-    /// Chantier 2 phase B — light-channel editor: every game output can be
+    /// Chantier 2 phase B - light-channel editor: every game output can be
     /// reallocated to a panel button and recolored. Saved into the game override
     /// ("outputs" section) that the runtime already applies (PanelStateOverrides).
     /// </summary>
@@ -919,8 +919,8 @@ public sealed class GamesView : UserControl, IDisposable
             var inputRef = output.TryGetProperty("inputRef", out var ir) ? ir.GetString() : null;
             var valueType = output.TryGetProperty("valueType", out var vt) ? vt.GetString() : null;
             _portDetails[name!] = L.T(
-                $"LUMIÈRE {name} · groupe {group ?? "—"} · type {valueType ?? "—"} · déclencheur {(string.IsNullOrWhiteSpace(inputRef) ? "—" : inputRef)}",
-                $"LIGHT {name} · group {group ?? "—"} · type {valueType ?? "—"} · trigger {(string.IsNullOrWhiteSpace(inputRef) ? "—" : inputRef)}");
+                $"LUMIÈRE {name} · groupe {group ?? "-"} · type {valueType ?? "-"} · déclencheur {(string.IsNullOrWhiteSpace(inputRef) ? "-" : inputRef)}",
+                $"LIGHT {name} · group {group ?? "-"} · type {valueType ?? "-"} · trigger {(string.IsNullOrWhiteSpace(inputRef) ? "-" : inputRef)}");
 
             outputs.Add((name!,
                 output.TryGetProperty("label", out var l) ? l.GetString() ?? name! : name!,
@@ -968,7 +968,7 @@ public sealed class GamesView : UserControl, IDisposable
             if (!string.IsNullOrWhiteSpace(id))
             {
                 // dynpanels may carry pre-0.286 Neo-Geo types (P1_A..P1_D) while
-                // the deployed cfg uses the normalized P1_BUTTONn — align on the
+                // the deployed cfg uses the normalized P1_BUTTONn - align on the
                 // normalized id so cables, wiring readback and patches all match
                 var neoGeo = System.Text.RegularExpressions.Regex.Match(id!, @"^P1_([A-F])$");
                 if (neoGeo.Success)
@@ -985,8 +985,8 @@ public sealed class GamesView : UserControl, IDisposable
             var mameTag = input.TryGetProperty("mameTag", out var mt) ? mt.GetString() : null;
             var mameMask = input.TryGetProperty("mameMask", out var mm) ? mm.GetString() : null;
             _portDetails[id!] = L.T(
-                $"ACTION {id} · port {mameTag ?? "—"} · masque {mameMask ?? "—"}",
-                $"ACTION {id} · port {mameTag ?? "—"} · mask {mameMask ?? "—"}");
+                $"ACTION {id} · port {mameTag ?? "-"} · masque {mameMask ?? "-"}",
+                $"ACTION {id} · port {mameTag ?? "-"} · mask {mameMask ?? "-"}");
 
             var existingAction = actions.FirstOrDefault(a => a.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
             if (existingAction.Id is null)
@@ -1030,7 +1030,7 @@ public sealed class GamesView : UserControl, IDisposable
 
         // default cables = the truth, in this order: wiring of the deployed cfg
         // (e.g. seawolf Fire on B1/B2/B6/B8), else the standard template slot n
-        // for P1_BUTTONn — so no action ever floats unwired.
+        // for P1_BUTTONn - so no action ever floats unwired.
         foreach (var action in actions)
         {
             if (_deployedWiring.TryGetValue(action.Id, out var deployed))
@@ -1055,7 +1055,7 @@ public sealed class GamesView : UserControl, IDisposable
 
         // --- joystick / peripherals channel (informative): analog axes per button,
         // directions and analog channels routed to their LARGE device node with one
-        // anchor per way/axis — the curator's granularity ---
+        // anchor per way/axis - the curator's granularity ---
         var axisPorts = new List<(string Id, string Label, IReadOnlyList<int> Slots, string? DeviceKey, string? Anchor)>();
         var deviceNodes = new List<PanelPatchBay.DeviceNode>();
 
@@ -1224,7 +1224,7 @@ public sealed class GamesView : UserControl, IDisposable
 
         _sheetContent.Children.Add(new TextBlock
         {
-            Text = L.T("Câblage du panel — actions et lumières :", "Panel wiring — actions and lights:"),
+            Text = L.T("Câblage du panel - actions et lumières :", "Panel wiring - actions and lights:"),
             FontWeight = FontWeights.Bold,
             FontSize = 12,
             Foreground = Text(0xE8, 0xE8, 0xF0),
@@ -1234,16 +1234,16 @@ public sealed class GamesView : UserControl, IDisposable
         {
             Text = L.T("Tire un câble d'une prise vers un bouton (il s'aimante) · SUPPRIMER une liaison : redépose l'action sur le "
                     + "bouton déjà branché, ou lâche le câble dans le vide pour revenir au réglage d'origine · une ACTION (cyan) "
-                    + "peut être branchée sur plusieurs boutons — y compris pour retirer un câble PAR DÉFAUT (redépose sur le "
+                    + "peut être branchée sur plusieurs boutons - y compris pour retirer un câble PAR DÉFAUT (redépose sur le "
                     + "bouton pointillé) · une LUMIÈRE peut éclairer plusieurs boutons d'origine ; la déplacer la ramène à un "
                     + "seul, et la redéposer sur son propre bouton la DÉTACHE (LED morte) · une DIRECTION de périphérique (bleu) peut aussi être câblée sur des "
-                    + "boutons — le stick continue de fonctionner, les boutons s'ajoutent · pointillé = réglage actuel, plein = "
+                    + "boutons - le stick continue de fonctionner, les boutons s'ajoutent · pointillé = réglage actuel, plein = "
                     + "ta modification · la prise violette d'un groupe câble toute la famille · clic sur une puce, un bouton ou "
                     + "un périphérique = focus · le point coloré ouvre la palette.",
                 "Drag a cable from a port to a button (it snaps) · REMOVE a link: drop the action again on the wired button, or "
                     + "drop the cable in the void to return to the original setting · an ACTION (cyan) can be wired to several "
                     + "buttons · a LIGHT may light several buttons by default; moving it re-homes it to one · a device "
-                    + "DIRECTION (blue) can also be wired to buttons — the stick keeps working, buttons are added · dashed = "
+                    + "DIRECTION (blue) can also be wired to buttons - the stick keeps working, buttons are added · dashed = "
                     + "current setting, solid = your change · a group's purple port wires the whole family · click a chip, a "
                     + "button or a device to focus · the color dot opens the palette."),
             FontSize = 10.5,
@@ -1346,7 +1346,7 @@ public sealed class GamesView : UserControl, IDisposable
 
     /// <summary>One line per used button: "B3  ✱ Cadet Mission (lumière lamp2) · ● Abort (action)…"</summary>
     /// <summary>
-    /// Wiring of the game's DEPLOYED MAME cfg in physical buttons — what really
+    /// Wiring of the game's DEPLOYED MAME cfg in physical buttons - what really
     /// fires today (e.g. seawolf: Fire on B1/B2/B6/B8). The bay shows it as the
     /// default cables, ahead of the dynpanel template.
     /// </summary>
@@ -1393,7 +1393,7 @@ public sealed class GamesView : UserControl, IDisposable
         return result;
     }
 
-    /// <summary>Anchor roles of a slotless analog channel, from its label — the
+    /// <summary>Anchor roles of a slotless analog channel, from its label - the
     /// curator's peripheral families (spinner/dial/trackball/paddle/wheel/pedal…).</summary>
     private static IReadOnlyList<string> AnchorsForAnalog(string label)
     {
@@ -1570,7 +1570,7 @@ public sealed class GamesView : UserControl, IDisposable
         }
 
         // START/SELECT wear the game's system-input colors, or the lamp homed on
-        // them (llander lamp0) — cached when the game sheet loads
+        // them (llander lamp0) - cached when the game sheet loads
         _panel.SetTarget("START", PanelColors.Resolve(_targetColorCache.TryGetValue("START", out var startColor) ? startColor : "GRAY"));
         _panel.SetTarget("SELECT", PanelColors.Resolve(_targetColorCache.TryGetValue("SELECT", out var selectColor) ? selectColor : "GRAY"));
 
@@ -1589,7 +1589,7 @@ public sealed class GamesView : UserControl, IDisposable
         }
 
         _summary.Text = parts.Count == 0
-            ? L.T("Aucune personnalisation — tout vient du pack.", "No customization — everything comes from the pack.")
+            ? L.T("Aucune personnalisation - tout vient du pack.", "No customization - everything comes from the pack.")
             : L.T("Personnalisé : ", "Customized: ") + string.Join(" · ", parts);
     }
 
@@ -1650,8 +1650,8 @@ public sealed class GamesView : UserControl, IDisposable
         }
 
         Repaint();
-        _status.Text = L.T("Modification non enregistrée — cliquez « Enregistrer ma configuration ».",
-            "Unsaved change — click \"Save my configuration\".");
+        _status.Text = L.T("Modification non enregistrée - cliquez « Enregistrer ma configuration ».",
+            "Unsaved change - click \"Save my configuration\".");
         if (_sender is { IsAlive: true })
         {
             SendLivePreview();
@@ -1747,8 +1747,8 @@ public sealed class GamesView : UserControl, IDisposable
 
         SendLivePreview();
         _liveTest.Content = L.T("Arrêter le test", "Stop the test");
-        _status.Text = L.T($"Couleurs envoyées au panneau réel ({_hardware.PicoLabel}) — elles suivent vos clics en direct.",
-            $"Colors sent to the real panel ({_hardware.PicoLabel}) — they follow your clicks live.");
+        _status.Text = L.T($"Couleurs envoyées au panneau réel ({_hardware.PicoLabel}) - elles suivent vos clics en direct.",
+            $"Colors sent to the real panel ({_hardware.PicoLabel}) - they follow your clicks live.");
     }
 
     private void SendLivePreview()

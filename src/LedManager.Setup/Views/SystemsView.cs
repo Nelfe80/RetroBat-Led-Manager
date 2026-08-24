@@ -101,10 +101,10 @@ public sealed class SystemsView : UserControl, IDisposable
             Text = L.T(
                 "Personnalisez les couleurs des boutons du gabarit de base d'un système : cliquez un bouton pour "
                 + "choisir sa couleur. Votre patch est enregistré dans overrides\\ et appliqué par LedManager à tous "
-                + "les jeux du système — le Data Pack n'est jamais modifié. Les panels par jeu (arcade) se règlent "
+                + "les jeux du système - le Data Pack n'est jamais modifié. Les panels par jeu (arcade) se règlent "
                 + "dans « Mes jeux ».",
                 "Customize the button colors of a system's base template: click a button to pick its color. "
-                + "Your patch is saved under overrides\\ and applied by LedManager to every game of the system — "
+                + "Your patch is saved under overrides\\ and applied by LedManager to every game of the system - "
                 + "the Data Pack is never modified. Per-game panels (arcade) are edited in \"My games\"."),
             Foreground = Text(0xB8, 0xB8, 0xC6),
             FontSize = 12,
@@ -163,7 +163,7 @@ public sealed class SystemsView : UserControl, IDisposable
     /// <summary>
     /// « Tester mon système » : launches the controller diagnostic rom curated for
     /// the system (resources\controllers_inputs_roms_testing\système) through
-    /// RetroBat's own emulatorLauncher — nothing is copied into roms\, nothing in
+    /// RetroBat's own emulatorLauncher - nothing is copied into roms\, nothing in
     /// RetroBat is modified. See the README in that folder for origins/licences.
     /// </summary>
     private void OnDiagTest(object sender, RoutedEventArgs e)
@@ -196,7 +196,7 @@ public sealed class SystemsView : UserControl, IDisposable
 
         // light the panel with the system template (the direct launch bypasses ES,
         // so LedManager never receives a "game selected" event): push a preview
-        // through APIExpose — best effort, the running LedManager applies it
+        // through APIExpose - best effort, the running LedManager applies it
         _ = PushPanelPreviewAsync();
 
         try
@@ -208,8 +208,8 @@ public sealed class SystemsView : UserControl, IDisposable
                 WorkingDirectory = System.IO.Path.GetDirectoryName(launcher)!,
                 UseShellExecute = false
             });
-            _status.Text = L.T($"Diagnostic lancé : {System.IO.Path.GetFileName(rom)} — appuyez sur chaque bouton du panel pour vérifier le câblage.",
-                $"Diagnostic launched: {System.IO.Path.GetFileName(rom)} — press every panel button to verify the wiring.");
+            _status.Text = L.T($"Diagnostic lancé : {System.IO.Path.GetFileName(rom)} - appuyez sur chaque bouton du panel pour vérifier le câblage.",
+                $"Diagnostic launched: {System.IO.Path.GetFileName(rom)} - press every panel button to verify the wiring.");
 
             // a launcher that dies within seconds means the emulator refused the
             // rom (core not installed, bios missing…): surface its last error
@@ -241,7 +241,7 @@ public sealed class SystemsView : UserControl, IDisposable
             var error = System.IO.File.Exists(log)
                 ? System.IO.File.ReadLines(log).LastOrDefault(l => l.Contains("[ERROR]") || l.Contains("[EXCEPTION]"))
                 : null;
-            var detail = error is null ? "" : " — " + error[(error.IndexOf(']', error.IndexOf(']') + 1) + 1)..].Trim();
+            var detail = error is null ? "" : " - " + error[(error.IndexOf(']', error.IndexOf(']') + 1) + 1)..].Trim();
             await Dispatcher.InvokeAsync(() => _status.Text = L.T(
                 $"Le diagnostic s'est arrêté aussitôt{detail}. Core/émulateur du système probablement absent.",
                 $"The diagnostic exited immediately{detail}. The system's core/emulator is probably missing."));
@@ -254,7 +254,7 @@ public sealed class SystemsView : UserControl, IDisposable
 
     /// <summary>
     /// A direct emulatorLauncher call lacks the %CONTROLLERSCONFIG% arguments ES
-    /// normally injects (-p1index/-p1guid/…) — without them no pad gets configured.
+    /// normally injects (-p1index/-p1guid/…) - without them no pad gets configured.
     /// Replays the controller arguments of the LAST normal launch, read from
     /// emulatorlauncher.log (read-only).
     /// </summary>
@@ -287,7 +287,7 @@ public sealed class SystemsView : UserControl, IDisposable
     }
 
     /// <summary>Sends the current template colors to the REAL panel through the
-    /// running LedManager (POST /panels/preview — same pipeline as game events).</summary>
+    /// running LedManager (POST /panels/preview - same pipeline as game events).</summary>
     private async Task PushPanelPreviewAsync()
     {
         try
@@ -440,7 +440,7 @@ public sealed class SystemsView : UserControl, IDisposable
             .ToList();
 
         _summary.Text = parts.Count == 0
-            ? L.T("Aucune personnalisation — tout vient du pack.", "No customization — everything comes from the pack.")
+            ? L.T("Aucune personnalisation - tout vient du pack.", "No customization - everything comes from the pack.")
             : L.T("Personnalisé : ", "Customized: ") + string.Join(" · ", parts);
     }
 
@@ -495,8 +495,8 @@ public sealed class SystemsView : UserControl, IDisposable
         }
 
         Repaint();
-        _status.Text = L.T("Modification non enregistrée — cliquez « Enregistrer ma configuration ».",
-            "Unsaved change — click \"Save the override\".");
+        _status.Text = L.T("Modification non enregistrée - cliquez « Enregistrer ma configuration ».",
+            "Unsaved change - click \"Save the override\".");
         if (_sender is { IsAlive: true })
         {
             SendLivePreview();
@@ -587,8 +587,8 @@ public sealed class SystemsView : UserControl, IDisposable
 
         SendLivePreview();
         _liveTest.Content = L.T("Arrêter le test", "Stop the test");
-        _status.Text = L.T($"Couleurs envoyées au panneau réel ({_hardware.PicoLabel}) — elles suivent vos clics en direct.",
-            $"Colors sent to the real panel ({_hardware.PicoLabel}) — they follow your clicks live.");
+        _status.Text = L.T($"Couleurs envoyées au panneau réel ({_hardware.PicoLabel}) - elles suivent vos clics en direct.",
+            $"Colors sent to the real panel ({_hardware.PicoLabel}) - they follow your clicks live.");
     }
 
     private void SendLivePreview()

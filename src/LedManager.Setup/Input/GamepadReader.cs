@@ -10,15 +10,15 @@ namespace LedManager.Setup.Input;
 /// gamecontrollerdb.txt RetroBat ships (system\tools\gamecontrollerdb.txt).
 ///
 /// Crucially, it parses that DB ITSELF (matching the device GUID) and reads the RAW
-/// joystick buttons/axes — instead of trusting SDL's GameController layer, whose
+/// joystick buttons/axes - instead of trusting SDL's GameController layer, whose
 /// built-in database can shadow RetroBat's entry and hand back a different button
 /// order (this is what silently swapped X/Y for a DirectInput arcade encoder). By
 /// applying RetroBat's own mapping to the raw inputs, the identity we measure is
-/// exactly what RetroArch sees — so CabinetButtons drives both rmp and MAME cfg
+/// exactly what RetroArch sees - so CabinetButtons drives both rmp and MAME cfg
 /// correctly with no downstream change.
 ///
 /// The SDL→RetroPad face swap (a→b, b→a, x→y, y→x, shoulders, triggers) is the fixed
-/// sdl2 joypad-driver convention, universal to every controller — not a particularism.
+/// sdl2 joypad-driver convention, universal to every controller - not a particularism.
 /// </summary>
 public sealed class GamepadReader : IDisposable
 {
@@ -286,7 +286,7 @@ public sealed class GamepadReader : IDisposable
             var name = token[..colon];
             if (!FaceSwap.TryGetValue(name, out var identity))
             {
-                continue; // dpad / guide / misc — not a cabinet identity
+                continue; // dpad / guide / misc - not a cabinet identity
             }
 
             var value = token[(colon + 1)..].TrimEnd('~'); // '~' = inverted axis
@@ -316,7 +316,7 @@ public sealed class GamepadReader : IDisposable
             {
                 device.AxisToIdentity.Add((index, sign, identity));
             }
-            // 'h' (hat) inputs are dpad directions — not cabinet identities
+            // 'h' (hat) inputs are dpad directions - not cabinet identities
         }
     }
 

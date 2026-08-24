@@ -153,8 +153,8 @@ public sealed class WizardView : UserControl, IDisposable
                     + "Plug your Pico in over USB, then click \"Detect the Pico\".");
                 _primary.Content = L.T("Détecter le Pico", "Detect the Pico");
                 _status.Text = LedManagerProcess.IsRunning()
-                    ? L.T("⚠ LedManager est en cours d'exécution — il sera arrêté à la détection.",
-                        "⚠ LedManager is running — it will be stopped at detection.")
+                    ? L.T("⚠ LedManager est en cours d'exécution - il sera arrêté à la détection.",
+                        "⚠ LedManager is running - it will be stopped at detection.")
                     : L.T("LedManager n'est pas en cours d'exécution. ✓", "LedManager is not running. ✓");
                 BuildTargetChoices();
                 _panel.ClearAll();
@@ -177,10 +177,10 @@ public sealed class WizardView : UserControl, IDisposable
                 _body.Text = L.T(
                     "L'assistant vérifie l'ordre des fils R, G, B. Le panneau virtuel montre la couleur "
                     + "attendue : si le vrai panneau affiche autre chose, indiquez la couleur réellement vue.\n\n"
-                    + "L'assistant corrigera alors l'ordre des canaux dans la configuration — sans ressouder.",
+                    + "L'assistant corrigera alors l'ordre des canaux dans la configuration - sans ressouder.",
                     "The assistant checks the R, G, B wire order. The virtual panel shows the expected "
                     + "color: if the real panel shows something else, report the color you actually see.\n\n"
-                    + "The assistant will then fix the channel order in the configuration — no re-soldering.");
+                    + "The assistant will then fix the channel order in the configuration - no re-soldering.");
                 _primary.Content = L.T("Passer ce test", "Skip this test");
                 StartColorTest();
                 break;
@@ -190,10 +190,10 @@ public sealed class WizardView : UserControl, IDisposable
                 _body.Text = L.T(
                     "Un bouton va s'allumer sur votre panneau physique, un par un. "
                     + "À chaque fois, cliquez ici sur le bouton virtuel qui correspond au bouton allumé en vrai.\n\n"
-                    + "Cela permet à l'assistant de vérifier — et corriger — la correspondance entre les GPIO et vos boutons.",
+                    + "Cela permet à l'assistant de vérifier - et corriger - la correspondance entre les GPIO et vos boutons.",
                     "One button lights up on your physical panel, one at a time. "
                     + "Each time, click here the virtual button matching the one really lit.\n\n"
-                    + "This lets the assistant verify — and fix — the mapping between GPIOs and your buttons.");
+                    + "This lets the assistant verify - and fix - the mapping between GPIOs and your buttons.");
                 _primary.Content = L.T("Passer", "Skip");
                 StartWiringTest();
                 break;
@@ -338,7 +338,7 @@ public sealed class WizardView : UserControl, IDisposable
 
     /// <summary>On the prepare screen, lets the user run the FULL wizard or jump
     /// straight to a single test (redo just the LED wiring, or just the input
-    /// cartography) — each is independently useful after a rewiring.</summary>
+    /// cartography) - each is independently useful after a rewiring.</summary>
     private void BuildTargetChoices()
     {
         _choices.Children.Clear();
@@ -507,7 +507,7 @@ public sealed class WizardView : UserControl, IDisposable
 
     /// <summary>
     /// One-button firmware install. Blank Pico (BOOTSEL drive visible): MicroPython
-    /// UF2 first — copied automatically if fw\*.uf2 exists, otherwise guided download.
+    /// UF2 first - copied automatically if fw\*.uf2 exists, otherwise guided download.
     /// Then the panel firmware goes over the MicroPython raw REPL, and detection re-runs.
     /// </summary>
     private async Task InstallFirmwareAsync()
@@ -646,7 +646,7 @@ public sealed class WizardView : UserControl, IDisposable
         _wiringMap[lit] = clicked;
 
         // Feedback: blink the clicked button on BOTH panels so the user sees the click
-        // registered — cyan on the virtual panel, a brief cyan pulse on the real one.
+        // registered - cyan on the virtual panel, a brief cyan pulse on the real one.
         if (clickedSlot.HasValue)
         {
             _panel.Flash(clickedSlot.Value.ToString(), FeedbackColor, 260);
@@ -762,8 +762,8 @@ public sealed class WizardView : UserControl, IDisposable
             .Select(g => $"{g.Key} ({string.Join(",", g.Select(x => x.Key.Label))})");
         if (dups.Any())
         {
-            warnings.Add(L.T($"⚠ Identité(s) en double : {string.Join(", ", dups)} — deux boutons enverraient la même chose.",
-                $"⚠ Duplicate identity(ies): {string.Join(", ", dups)} — two buttons would send the same thing."));
+            warnings.Add(L.T($"⚠ Identité(s) en double : {string.Join(", ", dups)} - deux boutons enverraient la même chose.",
+                $"⚠ Duplicate identity(ies): {string.Join(", ", dups)} - two buttons would send the same thing."));
         }
 
         foreach (var kv in _cartoMap.Where(kv => kv.Key.Target is not null))
@@ -771,8 +771,8 @@ public sealed class WizardView : UserControl, IDisposable
             var expected = kv.Key.Target!.Equals("START", StringComparison.OrdinalIgnoreCase) ? "start" : "select";
             if (!kv.Value.Equals(expected, StringComparison.OrdinalIgnoreCase))
             {
-                warnings.Add(L.T($"⚠ {kv.Key.Label} envoie « {kv.Value} » au lieu de « {expected} » — câblage encodeur à revoir.",
-                    $"⚠ {kv.Key.Label} sends \"{kv.Value}\" instead of \"{expected}\" — check the encoder wiring."));
+                warnings.Add(L.T($"⚠ {kv.Key.Label} envoie « {kv.Value} » au lieu de « {expected} » - câblage encodeur à revoir.",
+                    $"⚠ {kv.Key.Label} sends \"{kv.Value}\" instead of \"{expected}\" - check the encoder wiring."));
             }
         }
 
@@ -872,8 +872,8 @@ public sealed class WizardView : UserControl, IDisposable
                     _progress.Value = Math.Min(offset + processed, packTotal);
                 }
 
-                _status.Text = L.T($"Cfg MAME : {Math.Min(offset + processed, packTotal)}/{packTotal}" + (last is not null ? $" — {last}" : ""),
-                    $"MAME cfg: {Math.Min(offset + processed, packTotal)}/{packTotal}" + (last is not null ? $" — {last}" : ""));
+                _status.Text = L.T($"Cfg MAME : {Math.Min(offset + processed, packTotal)}/{packTotal}" + (last is not null ? $" - {last}" : ""),
+                    $"MAME cfg: {Math.Min(offset + processed, packTotal)}/{packTotal}" + (last is not null ? $" - {last}" : ""));
             }
             catch
             {
@@ -941,10 +941,10 @@ public sealed class WizardView : UserControl, IDisposable
             $"   • {kv.Key.Label} lit → clicked {kv.Value?.Label ?? "?"}")));
         return L.T($"{mismatches.Count} différence(s) détectée(s) entre le câblage et la disposition :\n{lines}\n\n"
                 + $"« Corriger automatiquement » réécrit le câblage logiciel ([GPIO:{_hardware.SenderId}]) pour que chaque bouton "
-                + "réponde à sa place — sans ressouder. Le test se relancera pour confirmer.",
+                + "réponde à sa place - sans ressouder. Le test se relancera pour confirmer.",
             $"{mismatches.Count} difference(s) detected between the wiring and the arrangement:\n{lines}\n\n"
                 + $"\"Fix automatically\" rewrites the software wiring ([GPIO:{_hardware.SenderId}]) so every button "
-                + "answers at its place — no re-soldering. The test will re-run to confirm.");
+                + "answers at its place - no re-soldering. The test will re-run to confirm.");
     }
 
     private void RenderDoneActions()

@@ -15,18 +15,18 @@ Le kit de référence, **sans aucune soudure** (détail complet dans `resources\
 | Connecteurs Dupont → XH2.54 4P | 10 | Un par bouton, connexion sans soudure |
 | Bloc Dupont 2,54 mm pour le commun | 1 | Distribue le 3V3(OUT) vers les 10 boutons |
 | Câble **micro-USB data** | 1 | Communication + alimentation (pas un câble de charge seul !) |
-| Joystick arcade + carte USB d'entrées | 1+1 | Les **entrées** de jeu — carte au choix (Zero Delay, DragonRise, I-PAC…), LedManager n'y touche pas |
+| Joystick arcade + carte USB d'entrées | 1+1 | Les **entrées** de jeu - carte au choix (Zero Delay, DragonRise, I-PAC…), LedManager n'y touche pas |
 
 Recommandé en plus : des câbles Dupont de rechange, des **étiquettes** pour repérer B1–B8 et les canaux couleur, des serre-câbles ; en option un multimètre et une alimentation 5 V externe si l'USB ne suffit pas à pleine luminosité.
 
 ## Le câblage
 
-![Plan de câblage Raspberry Pi Pico — 8 boutons RGB + START/SELECT](assets/pico_wiring_diagram_fr.png)
+![Plan de câblage Raspberry Pi Pico - 8 boutons RGB + START/SELECT](assets/pico_wiring_diagram_fr.png)
 
 Les points essentiels du plan :
 
 - Chaque bouton RGB utilise **3 GPIO** (fils jaune, blanc, rouge) : B1 = GP0/GP1/GP2, B2 = GP3/GP4/GP5, et ainsi de suite.
-- Le fil **noir** de chaque bouton est le commun, relié au **3.3V** du Pico — les GND ne sont pas câblés.
+- Le fil **noir** de chaque bouton est le commun, relié au **3.3V** du Pico - les GND ne sont pas câblés.
 - **START** utilise GP27 et **SELECT** GP28, avec une LED simple (une seule couleur parmi les trois fils, au choix).
 - Cas particulier : GP23 n'étant pas disponible sur le connecteur, le rouge de B8 est câblé sur **GP26**.
 
@@ -35,7 +35,7 @@ Les points essentiels du plan :
 
 ## La disposition standard conseillée pour RetroBat
 
-Placez physiquement vos boutons selon cette disposition — c'est elle qu'attendent les panels par jeu du Data Pack :
+Placez physiquement vos boutons selon cette disposition - c'est elle qu'attendent les panels par jeu du Data Pack :
 
 ![Disposition standard conseillée pour RetroBat](assets/panel_layout.svg)
 
@@ -48,13 +48,13 @@ SELECT   START
 
 Sa force : elle reste **fonctionnelle de 2 à 8 boutons sans recâblage**, car chaque bouton garde son identité. Un panel 2 boutons = `B1 B2` ; en 4 boutons on ajoute la rangée du haut `B4 B3` ; en 6 on ajoute la colonne `B5/B6` (L1/R1) ; en 8 la colonne `B7/B8` (L2/R2). Agrandir son panel n'oblige jamais à déplacer un bouton existant, et les couleurs par jeu tombent toujours au bon endroit.
 
-`SELECT` puis `START` se placent en haut à gauche du panel. Cette disposition est décrite dans `resources\setup\layouts\retrobat_standard.json` — c'est elle que le panel virtuel de `LedManagerSetup.exe` affiche.
+`SELECT` puis `START` se placent en haut à gauche du panel. Cette disposition est décrite dans `resources\setup\layouts\retrobat_standard.json` - c'est elle que le panel virtuel de `LedManagerSetup.exe` affiche.
 
 !!! note "Le Setup Manager pendant une partie"
-    Le panel virtuel tourne volontairement en priorité basse et regroupe ses rafraîchissements pour peser le moins possible. Un léger ralentissement du jeu reste néanmoins possible quand la fenêtre est ouverte pendant une partie — c'est normal : c'est un outil de mise au point, fermez-le pour jouer sérieusement.
+    Le panel virtuel tourne volontairement en priorité basse et regroupe ses rafraîchissements pour peser le moins possible. Un léger ralentissement du jeu reste néanmoins possible quand la fenêtre est ouverte pendant une partie - c'est normal : c'est un outil de mise au point, fermez-le pour jouer sérieusement.
 
-!!! tip "Déjà automatisé — les sections suivantes sont pour utilisateurs avancés"
-    Flasher le firmware, vérifier le Pico et décrire votre panel sont **entièrement pris en charge par l'[assistant](assistant.md) de `LedManagerSetup.exe`** : il dépose le firmware, détecte et teste le Pico, puis écrit la description du panel pour vous. Ce qui suit n'est utile qu'en **dépannage** ou pour comprendre ce qui se passe sous le capot — **pas nécessaire** pour une installation normale.
+!!! tip "Déjà automatisé - les sections suivantes sont pour utilisateurs avancés"
+    Flasher le firmware, vérifier le Pico et décrire votre panel sont **entièrement pris en charge par l'[assistant](assistant.md) de `LedManagerSetup.exe`** : il dépose le firmware, détecte et teste le Pico, puis écrit la description du panel pour vous. Ce qui suit n'est utile qu'en **dépannage** ou pour comprendre ce qui se passe sous le capot - **pas nécessaire** pour une installation normale.
 
 ## Flasher le firmware
 
@@ -79,7 +79,7 @@ C'est le moyen le plus rapide de confirmer que le firmware est en place et à la
 
 ## Décrire votre panel
 
-Une fois le matériel branché, vous le décrivez **avec des mots simples** dans `PicoCommandSender.ini` — nombre de boutons, type de LED, GPIO utilisés :
+Une fois le matériel branché, vous le décrivez **avec des mots simples** dans `PicoCommandSender.ini` - nombre de boutons, type de LED, GPIO utilisés :
 
 ```ini
 [Hardware:P1]
@@ -95,6 +95,6 @@ START=27
 SELECT=28
 ```
 
-Types possibles : `NONE` (absent), `LED` (simple ON/OFF, 1 GPIO), `RGBLED` (3 GPIO), `ADDRLED` (WS2812/NeoPixel adressable). Le sender se charge de toute l'initialisation du firmware — vous n'avez aucun nom de profil interne à connaître.
+Types possibles : `NONE` (absent), `LED` (simple ON/OFF, 1 GPIO), `RGBLED` (3 GPIO), `ADDRLED` (WS2812/NeoPixel adressable). Le sender se charge de toute l'initialisation du firmware - vous n'avez aucun nom de profil interne à connaître.
 
 La suite de la configuration (routage, couleurs, port série) est détaillée dans [Configuration](configuration.md).

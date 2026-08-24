@@ -1,6 +1,6 @@
 # Cartes LED externes
 
-LedManager n'est pas marié au Raspberry Pi Pico. Son principe : **il décide quoi afficher, jamais comment** — les GPIO, canaux USB, SDK constructeurs et API réseau vivent dans le *sender* de chaque carte.
+LedManager n'est pas marié au Raspberry Pi Pico. Son principe : **il décide quoi afficher, jamais comment** - les GPIO, canaux USB, SDK constructeurs et API réseau vivent dans le *sender* de chaque carte.
 
 ```text
 APIExpose
@@ -12,7 +12,7 @@ APIExpose
 
 ## Deux méthodes d'intégration
 
-=== "Méthode A — Templates directs"
+=== "Méthode A - Templates directs"
 
     Si votre programme LED accepte déjà des commandes texte simples, modifiez seulement `[CommandTemplates]` dans `LedManager.ini` :
 
@@ -25,7 +25,7 @@ APIExpose
 
     Rare, mais très propre quand le programme cible parle déjà un langage proche.
 
-=== "Méthode B — Sender adaptateur (recommandée)"
+=== "Méthode B - Sender adaptateur (recommandée)"
 
     Pour les cartes USB/SDK/API, on écrit un petit exécutable qui lit les commandes sur son entrée standard et les traduit pour le matériel :
 
@@ -40,7 +40,7 @@ APIExpose
     Le sender reçoit `SLOT 1 RED`, consulte son mapping (`RGB:1,2,3`) et applique les valeurs à la carte.
 
 !!! tip "Votre sender peut être n'importe quel programme"
-    `Executable=` et `Arguments=` sont libres : un exe compilé, un script Python (`Executable=python.exe`), Node, ou même PowerShell si vous y tenez. Seule règle : lire les commandes ligne par ligne sur l'entrée standard. Préférez toutefois un exécutable compilé — les antivirus surveillent de près les scripts PowerShell qui tournent en continu (heuristiques « ClickFix »), c'est d'ailleurs pourquoi le sender Pico officiel utilise un accès série natif.
+    `Executable=` et `Arguments=` sont libres : un exe compilé, un script Python (`Executable=python.exe`), Node, ou même PowerShell si vous y tenez. Seule règle : lire les commandes ligne par ligne sur l'entrée standard. Préférez toutefois un exécutable compilé - les antivirus surveillent de près les scripts PowerShell qui tournent en continu (heuristiques « ClickFix »), c'est d'ailleurs pourquoi le sender Pico officiel utilise un accès série natif.
 
 ## Cartes cibles réalistes
 
@@ -87,7 +87,7 @@ START=LED:25
 MATRIX1=MATRIX:16x16:60-315
 ```
 
-Règle de conception : **si une logique dépend du matériel, elle va dans le sender**. La table des couleurs (`RED=255,0,0`…) vit dans le sender de la carte, jamais dans `LedManager.ini` — chaque carte interprète les intensités à sa façon.
+Règle de conception : **si une logique dépend du matériel, elle va dans le sender**. La table des couleurs (`RED=255,0,0`…) vit dans le sender de la carte, jamais dans `LedManager.ini` - chaque carte interprète les intensités à sa façon.
 
 ## Checklist d'intégration
 

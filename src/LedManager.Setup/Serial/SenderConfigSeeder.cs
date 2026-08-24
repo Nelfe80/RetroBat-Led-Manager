@@ -8,13 +8,13 @@ namespace LedManager.Setup.Serial;
 /// ships as documentation-only (DryRun=true, no [GPIO:Pn], firmware profile init).
 /// Called once the wizard has detected the Pico on a real port, it seeds the missing
 /// pieces with the standard GPIO plan and switches the sender to the same auto-init
-/// pipeline as P1. Existing keys are never overwritten — except Port (the port that
+/// pipeline as P1. Existing keys are never overwritten - except Port (the port that
 /// really answered) and DryRun=false, which configuring the Pico implies.
 /// </summary>
 public static class SenderConfigSeeder
 {
     /// <summary>Standard GPIO plan of the reference kit (materiel page): triplets in
-    /// the firmware color tables' G,R,B position order — the color test fixes any
+    /// the firmware color tables' G,R,B position order - the color test fixes any
     /// wire-order difference afterwards.</summary>
     private static readonly (string Key, string Value)[] DefaultGpio =
     {

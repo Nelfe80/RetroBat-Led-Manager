@@ -7,7 +7,7 @@ namespace LedManager.Setup.Serial;
 /// <summary>
 /// Fixes the wire order of the [GPIO:*] triplets. The color test lights one channel
 /// at a time in the firmware's dialect: extinction percentages (0 = lit, 100 = off)
-/// applied to triplet positions in the color tables' G,R,B order — ALLPCT 100 0 100
+/// applied to triplet positions in the color tables' G,R,B order - ALLPCT 100 0 100
 /// lights the pins the config believes drive red. If the user reports another color,
 /// that die is wired on a different position: the fix reorders every B* triplet so
 /// each position drives the color the firmware tables expect.
@@ -17,7 +17,7 @@ public static class ColorChannelFixer
 {
     public sealed record Result(bool Success, string Message);
 
-    /// <param name="seen">Colors reported for driven channels R, G, B — e.g. seen[0]
+    /// <param name="seen">Colors reported for driven channels R, G, B - e.g. seen[0]
     /// is what lit up when the R channel was driven. Values: "R", "G" or "B".</param>
     public static Result Apply(string pluginRoot, string sender, IReadOnlyList<string> seen)
     {
@@ -31,9 +31,9 @@ public static class ColorChannelFixer
         {
             return new Result(false, L.T(
                 "Réponses incohérentes (une couleur vue deux fois). Deux fils peuvent être en court-circuit "
-                + "ou une LED défaillante — refaites le test ou vérifiez le câblage.",
+                + "ou une LED défaillante - refaites le test ou vérifiez le câblage.",
                 "Inconsistent answers (one color seen twice). Two wires may be shorted "
-                + "or an LED is failing — re-run the test or check the wiring."));
+                + "or an LED is failing - re-run the test or check the wiring."));
         }
 
         if (normalized[0] == "R" && normalized[1] == "G" && normalized[2] == "B")

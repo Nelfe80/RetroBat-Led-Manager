@@ -8,9 +8,9 @@ Two `.ini` files drive everything, each with a precise role:
 | `PicoCommandSender.ini` | The hardware adapter | *How* your board understands the orders |
 
 !!! tip "Graphical tools are coming"
-    A visual configuration tool is planned. Meanwhile, this page covers the settings a user actually changes — the rest can stay as it is.
+    A visual configuration tool is planned. Meanwhile, this page covers the settings a user actually changes - the rest can stay as it is.
 
-## LedManager.ini — the orchestrator
+## LedManager.ini - the orchestrator
 
 ### Declaring your senders
 
@@ -30,7 +30,7 @@ Arguments=daemon --ini "PicoCommandSender.ini" --sender P1
 StartupDelayMs=18000
 ```
 
-The setting worth knowing: **`StartupDelayMs`** gives the Pico time to initialize at startup. If your LEDs light up late, resist shrinking it too much — a Pico that is not ready ignores commands.
+The setting worth knowing: **`StartupDelayMs`** gives the Pico time to initialize at startup. If your LEDs light up late, resist shrinking it too much - a Pico that is not ready ignores commands.
 
 ### Routing players and targets
 
@@ -46,7 +46,7 @@ STRIP1=GLOBAL
 
 Cabinet-wide effects (score matrix, strips) go to the `GLOBAL` sender, player panels to `P1`/`P2`.
 
-## PicoCommandSender.ini — your hardware
+## PicoCommandSender.ini - your hardware
 
 ### The serial port
 
@@ -60,7 +60,7 @@ BaudRate=115200
 
 ### Your panel
 
-The `[Hardware:P1]` and `[GPIO:P1]` sections describe buttons and wiring — see [Hardware](materiel.md#describing-your-panel).
+The `[Hardware:P1]` and `[GPIO:P1]` sections describe buttons and wiring - see [Hardware](materiel.md#describing-your-panel).
 
 ### The color policy
 
@@ -91,7 +91,7 @@ Available variables: `{slot}`, `{target}`, `{color}`, `{durationMs}`, `{value}`,
 
 ## Customizing a game or a system: overrides
 
-Want Rainbow Road colors for Super Mario Kart? Create a **sparse patch** — only what you change goes in it, everything else keeps coming from APIExpose and its updates:
+Want Rainbow Road colors for Super Mario Kart? Create a **sparse patch** - only what you change goes in it, everything else keeps coming from APIExpose and its updates:
 
 ```text
 overrides\systems\snes.json          → every SNES game
@@ -121,26 +121,26 @@ A few useful behaviours (no setting required):
 ## Ingame effects: `default.mem.effects.json`
 
 Reactions to **game moments** (life lost, boss hit, coin collected…) are
-described in `default.mem.effects.json`, at the plugin root — an editable
+described in `default.mem.effects.json`, at the plugin root - an editable
 catalogue, no code involved:
 
 - **Family rules** (`genericRules`): one rule per family of moments
-  (`resources.lives`, `scoring.collectibles`, `combat.enemies`…) — it applies
+  (`resources.lives`, `scoring.collectibles`, `combat.enemies`…) - it applies
   to **every game**, no per-game mapping.
 - **Effects**: `flash_restore`, `sweep`, `pulse`, `sparkle`,
   `health_feedback`, `matrix_score`… with targets (`ALL_BUTTONS`, `STRIP1`,
   `RANDOM_COLUMN`, `MATRIX1`), colors, durations and anti-spam (`throttleMs`).
 - **Game color**: when the event carries its own color (arcade score deltas:
-  1944's orange plane…), it **wins** over the rule color — the effect takes
+  1944's orange plane…), it **wins** over the rule color - the effect takes
   the tint of the destroyed target.
 - **Per player**: events carrying a player index are routed to that player's
   panel (`playerField`), otherwise to `GLOBAL`.
 - **Layers** (`effectLayers`): ingame effects live above the game panel and
-  below alerts — every source has its priority, nothing gets clobbered.
+  below alerts - every source has its priority, nothing gets clobbered.
 
 !!! example "Example: golden flash on every treasure"
     In `genericRules`, the `inventory.items` family triggers a golden
     `sparkle` on `ALL_BUTTONS` + `STRIP1` with automatic restore: grab a key
-    in Zelda or an emerald in Sonic and the cabinet sparkles — two games,
+    in Zelda or an emerald in Sonic and the cabinet sparkles - two games,
     zero configuration.
 

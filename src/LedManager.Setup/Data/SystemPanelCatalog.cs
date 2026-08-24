@@ -6,7 +6,7 @@ namespace LedManager.Setup.Data;
 /// <summary>
 /// Reads the curated per-system panels from the APIExpose Data Pack
 /// (resources\dynpanels\systems\*.json → system_template.layouts). Colors are keyed
-/// by the `physical` field — the wired LED slot, validated on real hardware
+/// by the `physical` field - the wired LED slot, validated on real hardware
 /// (Score Master: B1 green, B2 yellow, B6 red, B3 blue, B4/B5 gray).
 /// </summary>
 public sealed class SystemPanelCatalog

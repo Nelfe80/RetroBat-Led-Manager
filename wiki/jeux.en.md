@@ -1,7 +1,7 @@
 # Per-game panels and wiring
 
 The **My games** tab of LedManager Setup customizes one game's panel: its colors, and
-for arcade its full **wiring** — which game actions land on which buttons, which lamps
+for arcade its full **wiring** - which game actions land on which buttons, which lamps
 light where.
 
 ![My games view](assets/setup/setup-games.png)
@@ -14,7 +14,7 @@ light where.
 3. Type in the search box (game or rom name) and pick from the list.
 
 The panel shows the final colors (pack + your system configuration + your game
-configuration). Click a button to change its color — saving writes a light patch under
+configuration). Click a button to change its color - saving writes a light patch under
 `overrides\`; the Data Pack is never modified.
 
 ## The wiring bay (arcade)
@@ -23,7 +23,7 @@ Below the panel, the **wiring bay** shows the game like a cabinet:
 
 - on the left, the **game actions** (cyan);
 - in the center, the **panel**: SELECT/START and the buttons, in the game's colors;
-- on the right, the native **lamps** (MAME), grouped by family — fully unwired
+- on the right, the native **lamps** (MAME), grouped by family - fully unwired
   families are folded, click the header to open them;
 - at the bottom, the **peripherals** (joystick with its ways, wheel, pedal…) with one
   socket per axis.
@@ -41,7 +41,7 @@ Key gestures:
 
 "Save the wiring" stores your configuration; "Update this game" (the **Controls**
 card) pushes it into the emulator. The **Repair this game** button realigns a MAME
-configuration broken by a version change, by querying your installed MAME — your
+configuration broken by a version change, by querying your installed MAME - your
 settings are preserved.
 
 ## Test my system

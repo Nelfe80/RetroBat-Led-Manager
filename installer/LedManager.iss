@@ -1,7 +1,7 @@
 ; ─────────────────────────────────────────────────────────────────────────────
-; RetroBat Led Manager — installeur de BORNE (Inno Setup)
+; RetroBat Led Manager - installeur de BORNE (Inno Setup)
 ; Installe le plugin dans <RetroBat>\plugins\LedManager, branche son hook
-; EmulationStation, et — via apiexpose-bootstrap.iss — installe APIExpose dans le
+; EmulationStation, et - via apiexpose-bootstrap.iss - installe APIExpose dans le
 ; dossier frère plugins\APIExpose s'il manque (APIExpose déjà présent = intact).
 ; Compilation : ISCC.exe installer\LedManager.iss
 ; ─────────────────────────────────────────────────────────────────────────────
@@ -39,7 +39,7 @@ french.SelectDirDesc=Choisissez le dossier plugins\LedManager de VOTRE RetroBat 
 Source: "..\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; \
     Excludes: "\src\*,\docs\*,\wiki\*,\media\*,\state\*,\artifacts\*,\dist\*,\installer\*,\tests\*,\.git\*,\.github\*,\.log\*,\.cache\*,\.versioning\*,\.archive\*,\.temp\*,\.graceful_exit\*,\obj\*,\bin\*,\site\*,\.gitignore,\.gitattributes,\mkdocs.yml,\LedManager.sln,\Directory.Build.props,\build.bat,\build-LedManager.bat,\build-PicoCommandSender.bat,\build-Setup.bat,\release.ps1,\config.ini,\config.ini.bak,\tools\wiki-panels-generator\*,CAHIER*,*.log,*.pdb,*.lib,__pycache__\*,*.pyc,\tools\*.ps1,\tools\*.py,*.bak"
 
-; Dépendance APIExpose (dossier frère) — DÉTECTION (fournit ApiExposeInstalled) ;
+; Dépendance APIExpose (dossier frère) - DÉTECTION (fournit ApiExposeInstalled) ;
 ; on avertit dans [Code] si absent (installée par APIExpose-Cabinet-Setup, pas ici)
 #include "..\..\APIExpose\installer\apiexpose-bootstrap.iss"
 #include "..\..\APIExpose\installer\retrobat-detect.iss"
@@ -66,7 +66,7 @@ begin
     if not ApiExposeInstalled() then
       MsgBox('APIExpose n''est pas installé à côté (plugins\APIExpose).'#13#10#13#10
         + 'Led Manager en a besoin pour fonctionner. Lancez d''abord'#13#10
-        + 'APIExpose-Cabinet-Setup.exe — l''installation continue quand même.',
+        + 'APIExpose-Cabinet-Setup.exe - l''installation continue quand même.',
         mbInformation, MB_OK);
   end;
 end;

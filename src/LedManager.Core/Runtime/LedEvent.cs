@@ -33,7 +33,7 @@ public sealed class LedEvent
         Type.Equals("ui.game.ended", StringComparison.OrdinalIgnoreCase) ||
         Type.Equals("game.end", StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>EmulationStation exited (APIExpose 1.3.5+) — authoritative shutdown signal.</summary>
+    /// <summary>EmulationStation exited (APIExpose 1.3.5+) - authoritative shutdown signal.</summary>
     public bool IsFrontendStopped =>
         Type.Equals("ui.frontend.stopped", StringComparison.OrdinalIgnoreCase);
 

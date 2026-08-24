@@ -9,7 +9,7 @@ namespace LedManager.Setup;
 /// Theme engine. The XAML shell consumes the token brushes through
 /// DynamicResource, so <see cref="Apply"/> retints it live; the code-built views
 /// route their colors through <see cref="Brush"/>/<see cref="Text"/>, whose remap
-/// table translates the dark palette into the light one — views are rebuilt on
+/// table translates the dark palette into the light one - views are rebuilt on
 /// theme change. Panel and patch-bay canvases deliberately stay dark in both
 /// themes (<see cref="Viewport"/>): LEDs and cables need a dark plate, like the
 /// viewport of any node editor. Choice persisted in LedManager.ini [Setup] Theme.

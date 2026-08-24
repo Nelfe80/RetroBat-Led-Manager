@@ -7,7 +7,7 @@ namespace LedManager.Setup.Data;
 /// <summary>
 /// Arcade game panels: lists the curated per-game dynpanels
 /// (APIExpose\resources\dynpanels\games) and resolves a game's slot colors through
-/// the EXACT runtime pipeline (PanelState.EnrichFromDynpanel) — what you see in the
+/// the EXACT runtime pipeline (PanelState.EnrichFromDynpanel) - what you see in the
 /// editor is what LedManager lights.
 /// </summary>
 public sealed class GamePanelCatalog
@@ -20,7 +20,7 @@ public sealed class GamePanelCatalog
     {
         /// <summary>
         /// Folder used for the override patch. The curated dynpanels say "mame" but
-        /// the RetroBat ES system (and the media tree) is "arcade" — the runtime
+        /// the RetroBat ES system (and the media tree) is "arcade" - the runtime
         /// accepts both, the setup writes the canonical one.
         /// </summary>
         public string OverrideSystem => System.Equals("mame", StringComparison.OrdinalIgnoreCase) ? "arcade" : System;
