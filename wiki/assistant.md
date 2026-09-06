@@ -55,6 +55,9 @@ Si rien n'est détecté, le bouton **« Installer le firmware »** apparaît : l
 
 Avant de lancer, choisissez l'**étendue** du test : **Test complet** (tout le parcours), **Juste le test LED** (refaire seulement le câblage des LEDs, étape 4) ou **Juste la cartographie** (refaire seulement les entrées, étape 5). Pratique pour ne rejouer qu'une seule étape après un changement de panneau ou d'encodeur.
 
+!!! tip "Pas de Pico ? La cartographie fonctionne quand même"
+    **Juste la cartographie** ne pilote aucune LED : elle lit seulement ce que votre manette ou votre encodeur envoie. Elle n'a donc **pas besoin d'un Pico**, et l'assistant poursuit même si la détection échoue - c'est le panneau virtuel qui vous indiquera quel bouton presser. Un panneau sans aucune LED se calibre ainsi de bout en bout. Si un Pico répond, tant mieux : le bouton attendu s'allume aussi en vrai.
+
 ### 2. Test du panneau
 
 Vos boutons doivent être **tous allumés en blanc**. C'est la confirmation que l'alimentation et le firmware fonctionnent. Si certains restent éteints, c'est un problème de câblage ou d'alimentation (voir [Dépannage](depannage.md)).
@@ -78,16 +81,34 @@ L'assistant compare ainsi votre câblage réel à la disposition attendue. Si de
 
 ### 5. Cartographie des entrées
 
-L'inverse de l'étape précédente : un bouton s'allume en **vert** sur votre vrai panneau, un par un, et cette fois **vous appuyez dessus**. L'assistant lit alors l'identité que votre manette/encodeur envoie - exactement comme RetroArch la voit (via la SDL de RetroArch et le `gamecontrollerdb.txt` de RetroBat) - et construit la **cartographie des entrées** : quel bouton physique déclenche quelle action en jeu. START et SELECT/COIN sont inclus.
+L'inverse de l'étape précédente : le bouton attendu **clignote en vert sur le panneau virtuel** - et s'allume en même temps sur votre vrai panneau si un Pico est présent - et cette fois **vous appuyez dessus**. L'assistant lit alors l'identité que votre manette/encodeur envoie - exactement comme RetroArch la voit (via la SDL de RetroArch et le `gamecontrollerdb.txt` de RetroBat) - et construit la **cartographie des entrées** : quel bouton physique déclenche quelle action en jeu. START et SELECT/COIN sont inclus.
+
+Le clignotement suffit à se repérer : c'est pour cela que cette étape se passe de LEDs, et donc de Pico.
 
 Un récapitulatif s'affiche, avec une alerte si deux boutons envoient la même chose, ou si START/SELECT n'émettent pas ce qu'on attend (câblage d'encodeur à revoir). Ensuite, **« Écrire la cartographie & régénérer »** :
 
 - enregistre cette cartographie **par joueur** (vos Picos et encodeurs peuvent être câblés différemment d'un joueur à l'autre) ;
-- régénère **tous** les remaps RetroArch (`.rmp`) et toutes les configs MAME (`.cfg`), avec une barre de progression indiquant le système ou le jeu en cours ;
+- régénère les fichiers de mapping des trois cibles décrites ci-dessous, avec une barre de progression indiquant le système ou le jeu en cours ;
 - reste réversible : **« Annuler cette cartographie »** rétablit l'état précédent.
 
-!!! note "MAME suit vos LEDs, comme RetroArch"
-    Les configs MAME placent désormais chaque bouton d'après la **même disposition que les LEDs et les remaps RetroArch**. Le bouton qui s'allume pour une action est donc bien celui qui la déclenche - dans RetroArch **comme** dans MAME standalone.
+#### Ce que la régénération écrit, et pour qui
+
+Un même jeu d'arcade ne se pilote pas de la même façon selon ce qui l'exécute. L'assistant produit donc trois familles de fichiers :
+
+| Ce qui lance le jeu | Fichier écrit |
+|---|---|
+| **MAME standalone** | `saves\mame\cfg\<rom>.cfg` |
+| **RetroArch, cœur MAME** | le **même** `saves\mame\cfg\<rom>.cfg` |
+| **RetroArch, cœur FBNeo** | `emulators\retroarch\config\remaps\FinalBurn Neo\<rom>.rmp` |
+
+**MAME standalone et le cœur MAME de RetroArch partagent le même fichier**, mais n'attendent pas la même chose pour Insérer une pièce et Start : le premier voit votre encodeur comme une série de boutons bruts, le second à travers une manette virtuelle qui a un vrai bouton Start. L'assistant écrit donc les **deux** formes dans le fichier, et chaque moteur retient celle qu'il comprend - l'autre reste sans effet.
+
+**FBNeo, lui, ignore ce fichier** : il se pilote par ses propres remaps, un par jeu. Et l'agencement de ses boutons lui est propre, jeu par jeu : sur Neo-Geo, le bouton C d'un Metal Slug ne tombe pas là où sa position sur le panneau le laisserait croire, et un jeu de combat CPS n'a rien à voir avec un shoot du même matériel. Ces correspondances sont **mesurées jeu par jeu** et livrées avec le Data Pack : l'assistant les compose avec votre cartographie au lieu de les déduire d'une règle de position. Un jeu pour lequel la mesure manque ne reçoit **aucun** fichier - FBNeo garde alors ses réglages d'origine, ce qui vaut mieux qu'un mapping inventé.
+
+Les remaps RetroArch **par système** (consoles) sont régénérés dans la même passe.
+
+!!! note "Le bouton qui s'allume est celui qui agit"
+    Les configs MAME placent chaque bouton d'après la **même disposition que vos LEDs**. Le bouton qui s'allume pour une action est donc bien celui qui la déclenche - dans RetroArch **comme** dans MAME standalone.
 
 ### 6. Enregistrer la configuration
 

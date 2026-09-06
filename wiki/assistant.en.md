@@ -55,6 +55,9 @@ If nothing is detected, the **"Install the firmware"** button appears: the assis
 
 Before you start, pick the test's **scope**: **Full test** (the whole run), **LED test only** (redo just the LED wiring, step 4) or **Cartography only** (redo just the inputs, step 5). Handy to replay a single step after swapping a panel or an encoder.
 
+!!! tip "No Pico? The cartography still works"
+    **Cartography only** drives no LED at all: it merely reads what your pad or encoder sends. It therefore needs **no Pico**, and the assistant carries on even when detection fails - the virtual panel is what tells you which button to press. A panel with no LEDs whatsoever can be calibrated end to end this way. If a Pico does answer, all the better: the expected button lights up for real as well.
+
 ### 2. Panel test
 
 Your buttons should all be **lit white**. That confirms power and firmware work. If some stay dark, it's a wiring or power issue (see [Troubleshooting](depannage.md)).
@@ -78,16 +81,34 @@ The assistant thus compares your real wiring to the expected arrangement. If dif
 
 ### 5. Input cartography
 
-The reverse of the previous step: one button lights up **green** on your real panel, one at a time, and this time **you press it**. The assistant reads the identity your pad/encoder emits - exactly as RetroArch sees it (through RetroArch's SDL and RetroBat's `gamecontrollerdb.txt`) - and builds the **input cartography**: which physical button triggers which in-game action. START and SELECT/COIN are included.
+The reverse of the previous step: the expected button **blinks green on the virtual panel** - and lights up on your real panel at the same time if a Pico is present - and this time **you press it**. The assistant reads the identity your pad/encoder emits - exactly as RetroArch sees it (through RetroArch's SDL and RetroBat's `gamecontrollerdb.txt`) - and builds the **input cartography**: which physical button triggers which in-game action. START and SELECT/COIN are included.
+
+The blink alone is enough to follow along: that is why this step does without LEDs, and therefore without a Pico.
 
 A summary appears, warning you if two buttons send the same thing, or if START/SELECT don't emit what's expected (encoder wiring to review). Then **"Write the cartography & regenerate"**:
 
 - saves this cartography **per player** (your Picos and encoders may be wired differently from one player to the next);
-- regenerates **all** RetroArch remaps (`.rmp`) and MAME configs (`.cfg`), with a progress bar showing the system or game being processed;
+- regenerates the mapping files for the three targets described below, with a progress bar showing the system or game being processed;
 - stays reversible: **"Undo this cartography"** restores the previous state.
 
-!!! note "MAME follows your LEDs, like RetroArch"
-    MAME configs now place each button from the **same layout as the LEDs and the RetroArch remaps**. The button that lights up for an action is therefore the one that triggers it - in RetroArch **and** in standalone MAME.
+#### What the regeneration writes, and for whom
+
+One and the same arcade game is not driven the same way depending on what runs it. The assistant therefore produces three families of files:
+
+| What launches the game | File written |
+|---|---|
+| **Standalone MAME** | `saves\mame\cfg\<rom>.cfg` |
+| **RetroArch, MAME core** | the **same** `saves\mame\cfg\<rom>.cfg` |
+| **RetroArch, FBNeo core** | `emulators\retroarch\config\remaps\FinalBurn Neo\<rom>.rmp` |
+
+**Standalone MAME and RetroArch's MAME core share the same file**, yet they do not expect the same thing for Insert coin and Start: the former sees your encoder as a row of raw buttons, the latter through a virtual pad that has a genuine Start button. The assistant therefore writes **both** forms into the file, and each engine keeps the one it understands - the other stays inert.
+
+**FBNeo, however, ignores that file**: it is driven by its own remaps, one per game. And its button arrangement is its own, game by game: on Neo-Geo, Metal Slug's C button does not land where its position on the panel would suggest, and a CPS fighting game has nothing in common with a shooter on the very same hardware. Those correspondences are **measured game by game** and shipped with the Data Pack: the assistant composes them with your cartography instead of deducing them from a position rule. A game with no measurement gets **no** file at all - FBNeo then keeps its own defaults, which beats an invented mapping.
+
+The **per-system** RetroArch remaps (consoles) are regenerated in the same pass.
+
+!!! note "The button that lights up is the one that acts"
+    MAME configs place each button from the **same layout as your LEDs**. The button that lights up for an action is therefore the one that triggers it - in RetroArch **and** in standalone MAME.
 
 ### 6. Save the configuration
 
