@@ -21,6 +21,9 @@ public sealed class PanelSurface : UserControl
     private readonly TextBlock _matrixText;
     private readonly Dictionary<int, ButtonVisual> _slots = new();
     private readonly Dictionary<string, ButtonVisual> _targets = new(StringComparer.OrdinalIgnoreCase);
+    private DispatcherTimer? _blinkTimer;
+    private ButtonVisual? _blinkVisual;
+    private Color _blinkRestore;
 
     /// <summary>Raised when the user clicks a numbered button (interactive mode). Arg = slot.</summary>
     public event Action<int>? SlotClicked;
@@ -130,6 +133,7 @@ public sealed class PanelSurface : UserControl
 
     public void SetAll(Color color)
     {
+        StopBlink();
         foreach (var visual in _slots.Values)
         {
             visual.SetColor(color);
@@ -175,5 +179,58 @@ public sealed class PanelSurface : UserControl
             visual.SetColor(previous);
         };
         timer.Start();
+    }
+
+    /// <summary>
+    /// Blinks ONE button until <see cref="StopBlink"/>. The cartography step uses it
+    /// to show WHICH button to press: it mirrors the green LED lit on the real panel,
+    /// and on a panel with no LEDs at all it is the only prompt the user gets.
+    /// target = a slot number ("3") or a named target (START/SELECT).
+    /// </summary>
+    public void Blink(string target, Color color, int periodMs = 420)
+    {
+        StopBlink();
+
+        ButtonVisual? visual = null;
+        if (int.TryParse(target, out var slot))
+        {
+            _slots.TryGetValue(slot, out visual);
+        }
+        else if (!string.IsNullOrWhiteSpace(target))
+        {
+            _targets.TryGetValue(target, out visual);
+        }
+
+        if (visual is null)
+        {
+            return;
+        }
+
+        _blinkVisual = visual;
+        _blinkRestore = visual.CurrentColor;
+
+        var lit = true;
+        visual.SetColor(color);
+        _blinkTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(Math.Max(80, periodMs)) };
+        _blinkTimer.Tick += (_, _) =>
+        {
+            lit = !lit;
+            visual.SetColor(lit ? color : PanelColors.Off);
+        };
+        _blinkTimer.Start();
+    }
+
+    /// <summary>Stops the blink and restores the button's previous colour.</summary>
+    public void StopBlink()
+    {
+        if (_blinkTimer is null)
+        {
+            return;
+        }
+
+        _blinkTimer.Stop();
+        _blinkTimer = null;
+        _blinkVisual?.SetColor(_blinkRestore);
+        _blinkVisual = null;
     }
 }

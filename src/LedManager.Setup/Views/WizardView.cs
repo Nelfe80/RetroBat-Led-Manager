@@ -144,14 +144,32 @@ public sealed class WizardView : UserControl, IDisposable
         {
             case Step.Prepare:
                 _title.Text = L.T("1. Préparation", "1. Preparation");
-                _body.Text = L.T(
-                    "L'assistant va prendre le contrôle direct de votre Pico pour tester le câblage. "
-                    + "Pour cela, LedManager doit être arrêté (il occupe le port du Pico).\n\n"
-                    + "Branchez votre Pico en USB, puis cliquez sur « Détecter le Pico ».",
-                    "The assistant takes direct control of your Pico to test the wiring. "
-                    + "LedManager must be stopped for that (it holds the Pico's port).\n\n"
-                    + "Plug your Pico in over USB, then click \"Detect the Pico\".");
-                _primary.Content = L.T("Détecter le Pico", "Detect the Pico");
+                if (_targetStep == Step.CartoTest)
+                {
+                    // The cartography only reads the pad and prompts on the virtual
+                    // panel: it works on a panel with NO LEDs, so no Pico is required.
+                    _body.Text = L.T(
+                        "La cartographie lit les appuis de votre manette/encodeur : elle fonctionne "
+                        + "même sur un panneau SANS LED, donc sans Pico.\n\n"
+                        + "Si un Pico est détecté, le bouton à presser s'allumera aussi en vrai. "
+                        + "Sinon il clignotera simplement sur le panneau virtuel ci-contre.",
+                        "The cartography only reads your pad/encoder presses: it works even on a panel "
+                        + "with NO LEDs, so no Pico is required.\n\n"
+                        + "If a Pico is detected the button to press also lights up for real. "
+                        + "Otherwise it simply blinks on the virtual panel.");
+                    _primary.Content = L.T("Commencer la cartographie", "Start the cartography");
+                }
+                else
+                {
+                    _body.Text = L.T(
+                        "L'assistant va prendre le contrôle direct de votre Pico pour tester le câblage. "
+                        + "Pour cela, LedManager doit être arrêté (il occupe le port du Pico).\n\n"
+                        + "Branchez votre Pico en USB, puis cliquez sur « Détecter le Pico ».",
+                        "The assistant takes direct control of your Pico to test the wiring. "
+                        + "LedManager must be stopped for that (it holds the Pico's port).\n\n"
+                        + "Plug your Pico in over USB, then click \"Detect the Pico\".");
+                    _primary.Content = L.T("Détecter le Pico", "Detect the Pico");
+                }
                 _status.Text = LedManagerProcess.IsRunning()
                     ? L.T("⚠ LedManager est en cours d'exécution - il sera arrêté à la détection.",
                         "⚠ LedManager is running - it will be stopped at detection.")
@@ -201,11 +219,15 @@ public sealed class WizardView : UserControl, IDisposable
             case Step.CartoTest:
                 _title.Text = L.T("5. Cartographie des entrées", "5. Input cartography");
                 _body.Text = L.T(
-                    "Un bouton s'allume en VERT sur votre panneau, un par un. À chaque fois, "
+                    "Un bouton clignote en VERT sur le panneau virtuel, un par un"
+                    + (_sender is null ? "" : " - et s'allume en même temps sur votre panneau physique")
+                    + ". À chaque fois, "
                     + "APPUYEZ sur ce bouton physique. L'assistant lit l'identité que la manette envoie "
                     + "(vue exactement comme RetroArch la voit) et construit la cartographie des entrées.\n\n"
                     + "C'est ce qui fait que le bon bouton déclenche la bonne action en jeu.",
-                    "One button lights up GREEN on your panel, one at a time. Each time, "
+                    "One button blinks GREEN on the virtual panel, one at a time"
+                    + (_sender is null ? "" : " - and lights up on your physical panel at the same time")
+                    + ". Each time, "
                     + "PRESS that physical button. The assistant reads the identity the pad sends "
                     + "(exactly as RetroArch sees it) and builds the input cartography.\n\n"
                     + "This is what makes the right button trigger the right action in game.");
@@ -303,6 +325,20 @@ public sealed class WizardView : UserControl, IDisposable
 
         if (!_detection.Found)
         {
+            // A panel with no LEDs has no Pico at all - and the input cartography does
+            // not need one: it reads the pad and prompts by blinking the button on the
+            // virtual panel. Let it run. Every other test drives LEDs, so those still
+            // require the firmware and stop here.
+            if (_targetStep == Step.CartoTest)
+            {
+                StopSender(); // no LEDs: item.Light() calls become no-ops
+                _secondary.Visibility = Visibility.Collapsed;
+                _primary.IsEnabled = true;
+                _step = Step.CartoTest;
+                RenderStep();
+                return;
+            }
+
             // firmware missing or Pico blank: offer the one-button installer
             _secondary.Content = L.T("Installer le firmware", "Install the firmware");
             _secondary.Visibility = Visibility.Visible;
@@ -366,8 +402,10 @@ public sealed class WizardView : UserControl, IDisposable
 
             button.Click += (_, _) =>
             {
+                // full re-render: the prepare text differs for the cartography, which
+                // needs no Pico at all
                 _targetStep = (Step)button.Tag;
-                BuildTargetChoices();
+                RenderStep();
             };
             _choices.Children.Add(button);
         }
@@ -596,6 +634,10 @@ public sealed class WizardView : UserControl, IDisposable
 
     private static readonly Color FeedbackColor = Color.FromRgb(0x20, 0xE8, 0xE8); // cyan
 
+    /// <summary>Green of the virtual panel's blink, matching the firmware's GREEN so
+    /// the two panels prompt with the same colour.</summary>
+    private static readonly Color PromptColor = Color.FromRgb(0x30, 0xE8, 0x50);
+
     private void StartWiringTest()
     {
         _wiringMap.Clear();
@@ -710,10 +752,15 @@ public sealed class WizardView : UserControl, IDisposable
         _sender?.Send("CLEAR");
         _sender?.Send(item.Light("GREEN"));
         _panel.ClearAll();
+
+        // The virtual panel blinks the button to press: it doubles the physical LED,
+        // and it is the ONLY prompt on a panel with no LEDs (no Pico detected).
+        _panel.Blink(item.Slot.HasValue ? item.Slot.Value.ToString() : item.Target ?? "", PromptColor);
+
         _secondary.Content = L.T("Bouton non câblé →", "Button not wired →");
         _secondary.Visibility = Visibility.Visible;
-        _status.Text = L.T($"Élément {_cartoIndex + 1}/{_cartoItems.Count} : APPUYEZ sur le bouton {item.Label} allumé en VERT.",
-            $"Item {_cartoIndex + 1}/{_cartoItems.Count}: PRESS the {item.Label} button lit GREEN.");
+        _status.Text = L.T($"Élément {_cartoIndex + 1}/{_cartoItems.Count} : APPUYEZ sur le bouton {item.Label} qui clignote.",
+            $"Item {_cartoIndex + 1}/{_cartoItems.Count}: PRESS the blinking {item.Label} button.");
 
         _cartoCts?.Cancel();
         _cartoCts = new System.Threading.CancellationTokenSource();
@@ -724,6 +771,7 @@ public sealed class WizardView : UserControl, IDisposable
         }
 
         _cartoMap[item] = press.Identity;
+        _panel.StopBlink();
         if (item.Slot.HasValue)
         {
             _panel.Flash(item.Slot.Value.ToString(), FeedbackColor, 260);
@@ -787,6 +835,7 @@ public sealed class WizardView : UserControl, IDisposable
     {
         _cartoCts?.Cancel();
         _cartoCts = null;
+        _panel.StopBlink();
         _sender?.Send("CLEAR");
     }
 
@@ -883,8 +932,58 @@ public sealed class WizardView : UserControl, IDisposable
             offset += processed;
             if (processed == 0 || (packTotal > 0 && offset >= packTotal))
             {
-                _status.Text = L.T("Régénération terminée. La nouvelle cartographie est active.", "Regeneration done. The new cartography is active.");
                 break;
+            }
+        }
+
+        await RegenerateFbneoAsync(baseUrl);
+        _status.Text = L.T("Régénération terminée. La nouvelle cartographie est active.",
+            "Regeneration done. The new cartography is active.");
+    }
+
+    /// <summary>
+    /// Per-game FBNeo remaps, chunked like the MAME cfg. Arcade games under RetroArch
+    /// need this pass: unlike MAME, which reads the shared cfg, FBNeo is driven by the
+    /// remap files - so a cartography change that skips this step leaves every FBNeo
+    /// game on the previous panel.
+    /// </summary>
+    private async Task RegenerateFbneoAsync(string baseUrl)
+    {
+        var offset = 0;
+        while (true)
+        {
+            var (ok, body) = await ApiExposeClient.PostAsync(baseUrl, $"/api/v1/panels/controls/fbneormp/deploy?offset={offset}&limit=200");
+            if (!ok)
+            {
+                _status.Text = L.T("Régénération FBNeo interrompue : ", "FBNeo regeneration interrupted: ") + body;
+                return;
+            }
+
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(body);
+                var root = doc.RootElement;
+                int Count(string n) => root.TryGetProperty(n, out var v) && v.TryGetInt32(out var x) ? x : 0;
+                var processed = Count("total");
+                var packTotal = Count("packTotal");
+                if (packTotal > 0)
+                {
+                    _progress.Maximum = packTotal;
+                    _progress.Value = Math.Min(offset + processed, packTotal);
+                }
+
+                _status.Text = L.T($"Remaps FBNeo : {Math.Min(offset + processed, packTotal)}/{packTotal}",
+                    $"FBNeo remaps: {Math.Min(offset + processed, packTotal)}/{packTotal}");
+
+                offset += processed;
+                if (processed == 0 || (packTotal > 0 && offset >= packTotal))
+                {
+                    return;
+                }
+            }
+            catch
+            {
+                return;
             }
         }
 
