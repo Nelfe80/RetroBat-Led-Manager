@@ -10,7 +10,7 @@ Installation, plan de câblage Pico, firmware, configuration et cartes LED exter
 
 ## ⬇ Installation rapide
 
-1. Installez d'abord [APIExpose](https://github.com/Nelfe80/RetroBat-APIExpose/releases/latest/download/APIExpose-Cabinet-Setup.exe) (requis) et le [runtime .NET 8 Desktop](https://dotnet.microsoft.com/download/dotnet/8.0).
+1. Installez d'abord [APIExpose](https://github.com/Nelfe80/RetroBat-APIExpose/releases/latest/download/APIExpose-Cabinet-Setup.exe) (requis) : son installateur met aussi en place le runtime .NET 8 dont LedManager a besoin.
 2. Téléchargez et lancez **[`LedManager-Setup.exe`](https://github.com/Nelfe80/RetroBat-Led-Manager/releases/latest/download/LedManager-Setup.exe)** : il installe le plugin dans `RetroBat\plugins\LedManager\` et enregistre le hook de démarrage EmulationStation.
 3. Indiquez le port COM de votre Pico dans `PicoCommandSender.ini` (ou via **LedManagerSetup** que l'installateur propose d'ouvrir) - le câblage et le firmware sont expliqués dans le wiki.
 
@@ -30,7 +30,7 @@ Usage personnel et non commercial libre ; utilisation commerciale sous licence �
 
 ## ⬇ Quick install
 
-1. First install [APIExpose](https://github.com/Nelfe80/RetroBat-APIExpose/releases/latest/download/APIExpose-Cabinet-Setup.exe) (required) and the [.NET 8 Desktop runtime](https://dotnet.microsoft.com/download/dotnet/8.0).
+1. First install [APIExpose](https://github.com/Nelfe80/RetroBat-APIExpose/releases/latest/download/APIExpose-Cabinet-Setup.exe) (required): its installer also sets up the .NET 8 runtime LedManager needs.
 2. Download and run **[`LedManager-Setup.exe`](https://github.com/Nelfe80/RetroBat-Led-Manager/releases/latest/download/LedManager-Setup.exe)**: it installs the plugin into `RetroBat\plugins\LedManager\` and registers the EmulationStation start hook.
 3. Set your Pico's COM port in `PicoCommandSender.ini` (or via **LedManagerSetup**, which the installer offers to open) - wiring and firmware are explained in the wiki.
 

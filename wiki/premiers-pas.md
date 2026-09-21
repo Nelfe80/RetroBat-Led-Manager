@@ -8,7 +8,6 @@ Vous aurez besoin de :
 
 - une installation **RetroBat** fonctionnelle ;
 - le plugin **[APIExpose](https://github.com/Nelfe80/RetroBat-APIExpose/releases/latest/download/APIExpose-Cabinet-Setup.exe)** installé et fonctionnel - c'est lui qui fournit les données des jeux à LedManager ;
-- le **[runtime .NET 8 Desktop](https://dotnet.microsoft.com/download/dotnet/8.0)** ;
 - un panel LED : un Raspberry Pi Pico câblé (voir [Matériel](materiel.md)) ou une carte compatible (voir [Cartes LED externes](cartes-externes.md)).
 
 ## Installation
