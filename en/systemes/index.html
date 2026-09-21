@@ -1,0 +1,3376 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Boutons LED RGB et panneaux lumineux pilotés par vos jeux RetroBat.">
+      
+      
+      
+        <link rel="canonical" href="https://nelfe80.github.io/RetroBat-Led-Manager/en/systemes/">
+      
+      
+        <link rel="prev" href="../materiel/">
+      
+      
+        <link rel="next" href="../jeux/">
+      
+      
+        
+          <link rel="alternate" href="../../systemes/" hreflang="fr">
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../../assets/brand/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Per-system panels - RetroBat LedManager</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/brand.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#per-system-panels" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../" title="RetroBat LedManager" class="md-header__button md-logo" aria-label="RetroBat LedManager" data-md-component="logo">
+      
+  <img src="../../assets/brand/nelfetech-white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            RetroBat LedManager
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Per-system panels
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Mode sombre"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Mode sombre" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Mode clair"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Mode clair" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../systemes/" hreflang="fr" class="md-select__link">
+              Français
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Nelfe80/RetroBat-Led-Manager" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Nelfe80/RetroBat-Led-Manager
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../" title="RetroBat LedManager" class="md-nav__button md-logo" aria-label="RetroBat LedManager" data-md-component="logo">
+      
+  <img src="../../assets/brand/nelfetech-white.svg" alt="logo">
+
+    </a>
+    RetroBat LedManager
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Nelfe80/RetroBat-Led-Manager" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Nelfe80/RetroBat-Led-Manager
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../premiers-pas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../assistant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup assistant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../materiel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Per-system panels
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Per-system panels
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#3do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3do
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amiga1200" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        amiga1200
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amiga500" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        amiga500
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amiga600" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        amiga600
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amigacd32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        amigacd32
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amstradcpc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        amstradcpc
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#apple2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        apple2
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#apple2gs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        apple2gs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#atari2600" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        atari2600
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#atari5200" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        atari5200
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#atari7800" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        atari7800
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#atari800" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        atari800
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#atarist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        atarist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#atomiswave" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        atomiswave
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bandaiwonderswan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bandaiwonderswan
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bbcmicro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bbcmicro
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c64" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        c64
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cdi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cdi
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#colecovision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        colecovision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dreamcast" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dreamcast
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="dreamcast">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hkt-7300" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HKT-7300
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fbneo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fbneo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fds
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gamecube" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gamecube
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="gamecube">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fighting-stick-cube" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fighting Stick Cube
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#left-stick" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Left Stick
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yellow-stick" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Yellow Stick
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gamegear" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gamegear
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gb
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gba" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gba
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gbc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gbc
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gx4000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gx4000
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jaguar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        jaguar
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="jaguar">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#jaguar-controller" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jaguar Controller
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jaguar-pro-controller" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jaguar Pro Controller
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lynx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lynx
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mame" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mame
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mastersystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mastersystem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#megadrive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        megadrive
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="megadrive">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arcade-power-stick-ii" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arcade Power Stick II
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#megaduck" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        megaduck
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#msx1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        msx1
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multivision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        multivision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#n64" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        n64
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="n64">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arcade-shark-6b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arcade-Shark 6B
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arcade-shark-8b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arcade-Shark 8B
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arcade-shark-yellow-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arcade-Shark Yellow Mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#naomi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        naomi
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#naomigd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        naomigd
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        nds
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#neogeo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        neogeo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="neogeo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#neogeo-mini" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NEOGEO MINI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neogeo-variation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NEOGEO VARIATION
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neogeo-mvs-type-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NEOGEO MVS TYPE 1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neogeo-mvs-type-1-variation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NEOGEO MVS TYPE 1 - VARIATION
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neogeo-mvs-type-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NEOGEO MVS TYPE 2
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#neogeocd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        neogeocd
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        nes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ngp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ngp
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ngpc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ngpc
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#oricatmos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        oricatmos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcengine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pcengine
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcenginecd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pcenginecd
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcfx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pcfx
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pokemini" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pokemini
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ps2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ps2
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#psp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        psp
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#psx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        psx
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#samcoupe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        samcoupe
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#satellaview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        satellaview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#saturn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        saturn
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="saturn">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#virtual-stick-6b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Virtual Stick 6B
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#virtual-stick-8b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Virtual Stick 8B
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scummvm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        scummvm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        scv
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sega32x" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sega32x
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#segacd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        segacd
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sg1000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sg1000
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#snes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        snes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="snes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#score-master" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Score Master
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#super-advantage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Super Advantage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#super-advantage-8b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Super Advantage - 8B
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spectravideo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        spectravideo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sufami" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sufami
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supergrafx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        supergrafx
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supervision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        supervision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#thomson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        thomson
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ti994a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ti994a
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tic80" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tic80
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trs80coco" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        trs80coco
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uzebox" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        uzebox
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vectrex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vectrex
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vg5000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vg5000
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vic20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vic20
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#videopacplus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        videopacplus
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#virtualboy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        virtualboy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wii" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        wii
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wswan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        wswan
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wswanc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        wswanc
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#x1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        x1
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#x68000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        x68000
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xbox" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xbox
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xbox360" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xbox360
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zx81" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        zx81
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zxspectrum" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        zxspectrum
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jeux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Per-game panels and wiring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cartes-externes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    External LED boards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../depannage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../licence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#3do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3do
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amiga1200" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        amiga1200
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amiga500" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        amiga500
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amiga600" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        amiga600
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amigacd32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        amigacd32
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amstradcpc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        amstradcpc
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#apple2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        apple2
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#apple2gs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        apple2gs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#atari2600" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        atari2600
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#atari5200" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        atari5200
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#atari7800" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        atari7800
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#atari800" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        atari800
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#atarist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        atarist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#atomiswave" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        atomiswave
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bandaiwonderswan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bandaiwonderswan
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bbcmicro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bbcmicro
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c64" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        c64
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cdi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cdi
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#colecovision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        colecovision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dreamcast" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dreamcast
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="dreamcast">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hkt-7300" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HKT-7300
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fbneo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fbneo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fds
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gamecube" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gamecube
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="gamecube">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fighting-stick-cube" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fighting Stick Cube
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#left-stick" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Left Stick
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yellow-stick" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Yellow Stick
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gamegear" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gamegear
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gb
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gba" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gba
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gbc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gbc
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gx4000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gx4000
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jaguar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        jaguar
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="jaguar">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#jaguar-controller" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jaguar Controller
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jaguar-pro-controller" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jaguar Pro Controller
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lynx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lynx
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mame" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mame
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mastersystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mastersystem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#megadrive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        megadrive
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="megadrive">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arcade-power-stick-ii" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arcade Power Stick II
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#megaduck" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        megaduck
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#msx1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        msx1
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multivision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        multivision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#n64" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        n64
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="n64">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arcade-shark-6b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arcade-Shark 6B
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arcade-shark-8b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arcade-Shark 8B
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arcade-shark-yellow-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arcade-Shark Yellow Mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#naomi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        naomi
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#naomigd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        naomigd
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        nds
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#neogeo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        neogeo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="neogeo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#neogeo-mini" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NEOGEO MINI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neogeo-variation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NEOGEO VARIATION
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neogeo-mvs-type-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NEOGEO MVS TYPE 1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neogeo-mvs-type-1-variation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NEOGEO MVS TYPE 1 - VARIATION
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neogeo-mvs-type-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NEOGEO MVS TYPE 2
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#neogeocd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        neogeocd
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        nes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ngp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ngp
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ngpc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ngpc
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#oricatmos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        oricatmos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcengine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pcengine
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcenginecd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pcenginecd
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcfx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pcfx
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pokemini" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pokemini
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ps2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ps2
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#psp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        psp
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#psx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        psx
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#samcoupe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        samcoupe
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#satellaview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        satellaview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#saturn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        saturn
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="saturn">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#virtual-stick-6b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Virtual Stick 6B
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#virtual-stick-8b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Virtual Stick 8B
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scummvm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        scummvm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        scv
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sega32x" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sega32x
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#segacd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        segacd
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sg1000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sg1000
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#snes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        snes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="snes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#score-master" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Score Master
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#super-advantage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Super Advantage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#super-advantage-8b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Super Advantage - 8B
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spectravideo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        spectravideo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sufami" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sufami
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supergrafx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        supergrafx
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supervision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        supervision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#thomson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        thomson
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ti994a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ti994a
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tic80" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tic80
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trs80coco" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        trs80coco
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uzebox" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        uzebox
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vectrex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vectrex
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vg5000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vg5000
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vic20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vic20
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#videopacplus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        videopacplus
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#virtualboy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        virtualboy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wii" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        wii
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wswan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        wswan
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wswanc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        wswanc
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#x1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        x1
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#x68000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        x68000
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xbox" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xbox
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xbox360" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xbox360
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zx81" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        zx81
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zxspectrum" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        zxspectrum
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="per-system-panels">Per-system panels</h1>
+<p>Every RetroBat system has its color configuration, taken from a real period controller or arcade
+stick (Score Master, Fighting Stick, NEOGEO sticks…) - see the <a href="https://retrobat.forumgaming.fr/t2953-led-panel-manager-panels-arcades-couleurs-des-boutons-led-lip">original research on the RetroBat
+forum</a>.
+This is what your LED buttons show when you select a game of that system. When a system offers
+several historical panels, each variant is illustrated; pick it in the system's EmulationStation
+menu ("Panel" setting).</p>
+<p>Positions follow the <a href="../materiel/">standard arrangement</a>: SELECT/START top-left,
+top row B4 B3 B5 B7, bottom row B1 B2 B6 B8. Under each button sits the <strong>system's original
+function</strong> (Circle, Triangle, A, B, C…); dimmed buttons are not used by that panel.</p>
+<h2 id="3do">3do</h2>
+<p><img alt="3do" src="../../assets/systems/3do.svg" /></p>
+<h2 id="amiga1200">amiga1200</h2>
+<p><img alt="amiga1200" src="../../assets/systems/amiga1200.svg" /></p>
+<h2 id="amiga500">amiga500</h2>
+<p><img alt="amiga500" src="../../assets/systems/amiga500.svg" /></p>
+<h2 id="amiga600">amiga600</h2>
+<p><img alt="amiga600" src="../../assets/systems/amiga600.svg" /></p>
+<h2 id="amigacd32">amigacd32</h2>
+<p><img alt="amigacd32" src="../../assets/systems/amigacd32.svg" /></p>
+<h2 id="amstradcpc">amstradcpc</h2>
+<p><img alt="amstradcpc" src="../../assets/systems/amstradcpc.svg" /></p>
+<h2 id="apple2">apple2</h2>
+<p><img alt="apple2" src="../../assets/systems/apple2.svg" /></p>
+<h2 id="apple2gs">apple2gs</h2>
+<p><img alt="apple2gs" src="../../assets/systems/apple2gs.svg" /></p>
+<h2 id="atari2600">atari2600</h2>
+<p><img alt="atari2600" src="../../assets/systems/atari2600.svg" /></p>
+<h2 id="atari5200">atari5200</h2>
+<p><img alt="atari5200" src="../../assets/systems/atari5200.svg" /></p>
+<h2 id="atari7800">atari7800</h2>
+<p><img alt="atari7800" src="../../assets/systems/atari7800.svg" /></p>
+<h2 id="atari800">atari800</h2>
+<p><img alt="atari800" src="../../assets/systems/atari800.svg" /></p>
+<h2 id="atarist">atarist</h2>
+<p><img alt="atarist" src="../../assets/systems/atarist.svg" /></p>
+<h2 id="atomiswave">atomiswave</h2>
+<p><img alt="atomiswave" src="../../assets/systems/atomiswave.svg" /></p>
+<h2 id="bandaiwonderswan">bandaiwonderswan</h2>
+<p><img alt="bandaiwonderswan" src="../../assets/systems/bandaiwonderswan.svg" /></p>
+<h2 id="bbcmicro">bbcmicro</h2>
+<p><img alt="bbcmicro" src="../../assets/systems/bbcmicro.svg" /></p>
+<h2 id="c64">c64</h2>
+<p><img alt="c64" src="../../assets/systems/c64.svg" /></p>
+<h2 id="cdi">cdi</h2>
+<p><img alt="cdi" src="../../assets/systems/cdi.svg" /></p>
+<h2 id="colecovision">colecovision</h2>
+<p><img alt="colecovision" src="../../assets/systems/colecovision.svg" /></p>
+<h2 id="dreamcast">dreamcast</h2>
+<p><img alt="dreamcast" src="../../assets/systems/dreamcast.svg" /></p>
+<h3 id="hkt-7300">HKT-7300</h3>
+<p><img alt="dreamcast - HKT-7300" src="../../assets/systems/dreamcast-hkt-7300.svg" /></p>
+<h2 id="fbneo">fbneo</h2>
+<p><img alt="fbneo" src="../../assets/systems/fbneo.svg" /></p>
+<p>Same example panel as MAME: FinalBurn Neo games use their per-game curated configuration.</p>
+<h2 id="fds">fds</h2>
+<p><img alt="fds" src="../../assets/systems/fds.svg" /></p>
+<h2 id="gamecube">gamecube</h2>
+<p><img alt="gamecube" src="../../assets/systems/gamecube.svg" /></p>
+<h3 id="fighting-stick-cube">Fighting Stick Cube</h3>
+<p><img alt="gamecube - Fighting Stick Cube" src="../../assets/systems/gamecube-fighting-stick-cube.svg" /></p>
+<h3 id="left-stick">Left Stick</h3>
+<p><img alt="gamecube - Left Stick" src="../../assets/systems/gamecube-left-stick.svg" /></p>
+<h3 id="yellow-stick">Yellow Stick</h3>
+<p><img alt="gamecube - Yellow Stick" src="../../assets/systems/gamecube-yellow-stick.svg" /></p>
+<h2 id="gamegear">gamegear</h2>
+<p><img alt="gamegear" src="../../assets/systems/gamegear.svg" /></p>
+<h2 id="gb">gb</h2>
+<p><img alt="gb" src="../../assets/systems/gb.svg" /></p>
+<h2 id="gba">gba</h2>
+<p><img alt="gba" src="../../assets/systems/gba.svg" /></p>
+<h2 id="gbc">gbc</h2>
+<p><img alt="gbc" src="../../assets/systems/gbc.svg" /></p>
+<h2 id="gx4000">gx4000</h2>
+<p><img alt="gx4000" src="../../assets/systems/gx4000.svg" /></p>
+<h2 id="jaguar">jaguar</h2>
+<p><img alt="jaguar" src="../../assets/systems/jaguar.svg" /></p>
+<h3 id="jaguar-controller">Jaguar Controller</h3>
+<p><img alt="jaguar - Jaguar Controller" src="../../assets/systems/jaguar-jaguar-controller.svg" /></p>
+<h3 id="jaguar-pro-controller">Jaguar Pro Controller</h3>
+<p><img alt="jaguar - Jaguar Pro Controller" src="../../assets/systems/jaguar-jaguar-pro-controller.svg" /></p>
+<h2 id="lynx">lynx</h2>
+<p><img alt="lynx" src="../../assets/systems/lynx.svg" /></p>
+<h2 id="mame">mame</h2>
+<p><img alt="mame" src="../../assets/systems/mame.svg" /></p>
+<p>Example panel Street Fighter style (LP/MP/HP top, LK/MK/HK bottom, white = light, yellow = medium, red = heavy). In practice, <strong>every arcade game has its own curated configuration</strong> (3000+ games): that's what lights up at launch.</p>
+<h2 id="mastersystem">mastersystem</h2>
+<p><img alt="mastersystem" src="../../assets/systems/mastersystem.svg" /></p>
+<h2 id="megadrive">megadrive</h2>
+<p><img alt="megadrive" src="../../assets/systems/megadrive.svg" /></p>
+<h3 id="arcade-power-stick-ii">Arcade Power Stick II</h3>
+<p><img alt="megadrive - Arcade Power Stick II" src="../../assets/systems/megadrive-arcade-power-stick-ii.svg" /></p>
+<h2 id="megaduck">megaduck</h2>
+<p><img alt="megaduck" src="../../assets/systems/megaduck.svg" /></p>
+<h2 id="msx1">msx1</h2>
+<p><img alt="msx1" src="../../assets/systems/msx1.svg" /></p>
+<h2 id="multivision">multivision</h2>
+<p><img alt="multivision" src="../../assets/systems/multivision.svg" /></p>
+<h2 id="n64">n64</h2>
+<p><img alt="n64" src="../../assets/systems/n64.svg" /></p>
+<h3 id="arcade-shark-6b">Arcade-Shark 6B</h3>
+<p><img alt="n64 - Arcade-Shark 6B" src="../../assets/systems/n64-arcade-shark-6b.svg" /></p>
+<h3 id="arcade-shark-8b">Arcade-Shark 8B</h3>
+<p><img alt="n64 - Arcade-Shark 8B" src="../../assets/systems/n64-arcade-shark-8b.svg" /></p>
+<h3 id="arcade-shark-yellow-mode">Arcade-Shark Yellow Mode</h3>
+<p><img alt="n64 - Arcade-Shark Yellow Mode" src="../../assets/systems/n64-arcade-shark-yellow-mode.svg" /></p>
+<h2 id="naomi">naomi</h2>
+<p><img alt="naomi" src="../../assets/systems/naomi.svg" /></p>
+<h2 id="naomigd">naomigd</h2>
+<p><img alt="naomigd" src="../../assets/systems/naomigd.svg" /></p>
+<h2 id="nds">nds</h2>
+<p><img alt="nds" src="../../assets/systems/nds.svg" /></p>
+<h2 id="neogeo">neogeo</h2>
+<p><img alt="neogeo" src="../../assets/systems/neogeo.svg" /></p>
+<h3 id="neogeo-mini">NEOGEO MINI</h3>
+<p><img alt="neogeo - NEOGEO MINI" src="../../assets/systems/neogeo-neogeo-mini.svg" /></p>
+<h3 id="neogeo-variation">NEOGEO VARIATION</h3>
+<p><img alt="neogeo - NEOGEO VARIATION" src="../../assets/systems/neogeo-neogeo-variation.svg" /></p>
+<h3 id="neogeo-mvs-type-1">NEOGEO MVS TYPE 1</h3>
+<p><img alt="neogeo - NEOGEO MVS TYPE 1" src="../../assets/systems/neogeo-neogeo-mvs-type-1.svg" /></p>
+<h3 id="neogeo-mvs-type-1-variation">NEOGEO MVS TYPE 1 - VARIATION</h3>
+<p><img alt="neogeo - NEOGEO MVS TYPE 1 - VARIATION" src="../../assets/systems/neogeo-neogeo-mvs-type-1-variation.svg" /></p>
+<h3 id="neogeo-mvs-type-2">NEOGEO MVS TYPE 2</h3>
+<p><img alt="neogeo - NEOGEO MVS TYPE 2" src="../../assets/systems/neogeo-neogeo-mvs-type-2.svg" /></p>
+<h2 id="neogeocd">neogeocd</h2>
+<p><img alt="neogeocd" src="../../assets/systems/neogeocd.svg" /></p>
+<h2 id="nes">nes</h2>
+<p><img alt="nes" src="../../assets/systems/nes.svg" /></p>
+<h2 id="ngp">ngp</h2>
+<p><img alt="ngp" src="../../assets/systems/ngp.svg" /></p>
+<h2 id="ngpc">ngpc</h2>
+<p><img alt="ngpc" src="../../assets/systems/ngpc.svg" /></p>
+<h2 id="oricatmos">oricatmos</h2>
+<p><img alt="oricatmos" src="../../assets/systems/oricatmos.svg" /></p>
+<h2 id="pcengine">pcengine</h2>
+<p><img alt="pcengine" src="../../assets/systems/pcengine.svg" /></p>
+<h2 id="pcenginecd">pcenginecd</h2>
+<p><img alt="pcenginecd" src="../../assets/systems/pcenginecd.svg" /></p>
+<h2 id="pcfx">pcfx</h2>
+<p><img alt="pcfx" src="../../assets/systems/pcfx.svg" /></p>
+<h2 id="pokemini">pokemini</h2>
+<p><img alt="pokemini" src="../../assets/systems/pokemini.svg" /></p>
+<h2 id="ps2">ps2</h2>
+<p><img alt="ps2" src="../../assets/systems/ps2.svg" /></p>
+<h2 id="psp">psp</h2>
+<p><img alt="psp" src="../../assets/systems/psp.svg" /></p>
+<h2 id="psx">psx</h2>
+<p><img alt="psx" src="../../assets/systems/psx.svg" /></p>
+<h2 id="samcoupe">samcoupe</h2>
+<p><img alt="samcoupe" src="../../assets/systems/samcoupe.svg" /></p>
+<h2 id="satellaview">satellaview</h2>
+<p><img alt="satellaview" src="../../assets/systems/satellaview.svg" /></p>
+<h2 id="saturn">saturn</h2>
+<p><img alt="saturn" src="../../assets/systems/saturn.svg" /></p>
+<h3 id="virtual-stick-6b">Virtual Stick 6B</h3>
+<p><img alt="saturn - Virtual Stick 6B" src="../../assets/systems/saturn-virtual-stick-6b.svg" /></p>
+<h3 id="virtual-stick-8b">Virtual Stick 8B</h3>
+<p><img alt="saturn - Virtual Stick 8B" src="../../assets/systems/saturn-virtual-stick-8b.svg" /></p>
+<h2 id="scummvm">scummvm</h2>
+<p><img alt="scummvm" src="../../assets/systems/scummvm.svg" /></p>
+<h2 id="scv">scv</h2>
+<p><img alt="scv" src="../../assets/systems/scv.svg" /></p>
+<h2 id="sega32x">sega32x</h2>
+<p><img alt="sega32x" src="../../assets/systems/sega32x.svg" /></p>
+<h2 id="segacd">segacd</h2>
+<p><img alt="segacd" src="../../assets/systems/segacd.svg" /></p>
+<h2 id="sg1000">sg1000</h2>
+<p><img alt="sg1000" src="../../assets/systems/sg1000.svg" /></p>
+<h2 id="snes">snes</h2>
+<p><img alt="snes" src="../../assets/systems/snes.svg" /></p>
+<h3 id="score-master">Score Master</h3>
+<p><img alt="snes - Score Master" src="../../assets/systems/snes-score-master.svg" /></p>
+<h3 id="super-advantage">Super Advantage</h3>
+<p><img alt="snes - Super Advantage" src="../../assets/systems/snes-super-advantage.svg" /></p>
+<h3 id="super-advantage-8b">Super Advantage - 8B</h3>
+<p><img alt="snes - Super Advantage - 8B" src="../../assets/systems/snes-super-advantage-8b.svg" /></p>
+<h2 id="spectravideo">spectravideo</h2>
+<p><img alt="spectravideo" src="../../assets/systems/spectravideo.svg" /></p>
+<h2 id="sufami">sufami</h2>
+<p><img alt="sufami" src="../../assets/systems/sufami.svg" /></p>
+<h2 id="supergrafx">supergrafx</h2>
+<p><img alt="supergrafx" src="../../assets/systems/supergrafx.svg" /></p>
+<h2 id="supervision">supervision</h2>
+<p><img alt="supervision" src="../../assets/systems/supervision.svg" /></p>
+<h2 id="thomson">thomson</h2>
+<p><img alt="thomson" src="../../assets/systems/thomson.svg" /></p>
+<h2 id="ti994a">ti994a</h2>
+<p><img alt="ti994a" src="../../assets/systems/ti994a.svg" /></p>
+<h2 id="tic80">tic80</h2>
+<p><img alt="tic80" src="../../assets/systems/tic80.svg" /></p>
+<h2 id="trs80coco">trs80coco</h2>
+<p><img alt="trs80coco" src="../../assets/systems/trs80coco.svg" /></p>
+<h2 id="uzebox">uzebox</h2>
+<p><img alt="uzebox" src="../../assets/systems/uzebox.svg" /></p>
+<h2 id="vectrex">vectrex</h2>
+<p><img alt="vectrex" src="../../assets/systems/vectrex.svg" /></p>
+<h2 id="vg5000">vg5000</h2>
+<p><img alt="vg5000" src="../../assets/systems/vg5000.svg" /></p>
+<h2 id="vic20">vic20</h2>
+<p><img alt="vic20" src="../../assets/systems/vic20.svg" /></p>
+<h2 id="videopacplus">videopacplus</h2>
+<p><img alt="videopacplus" src="../../assets/systems/videopacplus.svg" /></p>
+<h2 id="virtualboy">virtualboy</h2>
+<p><img alt="virtualboy" src="../../assets/systems/virtualboy.svg" /></p>
+<h2 id="wii">wii</h2>
+<p><img alt="wii" src="../../assets/systems/wii.svg" /></p>
+<h2 id="wswan">wswan</h2>
+<p><img alt="wswan" src="../../assets/systems/wswan.svg" /></p>
+<h2 id="wswanc">wswanc</h2>
+<p><img alt="wswanc" src="../../assets/systems/wswanc.svg" /></p>
+<h2 id="x1">x1</h2>
+<p><img alt="x1" src="../../assets/systems/x1.svg" /></p>
+<h2 id="x68000">x68000</h2>
+<p><img alt="x68000" src="../../assets/systems/x68000.svg" /></p>
+<h2 id="xbox">xbox</h2>
+<p><img alt="xbox" src="../../assets/systems/xbox.svg" /></p>
+<h2 id="xbox360">xbox360</h2>
+<p><img alt="xbox360" src="../../assets/systems/xbox360.svg" /></p>
+<h2 id="zx81">zx81</h2>
+<p><img alt="zx81" src="../../assets/systems/zx81.svg" /></p>
+<h2 id="zxspectrum">zxspectrum</h2>
+<p><img alt="zxspectrum" src="../../assets/systems/zxspectrum.svg" /></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../materiel/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Hardware">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Hardware
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../jeux/" class="md-footer__link md-footer__link--next" aria-label="Next: Per-game panels and wiring">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Per-game panels and wiring
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "navigation.footer", "content.code.copy", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
