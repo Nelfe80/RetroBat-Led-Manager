@@ -296,6 +296,12 @@ internal sealed class LedManagerApp
             {
                 var processes = Process.GetProcessesByName(processName);
                 bool isRunning = processes.Length > 0;
+                // each entry holds a process handle: released here, or one leaked
+                // every five seconds for as long as the daemon runs
+                foreach (var process in processes)
+                {
+                    process.Dispose();
+                }
 
                 if (isRunning)
                 {
@@ -344,14 +350,66 @@ internal sealed class LedManagerApp
         }
     }
 
-    private async Task ListenWebSocketAsync(string stream, Uri uri, CancellationToken cancellationToken)
+    /// <summary>
+    /// One worker per event stream: the socket loop only hands messages over, so a slow
+    /// dispatch (a serial write waiting on a stuck port) no longer stops the socket
+    /// from being read - APIExpose drops a client that does not drain within 250 ms.
+    /// Order is kept within a stream, exactly as when the loop processed them itself.
+    /// </summary>
+    private Channel<string> StreamMailbox(string stream, CancellationToken cancellationToken)
     {
-        while (!cancellationToken.IsCancellationRequested)
+        var mailbox = Channel.CreateBounded<string>(
+            new BoundedChannelOptions(2048)
+            {
+                SingleReader = true,
+                SingleWriter = true,
+                FullMode = BoundedChannelFullMode.DropOldest
+            },
+            _ => Console.Error.WriteLine($"[ws:{stream}] processing is behind, oldest pending message dropped"));
+        _ = Task.Run(async () =>
         {
             try
             {
+                await foreach (var json in mailbox.Reader.ReadAllAsync(cancellationToken))
+                {
+                    try
+                    {
+                        await HandleJsonAsync(json, stream);
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        Console.Error.WriteLine($"[ws:{stream}] processing failed: {ex.Message}");
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }, cancellationToken);
+        return mailbox;
+    }
+
+    private async Task ListenWebSocketAsync(string stream, Uri uri, CancellationToken cancellationToken)
+    {
+        var isPanel = stream.Equals("panel", StringComparison.OrdinalIgnoreCase);
+        var mailbox = isPanel && _config.ApiExpose.CoalescePanelStates ? null : StreamMailbox(stream, cancellationToken);
+        var loopback = ApiExposeLink.IsLoopback(_config.ApiExpose.BaseUrl);
+        var attempt = 0;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            string failure;
+            var connectedAt = 0L;
+            try
+            {
                 using var ws = new ClientWebSocket();
+                ws.Options.KeepAliveInterval = TimeSpan.FromSeconds(20);
+                if (_config.ApiExpose.ApiKey.Length > 0)
+                {
+                    ws.Options.SetRequestHeader(ApiExposeLink.ApiKeyHeader, _config.ApiExpose.ApiKey);
+                }
+
                 await ws.ConnectAsync(uri, cancellationToken);
+                connectedAt = Environment.TickCount64;
                 Console.WriteLine($"[ws:{stream}] connected {uri}");
                 if (stream.Equals("panel", StringComparison.OrdinalIgnoreCase))
                 {
@@ -378,8 +436,7 @@ internal sealed class LedManagerApp
                     if (result.MessageType == WebSocketMessageType.Text)
                     {
                         var json = Encoding.UTF8.GetString(ms.ToArray());
-                        if (_config.ApiExpose.CoalescePanelStates &&
-                            stream.Equals("panel", StringComparison.OrdinalIgnoreCase))
+                        if (mailbox is null)
                         {
                             // never block the socket drain on processing: the
                             // mailbox worker coalesces to the latest snapshot
@@ -387,10 +444,18 @@ internal sealed class LedManagerApp
                         }
                         else
                         {
-                            await HandleJsonAsync(json, stream);
+                            mailbox.Writer.TryWrite(json);
                         }
                     }
+                    else if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        break;
+                    }
                 }
+
+                // a clean close is still a lost stream: it waits like any other, or an
+                // API that accepts then closes (while it stops) is hammered in a loop
+                failure = "closed by APIExpose";
             }
             catch (OperationCanceledException)
             {
@@ -398,8 +463,34 @@ internal sealed class LedManagerApp
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"[ws:{stream}] {ex.Message}");
-                await Task.Delay(1500, cancellationToken);
+                failure = ApiExposeLink.DescribeFailure(ex.Message, loopback, _config.ApiExpose.ApiKey.Length > 0);
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            // a stream that held for a while starts over from a short wait
+            if (connectedAt > 0 && Environment.TickCount64 - connectedAt > 30_000)
+            {
+                attempt = 0;
+            }
+
+            attempt++;
+            var delay = ApiExposeLink.ReconnectDelay(attempt, Random.Shared.NextDouble());
+            if (attempt == 1 || attempt % 10 == 0)
+            {
+                Console.Error.WriteLine($"[ws:{stream}] lost: {failure}; attempt {attempt}, next in {delay.TotalSeconds:0} s");
+            }
+
+            try
+            {
+                await Task.Delay(delay, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
             }
         }
     }
@@ -1925,9 +2016,15 @@ internal sealed class SenderHost
             return null;
         }
 
-        if (_processes.TryGetValue(sender.Id, out var existing) && !existing.HasExited)
+        if (_processes.TryGetValue(sender.Id, out var existing))
         {
-            return existing;
+            if (!existing.HasExited)
+            {
+                return existing;
+            }
+
+            // the sender died and is about to be replaced: release its handle and pipes
+            try { existing.Dispose(); } catch { /* already gone */ }
         }
 
         var psi = new ProcessStartInfo

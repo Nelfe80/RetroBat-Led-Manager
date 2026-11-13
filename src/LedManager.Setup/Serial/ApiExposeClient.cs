@@ -30,13 +30,50 @@ public static class ApiExposeClient
         return baseUrl.TrimEnd('/');
     }
 
-    /// <summary>POST without body; returns (success, response body or error message).</summary>
-    public static async Task<(bool Ok, string Body)> PostAsync(string baseUrl, string path)
+    /// <summary>
+    /// The cabinet key for that address: empty on the loopback, where APIExpose asks
+    /// for none. Read from LedManager.ini [APIExpose] ApiKey, else from the APIExpose
+    /// folder next to this plugin. Read at each call: the user may have just set it.
+    /// </summary>
+    public static string ApiKeyFor(string baseUrl)
+    {
+        var pluginRoot = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
+        var configured = "";
+        try
+        {
+            var ini = Path.Combine(pluginRoot, "LedManager.ini");
+            if (File.Exists(ini))
+            {
+                configured = LedManager.Core.Ini.IniDocument.Load(ini).Get("APIExpose", "ApiKey", "");
+            }
+        }
+        catch
+        {
+            // unreadable ini: fall back to the sibling key file
+        }
+
+        return LedManager.Core.Runtime.ApiExposeLink.ApiKeyFor(baseUrl, configured, pluginRoot);
+    }
+
+    private static async Task<(bool Ok, string Body)> SendAsync(HttpMethod method, string baseUrl, string path, HttpContent? content)
     {
         try
         {
-            using var response = await Http.PostAsync(baseUrl + path, content: null).ConfigureAwait(false);
+            using var request = new HttpRequestMessage(method, baseUrl + path) { Content = content };
+            var key = ApiKeyFor(baseUrl);
+            if (key.Length > 0)
+            {
+                request.Headers.TryAddWithoutValidation(LedManager.Core.Runtime.ApiExposeLink.ApiKeyHeader, key);
+            }
+
+            using var response = await Http.SendAsync(request).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if ((int)response.StatusCode == 401)
+            {
+                body = LedManager.Core.Runtime.ApiExposeLink.DescribeFailure(
+                    "401", LedManager.Core.Runtime.ApiExposeLink.IsLoopback(baseUrl), key.Length > 0);
+            }
+
             return (response.IsSuccessStatusCode, body);
         }
         catch (Exception ex)
@@ -44,35 +81,19 @@ public static class ApiExposeClient
             return (false, ex.Message);
         }
     }
+
+    /// <summary>POST without body; returns (success, response body or error message).</summary>
+    public static Task<(bool Ok, string Body)> PostAsync(string baseUrl, string path)
+        => SendAsync(HttpMethod.Post, baseUrl, path, null);
 
     /// <summary>POST with a JSON body; returns (success, response body or error message).</summary>
     public static async Task<(bool Ok, string Body)> PostJsonAsync(string baseUrl, string path, string json)
     {
-        try
-        {
-            using var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-            using var response = await Http.PostAsync(baseUrl + path, content).ConfigureAwait(false);
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            return (response.IsSuccessStatusCode, body);
-        }
-        catch (Exception ex)
-        {
-            return (false, ex.Message);
-        }
+        using var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        return await SendAsync(HttpMethod.Post, baseUrl, path, content).ConfigureAwait(false);
     }
 
     /// <summary>GET; returns (success, response body or error message).</summary>
-    public static async Task<(bool Ok, string Body)> GetAsync(string baseUrl, string path)
-    {
-        try
-        {
-            using var response = await Http.GetAsync(baseUrl + path).ConfigureAwait(false);
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            return (response.IsSuccessStatusCode, body);
-        }
-        catch (Exception ex)
-        {
-            return (false, ex.Message);
-        }
-    }
+    public static Task<(bool Ok, string Body)> GetAsync(string baseUrl, string path)
+        => SendAsync(HttpMethod.Get, baseUrl, path, null);
 }

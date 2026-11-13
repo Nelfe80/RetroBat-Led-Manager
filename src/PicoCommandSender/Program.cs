@@ -106,7 +106,18 @@ internal sealed class PicoCommandSenderApp
                 }
 
                 await serial.ReconnectAsync();
-                await RunInitCommandsAsync("reconnect");
+                try
+                {
+                    await RunInitCommandsAsync("reconnect");
+                }
+                catch (Exception ex) when (ex is IOException or InvalidOperationException)
+                {
+                    // The port did not come back (panel unplugged): this used to escape
+                    // and end the daemon. The command is lost, the next one tries again.
+                    Console.Error.WriteLine($"[bridge] init after reconnect failed: {ex.Message}; command dropped, next command will retry");
+                    return;
+                }
+
                 if (resendAfterRecovery)
                 {
                     await SendOneWithRecoveryAsync(command, false);
@@ -1485,7 +1496,7 @@ internal sealed class PicoSerial : IAsyncDisposable
                 throw new InvalidOperationException("Serial handle is not open.");
             }
 
-            WriteLine(_handle, command, _config.LineEnding);
+            WriteLine(_handle, command, _config.LineEnding, _config.WriteTimeoutMs);
         }
 
         var total = Environment.TickCount64 - started;
@@ -1705,14 +1716,27 @@ internal sealed class PicoSerial : IAsyncDisposable
         }
     }
 
-    private static void WriteLine(SafeFileHandle handle, string command, string lineEnding)
+    /// <summary>
+    /// Writes one command. A write that fails at once is retried (a transient refusal);
+    /// a write that ran into the port's timeout is NOT: the port is stuck, and waiting
+    /// two more full timeouts on the same handle only froze the panel three times as
+    /// long before the reopen that actually fixes it.
+    /// </summary>
+    private static void WriteLine(SafeFileHandle handle, string command, string lineEnding, int writeTimeoutMs = 0)
     {
         var bytes = Encoding.UTF8.GetBytes(command.TrimEnd('\r', '\n') + lineEnding);
         for (var attempt = 1; attempt <= 3; attempt++)
         {
+            var started = Environment.TickCount64;
             if (NativeMethods.WriteFile(handle, bytes, bytes.Length, out var written, IntPtr.Zero) && written == bytes.Length)
             {
                 return;
+            }
+
+            var elapsed = Environment.TickCount64 - started;
+            if (IsWriteTimeout(elapsed, writeTimeoutMs))
+            {
+                throw new IOException($"Serial write timed out after {elapsed}ms. Bytes={bytes.Length}.", Marshal.GetLastWin32Error());
             }
 
             Thread.Sleep(60 * attempt);
@@ -1720,6 +1744,11 @@ internal sealed class PicoSerial : IAsyncDisposable
 
         throw new IOException($"Serial write failed after retries. Bytes={bytes.Length}.", Marshal.GetLastWin32Error());
     }
+
+    /// <summary>True when a failed write lasted long enough to be the port timeout
+    /// rather than an immediate refusal. 0 = timeout unknown, never a timeout.</summary>
+    internal static bool IsWriteTimeout(long elapsedMs, int writeTimeoutMs)
+        => writeTimeoutMs > 0 && elapsedMs >= Math.Max(250, writeTimeoutMs * 8L / 10);
 
     private static string ReadSome(SafeFileHandle handle)
     {

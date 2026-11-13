@@ -21,6 +21,12 @@ public static class ApiExposeProbe
             }
 
             using var socket = new ClientWebSocket();
+            var key = ApiExposeClient.ApiKeyFor(url);
+            if (key.Length > 0)
+            {
+                socket.Options.SetRequestHeader(LedManager.Core.Runtime.ApiExposeLink.ApiKeyHeader, key);
+            }
+
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
             timeout.CancelAfter(TimeSpan.FromSeconds(2));
             await socket.ConnectAsync(new Uri(url + "/ws/frontend"), timeout.Token).ConfigureAwait(false);

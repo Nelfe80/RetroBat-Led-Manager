@@ -82,6 +82,8 @@ public sealed class LedManagerConfig
             {
                 Enabled = ini.GetBool("APIExpose", "Enabled", false),
                 BaseUrl = ini.Get("APIExpose", "BaseUrl", "ws://127.0.0.1:12345"),
+                ApiKey = Runtime.ApiExposeLink.ApiKeyFor(
+                    ini.Get("APIExpose", "BaseUrl", "ws://127.0.0.1:12345"), ini.Get("APIExpose", "ApiKey", ""), baseDir),
                 FrontendPath = ini.Get("APIExpose", "FrontendPath", "/ws/frontend"),
                 PanelPath = ini.Get("APIExpose", "PanelPath", "/ws/panel"),
                 IngamePath = ini.Get("APIExpose", "IngamePath", "/ws/ingame"),
@@ -142,6 +144,10 @@ public sealed class ApiExposeConfig
 {
     public bool Enabled { get; init; }
     public string BaseUrl { get; init; } = "ws://127.0.0.1:12345";
+
+    /// <summary>Cabinet key to present, already resolved: empty on the loopback, where
+    /// APIExpose asks for none. Never logged.</summary>
+    public string ApiKey { get; init; } = "";
     public string FrontendPath { get; init; } = "/ws/frontend";
     public string PanelPath { get; init; } = "/ws/panel";
     public string IngamePath { get; init; } = "/ws/ingame";
