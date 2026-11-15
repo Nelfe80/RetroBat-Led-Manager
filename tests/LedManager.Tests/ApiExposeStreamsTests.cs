@@ -98,7 +98,7 @@ public class ApiExposeStreamsTests
     [InlineData("ws://127.0.0.1:12345", "http://127.0.0.1:12345/api/v1/ws/streams")]
     [InlineData("ws://127.0.0.1:12345/", "http://127.0.0.1:12345/api/v1/ws/streams")]
     [InlineData("wss://cabinet.local:4443", "https://cabinet.local:4443/api/v1/ws/streams")]
-    [InlineData("http://10.0.0.5:12345", "http://10.0.0.5:12345/api/v1/ws/streams")]
+    [InlineData("http://cabinet.lan:12345", "http://cabinet.lan:12345/api/v1/ws/streams")]
     public void The_catalog_is_asked_over_http_on_the_same_host(string baseUrl, string expected)
     {
         var root = ApiExposeLink.HttpBaseUri(baseUrl);
