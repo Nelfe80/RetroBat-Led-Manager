@@ -116,7 +116,9 @@ A few useful behaviours (no setting required):
 - ingame effects are targeted overlays; an `OFF` on a button restores it from the snapshot;
 - after 2 seconds without activity, the system panel is restored;
 - START and SELECT live their own life, independent of buttons B1–B8;
-- MAME lamps keep their own state: a panel restore never relights a lamp the game turned off.
+- MAME lamps keep their own state: a panel restore never relights a lamp the game turned off;
+- the same game announced twice (direct launch then ES hook, `.raw` then enriched form) does not replay the start effect: LedManager follows the APIExpose 1.9.185 `LaunchId`, and the end is tied to the same launch;
+- a selection in ES (`ui.game.selected`, replayed on every `frontend` stream connection) never triggers an effect.
 
 ## Ingame effects: `default.mem.effects.json`
 

@@ -116,7 +116,9 @@ Quelques comportements utiles à connaître (aucun réglage requis) :
 - les effets ingame sont des surcouches ciblées ; un `OFF` sur un bouton le restaure depuis le snapshot ;
 - après 2 secondes sans activité, le panel du système est restauré ;
 - START et SELECT vivent leur vie indépendamment des boutons B1–B8 ;
-- les lampes MAME gardent leur propre état : une restauration du panel ne rallume pas une lampe éteinte par le jeu.
+- les lampes MAME gardent leur propre état : une restauration du panel ne rallume pas une lampe éteinte par le jeu ;
+- un même jeu annoncé deux fois (lancement direct puis crochet d'ES, forme `.raw` puis enrichie) ne rejoue pas l'effet de départ : LedManager suit le `LaunchId` d'APIExpose 1.9.185, et la fin est rattachée au même lancement ;
+- une sélection dans ES (`ui.game.selected`, rejouée à chaque connexion du flux `frontend`) ne déclenche jamais d'effet.
 
 ## Les effets ingame : `default.mem.effects.json`
 

@@ -370,6 +370,31 @@ public sealed class SignalSemanticsTracker
     }
 
     /// <summary>
+    /// The running game, started without id (the .raw form comes first), is now known
+    /// under this id: same game, so the values measured so far are kept.
+    /// </summary>
+    public void AdoptLaunchId(string launchId)
+    {
+        var id = launchId.Trim();
+        if (id.Length == 0 || !string.IsNullOrEmpty(RunningLaunchId))
+        {
+            return;
+        }
+
+        RunningLaunchId = id;
+        if (Current is not null && Current.LaunchId.Length > 0 && !Current.LaunchId.Equals(id, StringComparison.OrdinalIgnoreCase))
+        {
+            Current = null;
+        }
+
+        if (Pending is not null && Pending.LaunchId.Equals(id, StringComparison.OrdinalIgnoreCase))
+        {
+            Current = Pending;
+            Pending = null;
+        }
+    }
+
+    /// <summary>
     /// The game ends. An end that names another launch than the running one is not
     /// this game's (false, nothing cleared).
     /// </summary>

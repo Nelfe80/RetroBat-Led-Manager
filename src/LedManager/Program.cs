@@ -62,6 +62,8 @@ internal sealed class LedManagerApp
     private long _arcadeOutputVersion;
     private long _lastPanelSequence;
     private int _activeEffectSequences;
+    private readonly object _launchLock = new();
+    private readonly LaunchTracker _launches = new();
     private readonly object _instrumentLock = new();
     private readonly SignalSemanticsTracker _semantics = new();
     private readonly ResourceAlertTracker _resourceAlerts = new();
@@ -673,6 +675,14 @@ internal sealed class LedManagerApp
             return;
         }
 
+        if (evt.IsFrontendSelection)
+        {
+            // replayed by APIExpose 1.9.185+ on every /ws/frontend connection: a selection
+            // is not a navigation of the player and never drives an effect here (the panel
+            // of the selection arrives on /ws/panel)
+            return;
+        }
+
         if (SignalSemantics.IsSemanticsEvent(evt))
         {
             HandleSemantics(evt);
@@ -681,7 +691,26 @@ internal sealed class LedManagerApp
 
         if (evt.IsFrontendGameStart)
         {
-            BeginInstrumentLaunch(LaunchIds.Read(evt));
+            var launchId = LaunchIds.Read(evt);
+            LaunchStart start;
+            lock (_launchLock)
+            {
+                start = _launches.OnStarted(launchId, Environment.TickCount64);
+            }
+
+            if (start.Kind == LaunchStartKind.Duplicate)
+            {
+                if (start.AdoptedLaunchId is { } adopted)
+                {
+                    AdoptInstrumentLaunch(adopted);
+                }
+
+                Console.WriteLine($"[frontend] {evt.Type} launch={LaunchIds.Short(start.LaunchId)}: game already running, start not replayed");
+                return;
+            }
+
+            Console.WriteLine($"[frontend] {evt.Type} launch={LaunchIds.Short(start.LaunchId)}: game start");
+            BeginInstrumentLaunch(start.LaunchId);
             await Task.Delay(GameStartPanelSettleDelayMs);
             if (_currentPanel is not null && !_currentPanel.IsEmpty)
             {
@@ -703,6 +732,21 @@ internal sealed class LedManagerApp
 
         if (evt.IsFrontendGameEnd)
         {
+            LaunchEnd end;
+            lock (_launchLock)
+            {
+                end = _launches.OnEnded(LaunchIds.Read(evt), Environment.TickCount64);
+            }
+
+            if (end.Kind == LaunchEndKind.Duplicate)
+            {
+                Console.WriteLine($"[frontend] {evt.Type} launch={LaunchIds.Short(end.LaunchId)}: game already ended, end not replayed");
+                return;
+            }
+
+            Console.WriteLine(end.Mismatch is null
+                ? $"[frontend] {evt.Type} launch={LaunchIds.Short(end.LaunchId)}: game end"
+                : $"[frontend] {evt.Type} launch={LaunchIds.Short(end.Mismatch)} while {LaunchIds.Short(end.LaunchId)} was running here: game end all the same");
             if (_config.RestorePanelOnGameEnd)
             {
                 var snapshot = PanelState.Load(_config.PanelSnapshotPath);
@@ -716,7 +760,7 @@ internal sealed class LedManagerApp
             _ingamePanel.Clear();
             ClearArcadeOutputStates("game-end");
             CancelIngameIdleSystemPanelRestore();
-            EndInstrumentLaunch(LaunchIds.Read(evt));
+            EndInstrumentLaunch(end.LaunchId);
             return;
         }
 
@@ -910,6 +954,14 @@ internal sealed class LedManagerApp
         }
 
         StopAllResourceBlinks();
+    }
+
+    private void AdoptInstrumentLaunch(string launchId)
+    {
+        lock (_instrumentLock)
+        {
+            _semantics.AdoptLaunchId(launchId);
+        }
     }
 
     private void EndInstrumentLaunch(string? launchId)

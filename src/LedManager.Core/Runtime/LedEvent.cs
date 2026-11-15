@@ -33,6 +33,16 @@ public sealed class LedEvent
         Type.Equals("ui.game.ended", StringComparison.OrdinalIgnoreCase) ||
         Type.Equals("game.end", StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// A selection in ES (game or system, enriched or .raw). Since APIExpose 1.9.185 the last
+    /// one is replayed whenever /ws/frontend connects: it must never drive an effect.
+    /// </summary>
+    public bool IsFrontendSelection =>
+        Type.Equals("ui.game.selected", StringComparison.OrdinalIgnoreCase) ||
+        Type.Equals("ui.game.selected.raw", StringComparison.OrdinalIgnoreCase) ||
+        Type.Equals("ui.system.selected", StringComparison.OrdinalIgnoreCase) ||
+        Type.Equals("ui.system.selected.raw", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>EmulationStation exited (APIExpose 1.3.5+) - authoritative shutdown signal.</summary>
     public bool IsFrontendStopped =>
         Type.Equals("ui.frontend.stopped", StringComparison.OrdinalIgnoreCase);
