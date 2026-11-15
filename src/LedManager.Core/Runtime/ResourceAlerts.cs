@@ -23,6 +23,23 @@ public static class ResourceRoles
             return false;
         }
 
+        if (signal.RoleGiven)
+        {
+            // the API's role is exact: null means "not a resource", never a guess from the id
+            var given = signal.Role is null
+                ? null
+                : roles.FirstOrDefault(r => r.Equals(signal.Role, StringComparison.OrdinalIgnoreCase));
+            var givenPlayer = signal.Player ?? PlayerFromId(signal.Id);
+            if (given is null || givenPlayer is not >= 1)
+            {
+                return false;
+            }
+
+            role = given.ToLowerInvariant();
+            player = givenPlayer.Value;
+            return true;
+        }
+
         var parts = signal.Id.Split('.');
         string candidate;
         if (parts.Length == 3 && parts[0].Equals("players", StringComparison.OrdinalIgnoreCase))
@@ -52,6 +69,13 @@ public static class ResourceRoles
 
         role = match.ToLowerInvariant();
         return true;
+    }
+
+    private static int? PlayerFromId(string id)
+    {
+        var parts = id.Split('.');
+        return parts.Length >= 2 && parts[0].Equals("players", StringComparison.OrdinalIgnoreCase) &&
+               int.TryParse(parts[1], out var n) ? n : null;
     }
 }
 

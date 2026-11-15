@@ -44,7 +44,9 @@ public sealed record SemanticSignal(
     long? Max,
     long? Initial,
     string Quality,
-    bool Available);
+    bool Available,
+    string? Role = null,
+    bool RoleGiven = false);
 
 public sealed record SemanticInstrument(string Id, string? Label, int? Player, string Show, IReadOnlyList<string> Signals);
 
@@ -257,6 +259,18 @@ public static class SignalSemantics
             }
         }
 
+        // Role given by the API (lives, bombs, ammo, health, power, boss_hp, stage, or null):
+        // when the field is present it is exact, even null; absent = older API, deduce from the id.
+        var roleElement = Get(item, "Role");
+        var roleGiven = roleElement.HasValue;
+        var roleText = roleGiven && roleElement!.Value.ValueKind == JsonValueKind.String
+            ? roleElement.Value.GetString()?.Trim().ToLowerInvariant()
+            : null;
+        if (string.IsNullOrEmpty(roleText))
+        {
+            roleText = null;
+        }
+
         var scale = Get(item, "Scale") is { ValueKind: JsonValueKind.Object } s ? s : default;
         return new SemanticSignal(
             id.Trim(),
@@ -272,7 +286,9 @@ public static class SignalSemantics
             Long(item, "Max"),
             Long(item, "Initial"),
             String(item, "Quality") ?? "",
-            Bool(item, "Available") ?? true);
+            Bool(item, "Available") ?? true,
+            roleText,
+            roleGiven);
     }
 
     private static JsonElement? Get(JsonElement element, string name)
