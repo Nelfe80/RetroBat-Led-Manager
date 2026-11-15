@@ -159,3 +159,30 @@ API keeps the usual five streams). Same API key, same reconnection.
   (`actionRules`): never the generic `*` flash. The shipped effects are flash
   sweeps the board restores by itself, in game as in ES.
 - Empty `[APIExpose] ScoringPath=` or `MultiplayerPath=`: that stream is not opened.
+
+## Signal meanings: ammo, bombs, lives
+
+During a game, APIExpose (1.9.185 or newer) publishes what the game signals
+mean (`deck.semantics`, read from its `.SMEM` file) on `/ws/ingame` and
+`/ws/arcade`. LedManager keeps it for the running launch, tracks the value of
+each signal and forgets it when the game ends.
+
+One generic behaviour per role, for any game with a `.SMEM`: when a stock
+falls to zero (`players.N.bombs`, `players.N.ammo`, `players.N.lives`), the
+button whose function matches blinks until the value comes back. The button
+function comes from the game's dynpanel (`"function": "Bomb"`); the `.SMEM`
+starting value never triggers anything.
+
+```ini
+[Instruments]
+Enabled=true          ; read the signal meanings
+ZeroBlink=true        ; blink the button of an empty stock
+BlinkColor=BLACK      ; the button goes dark for a moment, the board relights it
+BlinkOnMs=250
+BlinkIntervalMs=700
+
+[InstrumentButtons]   ; one role per key: words looked for in the button function
+bombs=bomb,grenade
+ammo=ammo,reload
+lives=                ; no button by default: the state is tracked and logged
+```

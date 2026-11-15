@@ -62,6 +62,11 @@ internal sealed class LedManagerApp
     private long _arcadeOutputVersion;
     private long _lastPanelSequence;
     private int _activeEffectSequences;
+    private readonly object _instrumentLock = new();
+    private readonly SignalSemanticsTracker _semantics = new();
+    private readonly ResourceAlertTracker _resourceAlerts = new();
+    private readonly Dictionary<(string Role, int Player), CancellationTokenSource> _resourceBlinks = new();
+    private readonly HashSet<(string Role, int Player)> _reportedUnmappedResources = new();
 
     public async Task<int> RunAsync(string[] args)
     {
@@ -668,8 +673,15 @@ internal sealed class LedManagerApp
             return;
         }
 
+        if (SignalSemantics.IsSemanticsEvent(evt))
+        {
+            HandleSemantics(evt);
+            return;
+        }
+
         if (evt.IsFrontendGameStart)
         {
+            BeginInstrumentLaunch(LaunchIds.Read(evt));
             await Task.Delay(GameStartPanelSettleDelayMs);
             if (_currentPanel is not null && !_currentPanel.IsEmpty)
             {
@@ -704,6 +716,7 @@ internal sealed class LedManagerApp
             _ingamePanel.Clear();
             ClearArcadeOutputStates("game-end");
             CancelIngameIdleSystemPanelRestore();
+            EndInstrumentLaunch(LaunchIds.Read(evt));
             return;
         }
 
@@ -711,6 +724,12 @@ internal sealed class LedManagerApp
         {
             Console.WriteLine($"[hiscore] observed durable score event {evt.Type}; not treated as live matrix score");
             return;
+        }
+
+        if (SignalSemantics.IsMemoryEvent(evt))
+        {
+            // the meaning layer only reads the value: the event still plays its effect below
+            ObserveInstrumentSignal(evt);
         }
 
         if (ApiOutcomeEvents.IsOutcomeEvent(evt))
@@ -768,6 +787,261 @@ internal sealed class LedManagerApp
         if (effectEvents.Count > 0)
         {
             _ = PlayEffectSequenceAsync(effectEvents);
+        }
+    }
+
+    /// <summary>
+    /// deck.semantics on /ws/ingame or /ws/arcade: the meaning of the .MEM signals of the
+    /// running launch. Kept for its LaunchId; one for another launch waits for that launch.
+    /// </summary>
+    private void HandleSemantics(LedEvent evt)
+    {
+        if (!_config.Instruments.Enabled)
+        {
+            return;
+        }
+
+        var snapshot = SignalSemantics.Parse(evt.Payload);
+        if (snapshot is null)
+        {
+            Console.WriteLine("[instrument] deck.semantics unreadable, ignored");
+            return;
+        }
+
+        SemanticsAcceptance acceptance;
+        string? running;
+        IReadOnlyList<ResourceAlert> alerts = Array.Empty<ResourceAlert>();
+        lock (_instrumentLock)
+        {
+            acceptance = _semantics.Apply(snapshot);
+            running = _semantics.RunningLaunchId;
+            if (acceptance == SemanticsAcceptance.Accepted)
+            {
+                // a new reading may drop or rename signals: alerts start over from it,
+                // with the values already measured during this launch
+                _resourceAlerts.Clear();
+                alerts = _resourceAlerts.Observe(_semantics.ReadAll(), _config.Instruments.Roles);
+            }
+        }
+
+        if (acceptance == SemanticsAcceptance.Unchanged)
+        {
+            return;
+        }
+
+        if (acceptance == SemanticsAcceptance.OtherLaunch)
+        {
+            Console.WriteLine($"[instrument] semantics for launch {LaunchIds.Short(snapshot.LaunchId)} kept aside: running launch is {LaunchIds.Short(running)}");
+            return;
+        }
+
+        StopAllResourceBlinks();
+        var resources = string.Join(",", snapshot.Signals
+            .Where(signal => ResourceRoles.TryParse(signal, _config.Instruments.Roles, out _, out _))
+            .Select(signal => signal.Available ? signal.Id : signal.Id + "(unavailable)"));
+        Console.WriteLine($"[instrument] semantics launch={LaunchIds.Short(snapshot.LaunchId)} game={snapshot.SystemId ?? "-"}/{snapshot.Rom ?? "-"} " +
+            $"status={snapshot.Status} revision={snapshot.Revision} signals={snapshot.Signals.Count} instruments={snapshot.Instruments.Count} " +
+            $"resources={(resources.Length > 0 ? resources : "-")}");
+        foreach (var alert in alerts.Where(alert => alert.Empty))
+        {
+            StartResourceBlink(alert);
+        }
+    }
+
+    private void ObserveInstrumentSignal(LedEvent evt)
+    {
+        if (!_config.Instruments.Enabled || SignalSemantics.ReadMemory(evt.Payload) is not { } memory)
+        {
+            return;
+        }
+
+        IReadOnlyList<SignalValueChange> changes;
+        IReadOnlyList<ResourceAlert> alerts;
+        lock (_instrumentLock)
+        {
+            changes = _semantics.Observe(memory);
+            alerts = changes.Count == 0 ? Array.Empty<ResourceAlert>() : _resourceAlerts.Observe(changes, _config.Instruments.Roles);
+        }
+
+        foreach (var change in changes)
+        {
+            if (change.Previous.Value != change.Current.Value &&
+                ResourceRoles.TryParse(change.Signal, _config.Instruments.Roles, out _, out _))
+            {
+                Console.WriteLine($"[instrument] {change.Signal.Id} {DescribeReading(change.Previous)} -> {DescribeReading(change.Current)}");
+            }
+        }
+
+        foreach (var alert in alerts)
+        {
+            if (alert.Empty)
+            {
+                StartResourceBlink(alert);
+            }
+            else
+            {
+                Console.WriteLine($"[instrument] {alert.SignalId} back to {alert.Value}: blink stopped");
+                StopResourceBlink((alert.Role, alert.Player));
+            }
+        }
+    }
+
+    private static string DescribeReading(SignalReading reading)
+    {
+        if (!reading.Valid)
+        {
+            return "--";
+        }
+
+        return reading.Label is { Length: > 0 } label ? $"{reading.Value} ({label})" : reading.Value?.ToString() ?? "--";
+    }
+
+    private void BeginInstrumentLaunch(string? launchId)
+    {
+        lock (_instrumentLock)
+        {
+            var previous = _semantics.RunningLaunchId;
+            _semantics.BeginLaunch(launchId);
+            if (!string.Equals(previous, _semantics.RunningLaunchId, StringComparison.OrdinalIgnoreCase))
+            {
+                _resourceAlerts.Clear();
+                _reportedUnmappedResources.Clear();
+            }
+        }
+
+        StopAllResourceBlinks();
+    }
+
+    private void EndInstrumentLaunch(string? launchId)
+    {
+        bool ended;
+        lock (_instrumentLock)
+        {
+            ended = _semantics.EndLaunch(launchId);
+            if (ended)
+            {
+                _resourceAlerts.Clear();
+                _reportedUnmappedResources.Clear();
+            }
+        }
+
+        if (ended)
+        {
+            StopAllResourceBlinks();
+        }
+    }
+
+    /// <summary>
+    /// A resource ran out: the button whose function matches its role blinks (a firmware
+    /// FLASH, restored by the board itself) until the value comes back or the game ends.
+    /// </summary>
+    private void StartResourceBlink(ResourceAlert alert)
+    {
+        if (!_config.Instruments.ZeroBlink)
+        {
+            Console.WriteLine($"[instrument] {alert.SignalId} empty; ZeroBlink off");
+            return;
+        }
+
+        var words = _config.Instruments.RoleButtons.TryGetValue(alert.Role, out var list) ? list : Array.Empty<string>();
+        var panel = _ingamePanel.IsActive ? _ingamePanel.BasePanel : _currentPanel;
+        var buttons = ResourceButtonMatcher.Find(panel, alert.Player, words);
+        if (buttons.Count == 0)
+        {
+            bool first;
+            lock (_instrumentLock)
+            {
+                first = _reportedUnmappedResources.Add((alert.Role, alert.Player));
+            }
+
+            if (first)
+            {
+                var why = words.Count == 0
+                    ? $"no button words for '{alert.Role}' in [InstrumentButtons]"
+                    : $"no P{alert.Player} button of this panel has a function matching {string.Join("/", words)}";
+                Console.WriteLine($"[instrument] {alert.SignalId} empty: {why}");
+            }
+
+            return;
+        }
+
+        var key = (alert.Role, alert.Player);
+        var cts = new CancellationTokenSource();
+        lock (_instrumentLock)
+        {
+            if (_resourceBlinks.Remove(key, out var previous))
+            {
+                previous.Cancel();
+            }
+
+            _resourceBlinks[key] = cts;
+        }
+
+        var onMs = _config.Instruments.BlinkOnMs;
+        var intervalMs = _config.Instruments.BlinkIntervalMs;
+        var color = NormalizeFeedbackColor(_config.Instruments.BlinkColor, "BLACK");
+        Console.WriteLine($"[instrument] {alert.SignalId} empty -> blink slots={string.Join(",", buttons.Select(b => b.Slot))} color={color} every {intervalMs} ms");
+        var token = cts.Token;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    foreach (var button in buttons)
+                    {
+                        var evt = new LedEvent
+                        {
+                            Type = "ledmanager.instrument.blink",
+                            Stream = "ingame",
+                            Player = button.Player is > 0 ? button.Player : _config.ApiExpose.DefaultPlayer,
+                            Action = "flash",
+                            Effect = "flash_restore",
+                            Target = $"SLOT:{button.Slot}",
+                            Slot = button.Slot,
+                            Color = color,
+                            FlashMs = onMs
+                        };
+
+                        // straight to the router: the ingame overlay would turn an "off"
+                        // color into a restore of the button, and the blink would vanish
+                        await DispatchAsync(_router.RouteEvent(evt));
+                    }
+
+                    await Task.Delay(intervalMs, token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[instrument] blink error: {ex.Message}");
+            }
+        });
+    }
+
+    private void StopResourceBlink((string Role, int Player) key)
+    {
+        lock (_instrumentLock)
+        {
+            if (_resourceBlinks.Remove(key, out var cts))
+            {
+                cts.Cancel();
+            }
+        }
+    }
+
+    private void StopAllResourceBlinks()
+    {
+        lock (_instrumentLock)
+        {
+            foreach (var cts in _resourceBlinks.Values)
+            {
+                cts.Cancel();
+            }
+
+            _resourceBlinks.Clear();
         }
     }
 

@@ -12,6 +12,7 @@ public sealed class LedManagerConfig
     public ApiExposeConfig ApiExpose { get; init; } = new();
     public EffectsConfig Effects { get; init; } = new();
     public FrontendFeedbackConfig FrontendFeedback { get; init; } = new();
+    public InstrumentsConfig Instruments { get; init; } = new();
     public HardwareConfig Hardware { get; init; } = new();
     public VirtualPanelConfig VirtualPanel { get; init; } = new();
     public IReadOnlyDictionary<string, CommandSenderConfig> Senders { get; init; } =
@@ -106,6 +107,7 @@ public sealed class LedManagerConfig
                 StartSelectPulseOffColor = ini.Get("FrontendFeedback", "StartSelectPulseOffColor", "BLACK"),
                 StartSelectPulseMs = Math.Max(0, ini.GetInt("FrontendFeedback", "StartSelectPulseMs", 140))
             },
+            Instruments = InstrumentsConfig.Load(ini),
             Hardware = new HardwareConfig
             {
                 PanelPlayers = Math.Max(1, ini.GetInt("Hardware", "PanelPlayers", 1)),
@@ -188,6 +190,69 @@ public sealed class FrontendFeedbackConfig
     public string StartSelectPulseColor { get; init; } = "ORANGE";
     public string StartSelectPulseOffColor { get; init; } = "BLACK";
     public int StartSelectPulseMs { get; init; } = 140;
+}
+
+/// <summary>
+/// The generic Instrument layer: signal meanings (.SMEM, via deck.semantics) read during
+/// a game, and the one behaviour per resource role. [Instruments] holds the switches,
+/// [InstrumentButtons] maps each tracked role to the words of the button functions it
+/// lights (one role per key; an empty value tracks the role without a button).
+/// </summary>
+public sealed class InstrumentsConfig
+{
+    public static IReadOnlyDictionary<string, IReadOnlyList<string>> DefaultRoleButtons { get; } =
+        new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["bombs"] = new[] { "bomb", "grenade" },
+            ["ammo"] = new[] { "ammo", "reload" },
+            ["lives"] = Array.Empty<string>()
+        };
+
+    /// <summary>Reads deck.semantics and keeps the current value of each signal.</summary>
+    public bool Enabled { get; init; } = true;
+
+    /// <summary>A resource that falls to zero blinks its button until the value comes back.</summary>
+    public bool ZeroBlink { get; init; } = true;
+
+    /// <summary>Color shown briefly by the blink (BLACK = the button goes dark), restored by the board.</summary>
+    public string BlinkColor { get; init; } = "BLACK";
+
+    public int BlinkOnMs { get; init; } = 250;
+
+    /// <summary>Time between two blinks; never shorter than BlinkOnMs + 100 ms.</summary>
+    public int BlinkIntervalMs { get; init; } = 700;
+
+    public IReadOnlyDictionary<string, IReadOnlyList<string>> RoleButtons { get; init; } = DefaultRoleButtons;
+
+    public IReadOnlyList<string> Roles => RoleButtons.Keys.ToArray();
+
+    public static InstrumentsConfig Load(IniDocument ini)
+    {
+        var roles = new Dictionary<string, IReadOnlyList<string>>(DefaultRoleButtons, StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in ini.Section("InstrumentButtons"))
+        {
+            var role = pair.Key.Trim();
+            if (role.Length == 0)
+            {
+                continue;
+            }
+
+            roles[role] = pair.Value
+                .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToArray();
+        }
+
+        var onMs = Math.Clamp(ini.GetInt("Instruments", "BlinkOnMs", 250), 50, 5000);
+        return new InstrumentsConfig
+        {
+            Enabled = ini.GetBool("Instruments", "Enabled", true),
+            ZeroBlink = ini.GetBool("Instruments", "ZeroBlink", true),
+            BlinkColor = ini.Get("Instruments", "BlinkColor", "BLACK"),
+            BlinkOnMs = onMs,
+            BlinkIntervalMs = Math.Max(onMs + 100, ini.GetInt("Instruments", "BlinkIntervalMs", 700)),
+            RoleButtons = roles
+        };
+    }
 }
 
 public sealed class HardwareConfig

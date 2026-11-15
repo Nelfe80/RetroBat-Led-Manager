@@ -159,3 +159,30 @@ plus ancienne garde les cinq flux habituels). Même clé d'API, même reconnexio
   (`actionRules`) : jamais le flash générique `*`. Les effets livrés sont des
   balayages de flashs, que la carte restaure seule, en partie comme dans ES.
 - `[APIExpose] ScoringPath=` ou `MultiplayerPath=` vide : le flux n'est pas ouvert.
+
+## Le sens des signaux : munitions, bombes, vies
+
+Pendant une partie, APIExpose (1.9.185 ou plus récent) publie le sens des
+signaux du jeu (`deck.semantics`, lu dans son fichier `.SMEM`) sur `/ws/ingame`
+et `/ws/arcade`. LedManager le garde pour le lancement en cours, tient la valeur
+de chaque signal et l'oublie à la fin de la partie.
+
+Un comportement générique par rôle, valable pour tout jeu qui a un `.SMEM` :
+quand un stock tombe à zéro (`players.N.bombs`, `players.N.ammo`,
+`players.N.lives`), le bouton dont la fonction correspond clignote jusqu'à ce
+que la valeur remonte. La fonction du bouton vient du dynpanel du jeu
+(`"function": "Bomb"`) ; la valeur de départ du `.SMEM` ne déclenche jamais rien.
+
+```ini
+[Instruments]
+Enabled=true          ; lire le sens des signaux
+ZeroBlink=true        ; faire clignoter le bouton d'un stock vide
+BlinkColor=BLACK      ; le bouton s'éteint un instant, la carte le rallume seule
+BlinkOnMs=250
+BlinkIntervalMs=700
+
+[InstrumentButtons]   ; un rôle par clé : les mots cherchés dans la fonction du bouton
+bombs=bomb,grenade
+ammo=ammo,reload
+lives=                ; aucun bouton par défaut : l'état est suivi et journalisé
+```
