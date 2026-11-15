@@ -74,6 +74,16 @@ public sealed class DefaultEffectCatalog
         return new DefaultEffectCatalog(actionRules, genericRules, hardware);
     }
 
+    /// <summary>
+    /// True when the catalog names this action itself (no wildcard, no "*" fallback): the
+    /// moments LedManager derives from the API (verdict, match) only light the panel when
+    /// the catalog in use says how, instead of borrowing the generic flash.
+    /// </summary>
+    public bool HasExactActionRule(string? action)
+    {
+        return !string.IsNullOrWhiteSpace(action) && _actionRules.ContainsKey(action.Trim());
+    }
+
     public IReadOnlyList<LedEvent> Resolve(LedEvent source)
     {
         if (!source.Type.Equals("mem.action", StringComparison.OrdinalIgnoreCase) &&

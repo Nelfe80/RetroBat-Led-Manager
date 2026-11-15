@@ -144,3 +144,18 @@ catalogue, no code involved:
     in Zelda or an emerald in Sonic and the cabinet sparkles - two games,
     zero configuration.
 
+
+## Score verdict and MULTIPLAYER matches
+
+With APIExpose 1.9.185 or newer, LedManager also opens `/ws/scoring` and
+`/ws/multiplayer`, only when `GET /api/v1/ws/streams` announces them (an older
+API keeps the usual five streams). Same API key, same reconnection.
+
+- The certification verdict (`scoring.verdict`) becomes a catalogue moment:
+  `SCORING_PUBLISHED`, `SCORING_HELD`, `SCORING_QUARANTINED`, `SCORING_REJECTED`.
+- A MULTIPLAYER match gives `MULTIPLAYER_MATCH_STARTED` then
+  `MULTIPLAYER_MATCH_ENDED`.
+- These moments only light up when `default.mem.effects.json` names them
+  (`actionRules`): never the generic `*` flash. The shipped effects are flash
+  sweeps the board restores by itself, in game as in ES.
+- Empty `[APIExpose] ScoringPath=` or `MultiplayerPath=`: that stream is not opened.

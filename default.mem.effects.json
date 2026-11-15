@@ -2341,6 +2341,48 @@
         }
       ]
     },
+    "MULTIPLAYER_MATCH_ENDED": {
+      "description": "MULTIPLAYER match over",
+      "when": {
+        "trigger": "api.outcome",
+        "action": "MULTIPLAYER_MATCH_ENDED"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "right_to_left_columns",
+          "color": "PURPLE",
+          "onMs": 130,
+          "intervalMs": 80,
+          "priority": 70,
+          "throttleMs": 2000
+        }
+      ]
+    },
+    "MULTIPLAYER_MATCH_STARTED": {
+      "description": "MULTIPLAYER match started, every guest in place",
+      "when": {
+        "trigger": "api.outcome",
+        "action": "MULTIPLAYER_MATCH_STARTED"
+      },
+      "then": [
+        {
+          "effect": "column_flash_bounce",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "color": "CYAN",
+          "onMs": 130,
+          "intervalMs": 80,
+          "priority": 70,
+          "throttleMs": 2000
+        }
+      ]
+    },
     "NEW_LEVEL": {
       "description": "Level",
       "when": {
@@ -3114,6 +3156,92 @@
           "onMs": 80,
           "priority": 38,
           "throttleMs": 250
+        }
+      ]
+    },
+    "SCORING_HELD": {
+      "description": "Certified score held for review (scoring.verdict)",
+      "when": {
+        "trigger": "api.outcome",
+        "action": "SCORING_HELD"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "color": "YELLOW",
+          "onMs": 130,
+          "intervalMs": 80,
+          "priority": 70,
+          "throttleMs": 2000
+        }
+      ]
+    },
+    "SCORING_PUBLISHED": {
+      "description": "Certified score published (scoring.verdict)",
+      "when": {
+        "trigger": "api.outcome",
+        "action": "SCORING_PUBLISHED"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "left_to_right_columns",
+          "color": "GREEN",
+          "onMs": 130,
+          "intervalMs": 80,
+          "times": 2,
+          "priority": 70,
+          "throttleMs": 2000
+        }
+      ]
+    },
+    "SCORING_QUARANTINED": {
+      "description": "Certified score quarantined (scoring.verdict)",
+      "when": {
+        "trigger": "api.outcome",
+        "action": "SCORING_QUARANTINED"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "right_to_left_columns",
+          "color": "ORANGE",
+          "onMs": 130,
+          "intervalMs": 80,
+          "priority": 70,
+          "throttleMs": 2000
+        }
+      ]
+    },
+    "SCORING_REJECTED": {
+      "description": "Certified score rejected (scoring.verdict)",
+      "when": {
+        "trigger": "api.outcome",
+        "action": "SCORING_REJECTED"
+      },
+      "then": [
+        {
+          "effect": "column_flash_scan",
+          "targets": [
+            "ALL_BUTTONS"
+          ],
+          "pattern": "right_to_left_columns",
+          "color": "RED",
+          "onMs": 130,
+          "intervalMs": 80,
+          "times": 2,
+          "priority": 70,
+          "throttleMs": 2000
         }
       ]
     },

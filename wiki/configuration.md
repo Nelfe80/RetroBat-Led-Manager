@@ -143,3 +143,19 @@ catalogue éditable, sans toucher au code :
     doré sur `ALL_BUTTONS` + `STRIP1` avec restauration automatique : ramassez
     une clé dans Zelda ou une émeraude dans Sonic, la borne scintille - deux
     jeux, zéro configuration.
+
+## Verdict du score et rencontres MULTIPLAYER
+
+Avec APIExpose 1.9.185 ou plus récent, LedManager ouvre aussi `/ws/scoring` et
+`/ws/multiplayer`, seulement si `GET /api/v1/ws/streams` les annonce (une API
+plus ancienne garde les cinq flux habituels). Même clé d'API, même reconnexion.
+
+- Le verdict de certification (`scoring.verdict`) devient un moment du
+  catalogue : `SCORING_PUBLISHED`, `SCORING_HELD`, `SCORING_QUARANTINED`,
+  `SCORING_REJECTED`.
+- Une rencontre MULTIPLAYER donne `MULTIPLAYER_MATCH_STARTED` puis
+  `MULTIPLAYER_MATCH_ENDED`.
+- Ces moments ne s'allument que si `default.mem.effects.json` les nomme
+  (`actionRules`) : jamais le flash générique `*`. Les effets livrés sont des
+  balayages de flashs, que la carte restaure seule, en partie comme dans ES.
+- `[APIExpose] ScoringPath=` ou `MultiplayerPath=` vide : le flux n'est pas ouvert.

@@ -53,6 +53,26 @@ public static class ApiExposeLink
     }
 
     /// <summary>
+    /// The HTTP root of the API behind a WebSocket base URL (ws -> http, wss -> https),
+    /// for the few REST calls the daemon makes. Null when the URL cannot be read.
+    /// </summary>
+    public static Uri? HttpBaseUri(string? baseUrl)
+    {
+        var text = string.IsNullOrWhiteSpace(baseUrl) ? "ws://127.0.0.1:12345" : baseUrl.Trim();
+        if (!Uri.TryCreate(text, UriKind.Absolute, out var uri)) return null;
+        var scheme = uri.Scheme.ToLowerInvariant() switch
+        {
+            "ws" => "http",
+            "wss" => "https",
+            "http" => "http",
+            "https" => "https",
+            _ => null
+        };
+        if (scheme is null) return null;
+        return new UriBuilder(uri) { Scheme = scheme, Port = uri.Port, Path = "/", Query = "" }.Uri;
+    }
+
+    /// <summary>
     /// Wait before reconnection attempt number <paramref name="attempt"/> (1-based):
     /// 1 s, 2 s, 4 s, 8 s then 15 s, spread by ±20 % so the streams do not all knock at
     /// the same instant. <paramref name="jitter"/> is a draw in [0, 1).

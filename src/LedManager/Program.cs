@@ -169,13 +169,113 @@ internal sealed class LedManagerApp
         };
 
         var tasks = streams.Select(s => ListenWebSocketAsync(s.Key, _config.ApiExpose.BuildUri(s.Value), cts.Token))
-            .Concat(new[] { MonitorEmulationStationLifecycleAsync(cts, cts.Token) });
+            .Concat(new[] { MonitorEmulationStationLifecycleAsync(cts, cts.Token), ListenAnnouncedOptionalStreamsAsync(cts.Token) });
         if (_config.ApiExpose.CoalescePanelStates)
         {
             tasks = tasks.Concat(new[] { DrainPanelMailboxAsync(cts.Token) });
         }
 
         await Task.WhenAll(tasks);
+    }
+
+    /// <summary>
+    /// /ws/scoring and /ws/multiplayer appeared with APIExpose 1.9.185: they are opened
+    /// only once GET /api/v1/ws/streams lists them, with the same key and the same
+    /// progressive reconnection as the other streams. An older API is left alone.
+    /// </summary>
+    private async Task ListenAnnouncedOptionalStreamsAsync(CancellationToken cancellationToken)
+    {
+        var paths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [ApiExposeStreams.Scoring] = _config.ApiExpose.ScoringPath,
+            [ApiExposeStreams.Multiplayer] = _config.ApiExpose.MultiplayerPath
+        };
+        if (paths.Values.All(string.IsNullOrWhiteSpace))
+        {
+            Console.WriteLine("[ws] scoring and multiplayer streams turned off in [APIExpose]");
+            return;
+        }
+
+        var announced = await DiscoverAnnouncedStreamsAsync(cancellationToken);
+        if (announced is null)
+        {
+            return;
+        }
+
+        var selected = ApiExposeStreams.SelectOptional(announced, paths);
+        if (selected.Count == 0)
+        {
+            Console.WriteLine("[ws] this APIExpose does not announce /ws/scoring nor /ws/multiplayer: not opened");
+            return;
+        }
+
+        Console.WriteLine($"[ws] announced by APIExpose, opening: {string.Join(", ", selected.Select(s => s.Stream))}");
+        await Task.WhenAll(selected.Select(s => ListenWebSocketAsync(s.Stream, _config.ApiExpose.BuildUri(s.Path), cancellationToken)));
+    }
+
+    /// <summary>The stream names the API announces; null when stopped before it answered.</summary>
+    private async Task<IReadOnlySet<string>?> DiscoverAnnouncedStreamsAsync(CancellationToken cancellationToken)
+    {
+        var root = ApiExposeLink.HttpBaseUri(_config.ApiExpose.BaseUrl);
+        if (root is null)
+        {
+            Console.Error.WriteLine("[ws] [APIExpose] BaseUrl unreadable: optional streams not opened");
+            return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var uri = new Uri(root, ApiExposeStreams.CatalogPath);
+        var loopback = ApiExposeLink.IsLoopback(_config.ApiExpose.BaseUrl);
+        var keyPresented = _config.ApiExpose.ApiKey.Length > 0;
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+        var attempt = 0;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            string failure;
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                if (keyPresented)
+                {
+                    request.Headers.TryAddWithoutValidation(ApiExposeLink.ApiKeyHeader, _config.ApiExpose.ApiKey);
+                }
+
+                using var response = await http.SendAsync(request, cancellationToken);
+                var body = response.IsSuccessStatusCode ? await response.Content.ReadAsStringAsync(cancellationToken) : null;
+                var answer = ApiExposeStreams.Interpret((int)response.StatusCode, body);
+                if (answer.Final)
+                {
+                    return answer.Announced;
+                }
+
+                failure = ApiExposeLink.DescribeFailure($"HTTP {(int)response.StatusCode}", loopback, keyPresented);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                failure = ApiExposeLink.DescribeFailure(ex.Message, loopback, keyPresented);
+            }
+
+            attempt++;
+            var delay = ApiExposeLink.ReconnectDelay(attempt, Random.Shared.NextDouble());
+            if (attempt == 1 || attempt % 10 == 0)
+            {
+                Console.Error.WriteLine($"[ws] stream catalog unavailable: {failure}; attempt {attempt}, next in {delay.TotalSeconds:0} s");
+            }
+
+            try
+            {
+                await Task.Delay(delay, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+        }
+
+        return null;
     }
 
     private readonly Channel<string> _panelMailbox = Channel.CreateUnbounded<string>(
@@ -613,6 +713,12 @@ internal sealed class LedManagerApp
             return;
         }
 
+        if (ApiOutcomeEvents.IsOutcomeEvent(evt))
+        {
+            HandleApiOutcome(evt);
+            return;
+        }
+
         if (await TryHandleMameOutputAsync(evt))
         {
             return;
@@ -629,6 +735,40 @@ internal sealed class LedManagerApp
         }
 
         await DispatchIngameAwareEventAsync(evt);
+    }
+
+    /// <summary>
+    /// Certification verdict and MULTIPLAYER matches: the moment is played through the
+    /// effect catalog when it names it exactly (SCORING_PUBLISHED, MULTIPLAYER_MATCH_STARTED...),
+    /// never through the generic "*" flash. The other scoring/multiplayer messages are state.
+    /// </summary>
+    private void HandleApiOutcome(LedEvent evt)
+    {
+        var outcome = ApiOutcomeEvents.Read(evt);
+        if (outcome.Action is null)
+        {
+            if (evt.Type.Equals("scoring.verdict", StringComparison.OrdinalIgnoreCase) ||
+                evt.Type.StartsWith("multiplayer.", StringComparison.OrdinalIgnoreCase) ||
+                evt.Type.StartsWith("netplay.", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine($"[{evt.Stream}] {outcome.Summary}");
+            }
+
+            return;
+        }
+
+        if (!_effectCatalog.HasExactActionRule(outcome.Action))
+        {
+            Console.WriteLine($"[{evt.Stream}] {outcome.Summary} -> no '{outcome.Action}' rule in the effect catalog, panel untouched");
+            return;
+        }
+
+        var effectEvents = _effectCatalog.Resolve(ApiOutcomeEvents.ToEffectEvent(evt, outcome, _config.ApiExpose.DefaultPlayer));
+        Console.WriteLine($"[{evt.Stream}] {outcome.Summary} -> action={outcome.Action} expanded={effectEvents.Count}");
+        if (effectEvents.Count > 0)
+        {
+            _ = PlayEffectSequenceAsync(effectEvents);
+        }
     }
 
     private bool LooksLikePanelSequenceReset(long sequence)

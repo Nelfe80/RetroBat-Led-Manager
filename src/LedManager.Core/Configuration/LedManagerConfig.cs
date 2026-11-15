@@ -89,6 +89,8 @@ public sealed class LedManagerConfig
                 IngamePath = ini.Get("APIExpose", "IngamePath", "/ws/ingame"),
                 ArcadePath = ini.Get("APIExpose", "ArcadePath", "/ws/arcade"),
                 HiscorePath = ini.Get("APIExpose", "HiscorePath", "/ws/hiscore"),
+                ScoringPath = ini.Get("APIExpose", "ScoringPath", "/ws/scoring"),
+                MultiplayerPath = ini.Get("APIExpose", "MultiplayerPath", "/ws/multiplayer"),
                 DefaultPlayer = ini.GetInt("APIExpose", "DefaultPlayer", 1),
                 CoalescePanelStates = ini.GetBool("APIExpose", "CoalescePanelStates", true)
             },
@@ -153,6 +155,14 @@ public sealed class ApiExposeConfig
     public string IngamePath { get; init; } = "/ws/ingame";
     public string ArcadePath { get; init; } = "/ws/arcade";
     public string HiscorePath { get; init; } = "/ws/hiscore";
+
+    /// <summary>Certification verdicts (APIExpose 1.9.185+). Opened only when
+    /// GET /api/v1/ws/streams announces it; empty turns it off.</summary>
+    public string ScoringPath { get; init; } = "/ws/scoring";
+
+    /// <summary>MULTIPLAYER gamerooms and matches (APIExpose 1.9.185+). Opened only
+    /// when GET /api/v1/ws/streams announces it; empty turns it off.</summary>
+    public string MultiplayerPath { get; init; } = "/ws/multiplayer";
     public int DefaultPlayer { get; init; } = 1;
 
     /// <summary>During fast ES navigation only the latest panel.state matters:
