@@ -13,6 +13,9 @@ public sealed class PanelState
     public DateTimeOffset CapturedAt { get; init; } = DateTimeOffset.Now;
     public IReadOnlyList<PanelOutput> Outputs { get; init; } = Array.Empty<PanelOutput>();
 
+    /// <summary>Button functions published by panel.state (ActivePanel.ControlMap.Inputs).</summary>
+    public IReadOnlyList<PanelControlInput> ControlInputs { get; init; } = Array.Empty<PanelControlInput>();
+
     [JsonIgnore]
     public bool IsEmpty => Outputs.Count == 0;
 
@@ -35,8 +38,39 @@ public sealed class PanelState
             PanelId = ReadString(active, "Id") ?? ReadString(active, "id") ?? ReadStringDeep(payloadObj, "PanelKey") ?? ReadStringDeep(payloadObj, "SourceFile") ?? ReadStringDeep(root, "panelId"),
             LayoutId = ReadStringNullable(layout, "Id") ?? ReadStringNullable(layout, "id") ?? ReadStringDeep(payloadObj, "ActiveLayoutId") ?? ReadStringDeep(root, "layout"),
             Sequence = ReadLongDeep(payloadObj, "Sequence") ?? ReadLongDeep(root, "Sequence") ?? 0,
-            Outputs = CompletePhysicalSlots(outputs)
+            Outputs = CompletePhysicalSlots(outputs),
+            ControlInputs = ReadControlInputs(active)
         };
+    }
+
+    private static IReadOnlyList<PanelControlInput> ReadControlInputs(JsonElement active)
+    {
+        var list = new List<PanelControlInput>();
+        var map = FindObject(active, "ControlMap") ?? FindObject(active, "controlMap");
+        if (map is not { } mapElement ||
+            !TryGetPropertyAny(mapElement, out var inputs, "Inputs", "inputs") ||
+            inputs.ValueKind != JsonValueKind.Array)
+        {
+            return list;
+        }
+
+        foreach (var input in inputs.EnumerateArray())
+        {
+            var slot = ReadInt(input, "Slot") ?? ReadInt(input, "slot");
+            if (slot is null)
+            {
+                continue;
+            }
+
+            list.Add(new PanelControlInput(
+                slot.Value,
+                ReadInt(input, "Player") ?? ReadInt(input, "player"),
+                ReadString(input, "Function") ?? ReadString(input, "function"),
+                ReadString(input, "Color") ?? ReadString(input, "color"),
+                ReadString(input, "DeviceType") ?? ReadString(input, "deviceType")));
+        }
+
+        return list;
     }
 
     public PanelState EnrichFromDynpanel(string baseDirectory)
@@ -86,6 +120,7 @@ public sealed class PanelState
             LayoutId = LayoutId,
             Sequence = Sequence,
             CapturedAt = CapturedAt,
+            ControlInputs = ControlInputs,
             Outputs = players
                 .SelectMany(player => Enumerable.Range(1, 8)
                     .Select(slot => baseByPlayerSlot.TryGetValue((player, slot), out var output)
@@ -797,6 +832,9 @@ public sealed class PanelState
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 }
+
+/// <summary>One entry of panel.state ControlMap.Inputs: what a physical control does in this game.</summary>
+public sealed record PanelControlInput(int Slot, int? Player, string? Function, string? Color, string? DeviceType);
 
 public sealed class PanelOutput
 {

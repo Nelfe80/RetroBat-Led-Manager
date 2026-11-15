@@ -105,6 +105,7 @@ public sealed class IngamePanelOverlay
             LayoutId = _basePanel.LayoutId,
             Sequence = _basePanel.Sequence,
             CapturedAt = _basePanel.CapturedAt,
+            ControlInputs = _basePanel.ControlInputs,
             Outputs = outputs
         };
     }

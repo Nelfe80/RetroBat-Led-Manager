@@ -169,6 +169,7 @@ public static class PanelStateOverrides
                 LayoutId = state.LayoutId,
                 Sequence = state.Sequence,
                 CapturedAt = state.CapturedAt,
+                ControlInputs = state.ControlInputs,
                 Outputs = outputs
             };
         }

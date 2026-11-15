@@ -141,7 +141,7 @@ public static class ResourceButtonMatcher
 {
     public static IReadOnlyList<PanelOutput> Find(PanelState? panel, int player, IReadOnlyList<string> words)
     {
-        if (panel is null || panel.IsEmpty || words.Count == 0)
+        if (panel is null || words.Count == 0)
         {
             return Array.Empty<PanelOutput>();
         }
@@ -152,7 +152,36 @@ public static class ResourceButtonMatcher
             return Array.Empty<PanelOutput>();
         }
 
-        return panel.Outputs
+        // the dedicated panel file (outputs enriched from the dynpanel) wins when it names a button
+        var fromOutputs = FindInOutputs(panel.Outputs, player, normalizedWords);
+        if (fromOutputs.Count > 0)
+        {
+            return fromOutputs;
+        }
+
+        // otherwise the functions published by panel.state (ControlMap.Inputs)
+        return panel.ControlInputs
+            .Where(input => input.Slot is >= 1 and <= 8)
+            .Where(input => input.Player == player || (input.Player is null or <= 0 && player == 1))
+            .Where(input => Normalize(input.Function) is { Length: > 0 } text &&
+                            normalizedWords.Any(word => text.Contains(word, StringComparison.Ordinal)))
+            .GroupBy(input => (input.Player, input.Slot))
+            .Select(group => group.First())
+            .OrderBy(input => input.Slot)
+            .Select(input => new PanelOutput
+            {
+                Player = input.Player,
+                Slot = input.Slot,
+                Target = $"SLOT:{input.Slot}",
+                Color = string.IsNullOrWhiteSpace(input.Color) ? "BLACK" : input.Color!,
+                Function = input.Function
+            })
+            .ToArray();
+    }
+
+    private static IReadOnlyList<PanelOutput> FindInOutputs(IReadOnlyList<PanelOutput> source, int player, string[] normalizedWords)
+    {
+        return source
             .Where(output => output.Slot is >= 1 and <= 8)
             .Where(output => output.Player == player || (output.Player is null or <= 0 && player == 1))
             .Where(output => new[] { output.Function, output.Name, output.Id }
