@@ -11,6 +11,9 @@ return await app.RunAsync(args);
 
 internal sealed class PicoCommandSenderApp
 {
+    /// <summary>Exit code when the serial port cannot be opened (board unplugged, port taken).</summary>
+    public const int ExitNoDevice = 3;
+
     public async Task<int> RunAsync(string[] args)
     {
         var mode = args.Length > 0 ? args[0].ToLowerInvariant() : "send";
@@ -35,7 +38,21 @@ internal sealed class PicoCommandSenderApp
             SingleReader = true,
             SingleWriter = false
         });
-        await using var serial = await PicoSerial.OpenAsync(config, line => bridgeLines.Writer.TryWrite(line));
+        // No board, no crash (18/11/2026: a Pico unplugged made this exe die with an unhandled
+        // IOException every few seconds, each one a Windows Error Report). One line that
+        // LedManager understands, then a clean exit with its own code.
+        PicoSerial serialOpened;
+        try
+        {
+            serialOpened = await PicoSerial.OpenAsync(config, line => bridgeLines.Writer.TryWrite(line));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            Console.WriteLine($"NO_DEVICE sender={config.SenderId} port={config.Port}: {ex.Message}");
+            return ExitNoDevice;
+        }
+
+        await using var serial = serialOpened;
 
         if (mode == "daemon")
         {

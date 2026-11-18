@@ -1937,6 +1937,8 @@ internal sealed class SenderHost
     private readonly LedManagerConfig _config;
     private readonly Dictionary<string, Process> _processes = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, TaskCompletionSource> _readySignals = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, SenderRestartPolicy> _restarts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _lastNoDevice = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, Channel<QueuedCommand>> _queues = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, Channel<RoutedCommand>> _panelQueues = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, RoutedCommand> _latestPanelCommands = new(StringComparer.OrdinalIgnoreCase);
@@ -2482,6 +2484,8 @@ internal sealed class SenderHost
             return null;
         }
 
+        var restart = _restarts.GetOrAdd(sender.Id, _ => new SenderRestartPolicy());
+        var now = DateTime.UtcNow;
         if (_processes.TryGetValue(sender.Id, out var existing))
         {
             if (!existing.HasExited)
@@ -2489,8 +2493,30 @@ internal sealed class SenderHost
                 return existing;
             }
 
-            // the sender died and is about to be replaced: release its handle and pipes
+            // the sender died: a board that never opened (Pico unplugged) is not restarted in a tight loop
+            var lived = TimeSpan.Zero;
+            var code = 0;
+            try
+            {
+                lived = existing.ExitTime.ToUniversalTime() - existing.StartTime.ToUniversalTime();
+                code = existing.ExitCode;
+            }
+            catch { /* times unavailable: treated as an early death */ }
+
+            var reachedReady = _readySignals.TryGetValue(sender.Id, out var signal) && signal.Task.IsCompletedSuccessfully;
+            if (restart.OnExit(now, lived, reachedReady))
+            {
+                Console.Error.WriteLine($"[sender:{sender.Id}] exited after {lived.TotalSeconds:0.0} s (code {code}); next start in {restart.CurrentDelay.TotalSeconds:0} s");
+            }
+
+            // release its handle and pipes
             try { existing.Dispose(); } catch { /* already gone */ }
+            _processes.Remove(sender.Id);
+        }
+
+        if (!restart.CanStart(now))
+        {
+            return null;
         }
 
         var psi = new ProcessStartInfo
@@ -2524,9 +2550,21 @@ internal sealed class SenderHost
     {
         while (await reader.ReadLineAsync() is { } line)
         {
+            // the same « no device » line at every retry says nothing new: once per streak
+            if (line.StartsWith("NO_DEVICE", StringComparison.OrdinalIgnoreCase))
+            {
+                lock (_lastNoDevice)
+                {
+                    if (_lastNoDevice.TryGetValue(senderId, out var last) && last == line) continue;
+                    _lastNoDevice[senderId] = line;
+                }
+            }
+
             Console.WriteLine($"[sender:{senderId}] {line}");
             if (line.Contains($"READY sender={senderId}", StringComparison.OrdinalIgnoreCase))
             {
+                lock (_lastNoDevice) _lastNoDevice.Remove(senderId);
+                if (_restarts.TryGetValue(senderId, out var policy)) policy.OnReady();
                 ready?.TrySetResult();
                 ClearSenderState(senderId);
                 if (_latestPanelCommands.TryGetValue(senderId, out var latestPanel) &&
